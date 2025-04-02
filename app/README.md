@@ -1,4 +1,4 @@
-# Ollama App
+# Rose App
 
 ## Linux
 

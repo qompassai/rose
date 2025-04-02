@@ -7,5 +7,5 @@ import (
 
 func getStorePath() string {
 	localAppData := os.Getenv("LOCALAPPDATA")
-	return filepath.Join(localAppData, "Ollama", "config.json")
+	return filepath.Join(localAppData, "Rose", "config.json")
 }

@@ -1,6 +1,6 @@
 # How to troubleshoot issues
 
-Sometimes Ollama may not perform as expected. One of the best ways to figure out what happened is to take a look at the logs. Find the logs on **Mac** by running the command:
+Sometimes Rose may not perform as expected. One of the best ways to figure out what happened is to take a look at the logs. Find the logs on **Mac** by running the command:
 
 ```shell
 cat ~/.ollama/logs/server.log

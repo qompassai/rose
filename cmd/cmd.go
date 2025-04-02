@@ -162,7 +162,7 @@ func CreateHandler(cmd *cobra.Command, args []string) error {
 
 	if err := client.Create(cmd.Context(), req, fn); err != nil {
 		if strings.Contains(err.Error(), "path or Modelfile are required") {
-			return fmt.Errorf("the ollama server must be updated to use `ollama create` with this client")
+			return fmt.Errorf("the rose server must be updated to use `rose create` with this client")
 		}
 		return err
 	}
@@ -1096,8 +1096,8 @@ func initializeKeypair() error {
 		return err
 	}
 
-	privKeyPath := filepath.Join(home, ".ollama", "id_ed25519")
-	pubKeyPath := filepath.Join(home, ".ollama", "id_ed25519.pub")
+	privKeyPath := filepath.Join(home, ".rose", "id_ed25519")
+	pubKeyPath := filepath.Join(home, ".rose", "id_ed25519.pub")
 
 	_, err = os.Stat(privKeyPath)
 	if os.IsNotExist(err) {
@@ -1146,7 +1146,7 @@ func checkServerHeartbeat(cmd *cobra.Command, _ []string) error {
 			return err
 		}
 		if err := startApp(cmd.Context(), client); err != nil {
-			return errors.New("could not connect to ollama app, is it running?")
+			return errors.New("could not connect to rose app, is it running?")
 		}
 	}
 	return nil
@@ -1160,11 +1160,11 @@ func versionHandler(cmd *cobra.Command, _ []string) {
 
 	serverVersion, err := client.Version(cmd.Context())
 	if err != nil {
-		fmt.Println("Warning: could not connect to a running Ollama instance")
+		fmt.Println("Warning: could not connect to a running Rose instance")
 	}
 
 	if serverVersion != "" {
-		fmt.Printf("ollama version is %s\n", serverVersion)
+		fmt.Printf("rose version is %s\n", serverVersion)
 	}
 
 	if serverVersion != version.Version {
@@ -1196,7 +1196,7 @@ func NewCLI() *cobra.Command {
 	}
 
 	rootCmd := &cobra.Command{
-		Use:           "ollama",
+		Use:           "rose",
 		Short:         "Large language model runner",
 		SilenceUsage:  true,
 		SilenceErrors: true,
@@ -1266,7 +1266,7 @@ func NewCLI() *cobra.Command {
 	serveCmd := &cobra.Command{
 		Use:     "serve",
 		Aliases: []string{"start"},
-		Short:   "Start ollama",
+		Short:   "Start rose",
 		Args:    cobra.ExactArgs(0),
 		RunE:    RunServer,
 	}

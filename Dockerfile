@@ -95,7 +95,7 @@ COPY . .
 ARG GOFLAGS="'-ldflags=-w -s'"
 ENV CGO_ENABLED=1
 RUN --mount=type=cache,target=/root/.cache/go-build \
-    go build -trimpath -buildmode=pie -o /bin/ollama .
+    go build -trimpath -buildmode=pie -o /bin/rose .
 
 FROM --platform=linux/amd64 scratch AS amd64
 COPY --from=cuda-11 dist/lib/ollama/cuda_v11 /lib/ollama/cuda_v11
@@ -112,7 +112,7 @@ COPY --from=rocm-6 dist/lib/ollama/rocm /lib/ollama/rocm
 
 FROM ${FLAVOR} AS archive
 COPY --from=cpu dist/lib/ollama /lib/ollama
-COPY --from=build /bin/ollama /bin/ollama
+COPY --from=build /bin/rose /bin/rose
 
 FROM ubuntu:20.04
 RUN apt-get update \
@@ -125,7 +125,7 @@ COPY --from=archive /lib/ollama /usr/lib/ollama
 ENV LD_LIBRARY_PATH=/usr/local/nvidia/lib:/usr/local/nvidia/lib64
 ENV NVIDIA_DRIVER_CAPABILITIES=compute,utility
 ENV NVIDIA_VISIBLE_DEVICES=all
-ENV OLLAMA_HOST=0.0.0.0:11434
+ENV ROSE_HOST=0.0.0.0:11434
 EXPOSE 11434
-ENTRYPOINT ["/bin/ollama"]
+ENTRYPOINT ["/bin/rose"]
 CMD ["serve"]

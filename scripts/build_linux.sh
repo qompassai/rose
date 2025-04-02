@@ -17,7 +17,7 @@ mkdir -p dist
 docker buildx build \
         --output type=local,dest=./dist/ \
         --platform=${PLATFORM} \
-        ${OLLAMA_COMMON_BUILD_ARGS} \
+        ${ROSE_COMMON_BUILD_ARGS} \
         --target archive \
         -f Dockerfile \
         .
@@ -30,7 +30,7 @@ if echo $PLATFORM | grep "amd64" > /dev/null; then
     docker buildx build \
         --output type=local,dest=${outDir} \
         --platform=linux/amd64 \
-        ${OLLAMA_COMMON_BUILD_ARGS} \
+        ${ROSE_COMMON_BUILD_ARGS} \
         --build-arg FLAVOR=rocm \
         --target archive \
         -f Dockerfile \
