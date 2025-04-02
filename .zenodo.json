@@ -1,0 +1,38 @@
+{
+  "title": "The Responsible Open Science Engine",
+  "description": "Empowering you to navigate the Deep Waters of Deep Tech.",
+  "license": ["AGPL-3.0", "Q-CDA"],
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/qompassai/rose",
+      "relation": "isSupplementTo",
+      "resource_type": "software"
+    }
+  ],
+  "upload_type": "software",
+  "access_right": "open",
+  "version": "2025.04.02",
+  "creators": [
+    {
+      "name": "Porter, Matthew A.",
+      "affiliation": "Qompass AI",
+      "orcid": "0000-0002-0302-4812"
+    }
+  ],
+  "notes": "This software is dual-licensed under AGPL-3.0 and the Qompass Commercial Distribution Agreement (Q-CDA). The AGPL-3.0 applies to the source code, while the Q-CDA provides additional permissions and constraints for distribution.",
+  "keywords": [
+    "AI",
+    "LLM",
+    "Large Language Models",
+    "Local Inference",
+    "Quantum-Safe",
+    "Open Source",
+    "GGUF"
+  ],
+  "grants": [
+    {
+      "id": "Service Disabled Veteran Owned Business"
+    }
+  ]
+}
+
