@@ -1,4 +1,4 @@
-// Package registry implements an http.Handler for handling local Ollama API
+// Package registry implements an http.Handler for handling local Rose API
 // model management requests. See [Local] for details.
 package registry
 
@@ -14,17 +14,17 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ollama/ollama/server/internal/cache/blob"
-	"github.com/ollama/ollama/server/internal/client/ollama"
+	"github.com/qompassai/rose/server/internal/cache/blob"
+	"github.com/qompassai/rose/server/internal/client/rose"
 )
 
-// Local implements an http.Handler for handling local Ollama API model
+// Local implements an http.Handler for handling local Rose API model
 // management requests, such as pushing, pulling, and deleting models.
 //
 // It can be arranged for all unknown requests to be passed through to a
 // fallback handler, if one is provided.
 type Local struct {
-	Client *ollama.Registry // required
+	Client *rose.Registry // required
 	Logger *slog.Logger     // required
 
 	// Fallback, if set, is used to handle requests that are not handled by
@@ -36,8 +36,8 @@ type Local struct {
 	Prune func() error // optional
 }
 
-// serverError is like ollama.Error, but with a Status field for the HTTP
-// response code. We want to avoid adding that field to ollama.Error because it
+// serverError is like rose.Error, but with a Status field for the HTTP
+// response code. We want to avoid adding that field to rose.Error because it
 // would always be 0 to clients (we don't want to leak the status code in
 // errors), and so it would be confusing to have a field that is always 0.
 type serverError struct {
@@ -126,7 +126,7 @@ func (s *Local) serveHTTP(rec *statusCodeRecorder, r *http.Request) {
 		var e *serverError
 		switch {
 		case errors.As(err, &e):
-		case errors.Is(err, ollama.ErrNameInvalid):
+		case errors.Is(err, rose.ErrNameInvalid):
 			e = &serverError{400, "bad_request", err.Error()}
 		default:
 			e = errInternalError
@@ -260,7 +260,7 @@ func (s *Local) handlePull(w http.ResponseWriter, r *http.Request) error {
 	enc := json.NewEncoder(w)
 	if !p.stream() {
 		if err := s.Client.Pull(r.Context(), p.model()); err != nil {
-			if errors.Is(err, ollama.ErrModelNotFound) {
+			if errors.Is(err, rose.ErrModelNotFound) {
 				return errModelNotFound
 			}
 			return err
@@ -277,9 +277,9 @@ func (s *Local) handlePull(w http.ResponseWriter, r *http.Request) error {
 	defer maybeFlush()
 
 	var mu sync.Mutex
-	progress := make(map[*ollama.Layer]int64)
+	progress := make(map[*rose.Layer]int64)
 
-	progressCopy := make(map[*ollama.Layer]int64, len(progress))
+	progressCopy := make(map[*rose.Layer]int64, len(progress))
 	flushProgress := func() {
 		defer maybeFlush()
 
@@ -305,8 +305,8 @@ func (s *Local) handlePull(w http.ResponseWriter, r *http.Request) error {
 		flushProgress() // flush initial state
 		t.Reset(100 * time.Millisecond)
 	})
-	ctx := ollama.WithTrace(r.Context(), &ollama.Trace{
-		Update: func(l *ollama.Layer, n int64, err error) {
+	ctx := rose.WithTrace(r.Context(), &rose.Trace{
+		Update: func(l *rose.Layer, n int64, err error) {
 			if n > 0 {
 				// Block flushing progress updates until every
 				// layer is accounted for. Clients depend on a
@@ -335,7 +335,7 @@ func (s *Local) handlePull(w http.ResponseWriter, r *http.Request) error {
 			flushProgress()
 			if err != nil {
 				var status string
-				if errors.Is(err, ollama.ErrModelNotFound) {
+				if errors.Is(err, rose.ErrModelNotFound) {
 					status = fmt.Sprintf("error: model %q not found", p.model())
 				} else {
 					status = fmt.Sprintf("error: %v", err)

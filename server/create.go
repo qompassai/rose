@@ -18,15 +18,15 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/convert"
-	"github.com/ollama/ollama/envconfig"
-	"github.com/ollama/ollama/format"
-	"github.com/ollama/ollama/fs/ggml"
-	"github.com/ollama/ollama/llama"
-	"github.com/ollama/ollama/template"
-	"github.com/ollama/ollama/types/errtypes"
-	"github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/convert"
+	"github.com/qompassai/rose/envconfig"
+	"github.com/qompassai/rose/format"
+	"github.com/qompassai/rose/fs/ggml"
+	"github.com/qompassai/rose/llama"
+	"github.com/qompassai/rose/template"
+	"github.com/qompassai/rose/types/errtypes"
+	"github.com/qompassai/rose/types/model"
 )
 
 var (
@@ -55,7 +55,7 @@ func (s *Server) CreateHandler(c *gin.Context) {
 		}
 	}
 
-	name := model.ParseName(cmp.Or(r.Model, r.Name))
+	name := model.ParseName(cmp.Or(r.Model, r.Model))
 	if !name.IsValid() {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": errtypes.InvalidModelNameErrMsg})
 		return
@@ -225,7 +225,7 @@ func detectModelTypeFromFiles(files map[string]string) string {
 }
 
 func convertFromSafetensors(files map[string]string, baseLayers []*layerGGML, isAdapter bool, fn func(resp api.ProgressResponse)) ([]*layerGGML, error) {
-	tmpDir, err := os.MkdirTemp("", "ollama-safetensors")
+	tmpDir, err := os.MkdirTemp("", "rose-safetensors")
 	if err != nil {
 		return nil, err
 	}
@@ -264,7 +264,7 @@ func convertFromSafetensors(files map[string]string, baseLayers []*layerGGML, is
 	var mediaType string
 	if !isAdapter {
 		fn(api.ProgressResponse{Status: "converting model"})
-		mediaType = "application/vnd.ollama.image.model"
+		mediaType = "application/vnd.rose.image.model"
 		if err := convert.ConvertModel(os.DirFS(tmpDir), t); err != nil {
 			return nil, err
 		}
@@ -274,7 +274,7 @@ func convertFromSafetensors(files map[string]string, baseLayers []*layerGGML, is
 			return nil, err
 		}
 		fn(api.ProgressResponse{Status: "converting adapter"})
-		mediaType = "application/vnd.ollama.image.adapter"
+		mediaType = "application/vnd.rose.image.adapter"
 		if err := convert.ConvertAdapter(os.DirFS(tmpDir), t, kv); err != nil {
 			return nil, err
 		}
@@ -328,8 +328,8 @@ func createModel(r api.CreateRequest, name model.Name, baseLayers []*layerGGML, 
 	var layers []Layer
 	for _, layer := range baseLayers {
 		if layer.GGML != nil {
-			quantType := strings.ToUpper(cmp.Or(r.Quantize, r.Quantization))
-			if quantType != "" && layer.GGML.Name() == "gguf" && layer.MediaType == "application/vnd.ollama.image.model" {
+			quantType := strings.ToUpper(cmp.Or(r.Quantize, r.Quantize))
+			if quantType != "" && layer.GGML.Name() == "gguf" && layer.MediaType == "application/vnd.rose.image.model" {
 				want, err := ggml.ParseFileType(quantType)
 				if err != nil {
 					return err
@@ -506,11 +506,11 @@ func ggufLayers(digest string, fn func(resp api.ProgressResponse)) ([]*layerGGML
 			return nil, err
 		}
 
-		mediatype := "application/vnd.ollama.image.model"
+		mediatype := "application/vnd.rose.image.model"
 		if f.KV().Kind() == "adapter" {
-			mediatype = "application/vnd.ollama.image.adapter"
+			mediatype = "application/vnd.rose.image.adapter"
 		} else if _, ok := f.KV()[fmt.Sprintf("%s.vision.block_count", f.KV().Architecture())]; ok || f.KV().Kind() == "projector" {
-			mediatype = "application/vnd.ollama.image.projector"
+			mediatype = "application/vnd.rose.image.projector"
 		}
 
 		var layer Layer
@@ -553,7 +553,7 @@ func removeLayer(layers []Layer, mediatype string) []Layer {
 }
 
 func setTemplate(layers []Layer, t string) ([]Layer, error) {
-	layers = removeLayer(layers, "application/vnd.ollama.image.template")
+	layers = removeLayer(layers, "application/vnd.rose.image.template")
 	if _, err := template.Parse(t); err != nil {
 		return nil, fmt.Errorf("%w: %s", errBadTemplate, err)
 	}
@@ -562,7 +562,7 @@ func setTemplate(layers []Layer, t string) ([]Layer, error) {
 	}
 
 	blob := strings.NewReader(t)
-	layer, err := NewLayer(blob, "application/vnd.ollama.image.template")
+	layer, err := NewLayer(blob, "application/vnd.rose.image.template")
 	if err != nil {
 		return nil, err
 	}
@@ -572,10 +572,10 @@ func setTemplate(layers []Layer, t string) ([]Layer, error) {
 }
 
 func setSystem(layers []Layer, s string) ([]Layer, error) {
-	layers = removeLayer(layers, "application/vnd.ollama.image.system")
+	layers = removeLayer(layers, "application/vnd.rose.image.system")
 	if s != "" {
 		blob := strings.NewReader(s)
-		layer, err := NewLayer(blob, "application/vnd.ollama.image.system")
+		layer, err := NewLayer(blob, "application/vnd.rose.image.system")
 		if err != nil {
 			return nil, err
 		}
@@ -586,7 +586,7 @@ func setSystem(layers []Layer, s string) ([]Layer, error) {
 
 func setLicense(layers []Layer, l string) ([]Layer, error) {
 	blob := strings.NewReader(l)
-	layer, err := NewLayer(blob, "application/vnd.ollama.image.license")
+	layer, err := NewLayer(blob, "application/vnd.rose.image.license")
 	if err != nil {
 		return nil, err
 	}
@@ -599,7 +599,7 @@ func setParameters(layers []Layer, p map[string]any) ([]Layer, error) {
 		p = make(map[string]any)
 	}
 	for _, layer := range layers {
-		if layer.MediaType != "application/vnd.ollama.image.params" {
+		if layer.MediaType != "application/vnd.rose.image.params" {
 			continue
 		}
 
@@ -631,13 +631,13 @@ func setParameters(layers []Layer, p map[string]any) ([]Layer, error) {
 		return layers, nil
 	}
 
-	layers = removeLayer(layers, "application/vnd.ollama.image.params")
+	layers = removeLayer(layers, "application/vnd.rose.image.params")
 
 	var b bytes.Buffer
 	if err := json.NewEncoder(&b).Encode(p); err != nil {
 		return nil, err
 	}
-	layer, err := NewLayer(&b, "application/vnd.ollama.image.params")
+	layer, err := NewLayer(&b, "application/vnd.rose.image.params")
 	if err != nil {
 		return nil, err
 	}
@@ -653,12 +653,12 @@ func setMessages(layers []Layer, m []api.Message) ([]Layer, error) {
 	}
 
 	fmt.Printf("removing old messages\n")
-	layers = removeLayer(layers, "application/vnd.ollama.image.messages")
+	layers = removeLayer(layers, "application/vnd.rose.image.messages")
 	var b bytes.Buffer
 	if err := json.NewEncoder(&b).Encode(m); err != nil {
 		return nil, err
 	}
-	layer, err := NewLayer(&b, "application/vnd.ollama.image.messages")
+	layer, err := NewLayer(&b, "application/vnd.rose.image.messages")
 	if err != nil {
 		return nil, err
 	}

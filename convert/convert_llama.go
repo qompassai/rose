@@ -9,7 +9,7 @@ import (
 	"github.com/pdevine/tensor"
 	"github.com/pdevine/tensor/native"
 
-	"github.com/ollama/ollama/fs/ggml"
+	"github.com/qompassai/rose/fs/ggml"
 )
 
 type llamaModel struct {

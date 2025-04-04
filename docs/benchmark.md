@@ -1,6 +1,6 @@
 # Benchmark
 
-Go benchmark tests that measure end-to-end performance of a running Ollama server. Run these tests to evaluate model inference performance on your hardware and measure the impact of code changes.
+Go benchmark tests that measure end-to-end performance of a running Rose server. Run these tests to evaluate model inference performance on your hardware and measure the impact of code changes.
 
 ## When to use
 
@@ -12,11 +12,11 @@ Run these benchmarks when:
 - Testing performance across different hardware setups
 
 ## Prerequisites
-- Ollama server running locally with `ollama serve` on `127.0.0.1:11434`
+- Rose server running locally with `rose serve` on `127.0.0.1:11434`
 ## Usage and Examples
 
 >[!NOTE]
->All commands must be run from the root directory of the Ollama project.
+>All commands must be run from the root directory of the Rose project.
 
 Basic syntax:
 ```bash

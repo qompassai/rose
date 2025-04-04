@@ -16,11 +16,11 @@ import (
 	_ "golang.org/x/image/tiff"
 	_ "golang.org/x/image/webp"
 
-	fs "github.com/ollama/ollama/fs/ggml"
-	"github.com/ollama/ollama/kvcache"
-	"github.com/ollama/ollama/ml"
-	_ "github.com/ollama/ollama/ml/backend"
-	"github.com/ollama/ollama/model/input"
+	fs "github.com/qompassai/rose/fs/ggml"
+	"github.com/qompassai/rose/kvcache"
+	"github.com/qompassai/rose/ml"
+	_ "github.com/qompassai/rose/ml/backend"
+	"github.com/qompassai/rose/model/input"
 )
 
 var ErrNoVisionModel = errors.New("this model is missing data required for image input")

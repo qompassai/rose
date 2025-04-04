@@ -1,6 +1,6 @@
 #!/bin/sh
 # This script installs Rose on Linux.
-# It detects the current operating system architecture and installs the appropriate version of Ollama.
+# It detects the current operating system architecture and installs the appropriate version of Rose.
 
 set -eu
 
@@ -80,7 +80,7 @@ $SUDO install -o0 -g0 -m755 -d $BINDIR
 $SUDO install -o0 -g0 -m755 -d "$ROSE_INSTALL_DIR/lib/rose"
 status "Downloading Linux ${ARCH} bundle"
 curl --fail --show-error --location --progress-bar \
-    "https://ollama.com/download/ollama-linux-${ARCH}.tgz${VER_PARAM}" | \
+    "https://qompass.ai/download/rose-linux-${ARCH}.tgz${VER_PARAM}" | \
     $SUDO tar -xzf - -C "$ROSE_INSTALL_DIR"
 
 if [ "$ROSE_INSTALL_DIR/bin/rose" != "$BINDIR/rose" ] ; then
@@ -93,12 +93,12 @@ if [ -f /etc/nv_tegra_release ] ; then
     if grep R36 /etc/nv_tegra_release > /dev/null ; then
         status "Downloading JetPack 6 components"
         curl --fail --show-error --location --progress-bar \
-            "https://ollama.com/download/rose-linux-${ARCH}-jetpack6.tgz${VER_PARAM}" | \
+            "https://qompass.ai/download/rose-linux-${ARCH}-jetpack6.tgz${VER_PARAM}" | \
             $SUDO tar -xzf - -C "$ROSE_INSTALL_DIR"
     elif grep R35 /etc/nv_tegra_release > /dev/null ; then
         status "Downloading JetPack 5 components"
         curl --fail --show-error --location --progress-bar \
-            "https://ollama.com/download/rose-linux-${ARCH}-jetpack5.tgz${VER_PARAM}" | \
+            "https://qompass.ai/download/rose-linux-${ARCH}-jetpack5.tgz${VER_PARAM}" | \
             $SUDO tar -xzf - -C "$ROSE_INSTALL_DIR"
     else
         warning "Unsupported JetPack version detected.  GPU may not be supported"
@@ -217,14 +217,14 @@ fi
 
 if ! check_gpu lspci nvidia && ! check_gpu lshw nvidia && ! check_gpu lspci amdgpu && ! check_gpu lshw amdgpu; then
     install_success
-    warning "No NVIDIA/AMD GPU detected. Ollama will run in CPU-only mode."
+    warning "No NVIDIA/AMD GPU detected. Rose will run in CPU-only mode."
     exit 0
 fi
 
 if check_gpu lspci amdgpu || check_gpu lshw amdgpu; then
     status "Downloading Linux ROCm ${ARCH} bundle"
     curl --fail --show-error --location --progress-bar \
-        "https://ollama.com/download/ollama-linux-${ARCH}-rocm.tgz${VER_PARAM}" | \
+        "https://qompass.ai/download/rose-linux-${ARCH}-rocm.tgz${VER_PARAM}" | \
         $SUDO tar -xzf - -C "$ROSE_INSTALL_DIR"
 
     install_success

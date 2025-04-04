@@ -9,7 +9,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/ollama/ollama/fs/util/bufioutil"
+	"github.com/qompassai/rose/fs/util/bufioutil"
 )
 
 type GGML struct {
@@ -133,7 +133,7 @@ func (kv KV) Floats(key string, defaultValue ...[]float32) []float32 {
 	return s
 }
 
-func (kv KV) OllamaEngineRequired() bool {
+func (kv KV) RoseEngineRequired() bool {
 	return kv.Architecture() == "gemma3"
 }
 

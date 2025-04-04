@@ -7,7 +7,7 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/types/model"
 )
 
 func createManifest(t *testing.T, path, name string) {
@@ -44,21 +44,21 @@ func TestManifests(t *testing.T) {
 		},
 		"multiple": {
 			ps: []string{
-				filepath.Join("registry.ollama.ai", "library", "llama3", "latest"),
-				filepath.Join("registry.ollama.ai", "library", "llama3", "q4_0"),
-				filepath.Join("registry.ollama.ai", "library", "llama3", "q4_1"),
-				filepath.Join("registry.ollama.ai", "library", "llama3", "q8_0"),
-				filepath.Join("registry.ollama.ai", "library", "llama3", "q5_0"),
-				filepath.Join("registry.ollama.ai", "library", "llama3", "q5_1"),
-				filepath.Join("registry.ollama.ai", "library", "llama3", "q2_K"),
-				filepath.Join("registry.ollama.ai", "library", "llama3", "q3_K_S"),
-				filepath.Join("registry.ollama.ai", "library", "llama3", "q3_K_M"),
-				filepath.Join("registry.ollama.ai", "library", "llama3", "q3_K_L"),
-				filepath.Join("registry.ollama.ai", "library", "llama3", "q4_K_S"),
-				filepath.Join("registry.ollama.ai", "library", "llama3", "q4_K_M"),
-				filepath.Join("registry.ollama.ai", "library", "llama3", "q5_K_S"),
-				filepath.Join("registry.ollama.ai", "library", "llama3", "q5_K_M"),
-				filepath.Join("registry.ollama.ai", "library", "llama3", "q6_K"),
+				filepath.Join("harbor.qompass.ai", "archive", "llama3", "latest"),
+				filepath.Join("harbor.qompass.ai", "archive", "llama3", "q4_0"),
+				filepath.Join("harbor.qompass.ai", "archive", "llama3", "q4_1"),
+				filepath.Join("harbor.qompass.ai", "archive", "llama3", "q8_0"),
+				filepath.Join("harbor.qompass.ai", "archive", "llama3", "q5_0"),
+				filepath.Join("harbor.qompass.ai", "archive", "llama3", "q5_1"),
+				filepath.Join("harbor.qompass.ai", "archive", "llama3", "q2_K"),
+				filepath.Join("harbor.qompass.ai", "archive", "llama3", "q3_K_S"),
+				filepath.Join("harbor.qompass.ai", "archive", "llama3", "q3_K_M"),
+				filepath.Join("harbor.qompass.ai", "archive", "llama3", "q3_K_L"),
+				filepath.Join("harbor.qompass.ai", "archive", "llama3", "q4_K_S"),
+				filepath.Join("harbor.qompass.ai", "archive", "llama3", "q4_K_M"),
+				filepath.Join("harbor.qompass.ai", "archive", "llama3", "q5_K_S"),
+				filepath.Join("harbor.qompass.ai", "archive", "llama3", "q5_K_M"),
+				filepath.Join("harbor.qompass.ai", "archive", "llama3", "q6_K"),
 			},
 			wantValidCount: 15,
 		},
@@ -106,7 +106,7 @@ func TestManifests(t *testing.T) {
 	for n, wants := range cases {
 		t.Run(n, func(t *testing.T) {
 			d := t.TempDir()
-			t.Setenv("OLLAMA_MODELS", d)
+			t.Setenv("ROSE_MODELS", d)
 
 			for _, p := range wants.ps {
 				createManifest(t, d, p)

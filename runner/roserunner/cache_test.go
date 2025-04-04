@@ -1,11 +1,11 @@
-package ollamarunner
+package roserunner
 
 import (
 	"image"
 	"testing"
 	"time"
 
-	"github.com/ollama/ollama/model/input"
+	"github.com/qompassai/rose/model/input"
 )
 
 func TestCountCommon(t *testing.T) {

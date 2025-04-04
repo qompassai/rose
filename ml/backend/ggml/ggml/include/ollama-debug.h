@@ -4,7 +4,7 @@
 extern "C" {
 #endif
 
-void ollama_debug(const struct ggml_tensor *tensor, bool verbose);
+void rose_debug(const struct ggml_tensor *tensor, bool verbose);
 
 #ifdef __cplusplus
 }

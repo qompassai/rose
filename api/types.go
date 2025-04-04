@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ollama/ollama/envconfig"
+	"github.com/qompassai/rose/envconfig"
 )
 
 // StatusError is an error with an HTTP status code and message.
@@ -31,7 +31,7 @@ func (e StatusError) Error() string {
 		return e.ErrorMessage
 	default:
 		// this should not happen
-		return "something went wrong, please see the ollama server logs for details"
+		return "something went wrong, please see the rose server logs for details"
 	}
 }
 
@@ -42,8 +42,8 @@ type ImageData []byte
 // have to specify the Model and Prompt fields, all the other fields have
 // reasonable defaults for basic uses.
 type GenerateRequest struct {
-	// Model is the model name; it should be a name familiar to Ollama from
-	// the library at https://ollama.com/library
+	// Model is the model name; it should be a name familiar to Rose from
+	// the library at https://qompass.ai/library
 	Model string `json:"model"`
 
 	// Prompt is the textual prompt to send to the model.

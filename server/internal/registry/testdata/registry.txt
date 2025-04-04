@@ -9,7 +9,7 @@
   },
   "layers": [
     {
-      "mediaType": "application/vnd.ollama.image.model",
+      "mediaType": "application/vnd.rose.image.model",
       "digest": "sha256:68e0ec597aee59d35f8dc44942d7b17d471ade10d3aca07a5bb7177713950312",
       "size": 5
     }

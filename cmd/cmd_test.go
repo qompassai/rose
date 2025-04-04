@@ -15,7 +15,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/spf13/cobra"
 
-	"github.com/ollama/ollama/api"
+	"github.com/qompassai/rose/api"
 )
 
 func TestShowInfo(t *testing.T) {
@@ -234,7 +234,10 @@ Weigh anchor!
 
 	t.Run("license", func(t *testing.T) {
 		var b bytes.Buffer
-		license := "MIT License\nCopyright (c) Ollama\n"
+		license := "This software is dual-licensed under:\n" +
+			"1. GNU Affero General Public License (AGPL) v3.0 for non-commercial use\n" +
+			"2. Qompass Commercial Distribution Agreement (Q-CDA) for commercial use\n\n" +
+			"Copyright (c) Qompass AI\n"
 		if err := showInfo(&api.ShowResponse{
 			Details: api.ModelDetails{
 				Family:            "test",
@@ -252,8 +255,16 @@ Weigh anchor!
     quantization    FP16    
 
   License
-    MIT License             
-    Copyright (c) Ollama    
+    This software is dual-licensed under:
+    1. GNU Affero General Public License (AGPL) v3.0 for non-commercial use
+    2. Qompass Commercial Distribution Agreement (Q-CDA) for commercial use
+
+    Copyright (c) Qompass AI
+
+
+
+`
+    
 
 `
 		if diff := cmp.Diff(expect, b.String()); diff != "" {
@@ -271,7 +282,7 @@ func TestDeleteHandler(t *testing.T) {
 				http.Error(w, err.Error(), http.StatusBadRequest)
 				return
 			}
-			if req.Name == "test-model" {
+			if req.Model == "test-model" {
 				w.WriteHeader(http.StatusOK)
 			} else {
 				w.WriteHeader(http.StatusNotFound)
@@ -304,7 +315,7 @@ func TestDeleteHandler(t *testing.T) {
 		}
 	}))
 
-	t.Setenv("OLLAMA_HOST", mockServer.URL)
+	t.Setenv("ROSE_HOST", mockServer.URL)
 	t.Cleanup(mockServer.Close)
 
 	cmd := &cobra.Command{}
@@ -444,8 +455,8 @@ func TestPushHandler(t *testing.T) {
 						return
 					}
 
-					if req.Name != "test-model" {
-						t.Errorf("expected model name 'test-model', got %s", req.Name)
+					if req.Model != "test-model" {
+						t.Errorf("expected model name 'test-model', got %s", req.Model)
 					}
 
 					// Simulate progress updates
@@ -464,7 +475,7 @@ func TestPushHandler(t *testing.T) {
 					}
 				},
 			},
-			expectedOutput: "\nYou can find your model at:\n\n\thttps://ollama.com/test-model\n",
+			expectedOutput: "\nYou can find your model at:\n\n\thttps://qomass.ai/test-model\n",
 		},
 		{
 			name:      "unauthorized push",
@@ -496,7 +507,7 @@ func TestPushHandler(t *testing.T) {
 			}))
 			defer mockServer.Close()
 
-			t.Setenv("OLLAMA_HOST", mockServer.URL)
+			t.Setenv("ROSE_HOST", mockServer.URL)
 
 			cmd := &cobra.Command{}
 			cmd.Flags().Bool("insecure", false, "")
@@ -602,7 +613,7 @@ func TestListHandler(t *testing.T) {
 			}))
 			defer mockServer.Close()
 
-			t.Setenv("OLLAMA_HOST", mockServer.URL)
+			t.Setenv("ROSE_HOST", mockServer.URL)
 
 			cmd := &cobra.Command{}
 			cmd.SetContext(context.TODO())
@@ -698,7 +709,7 @@ func TestCreateHandler(t *testing.T) {
 				}
 				handler(w, r)
 			}))
-			t.Setenv("OLLAMA_HOST", mockServer.URL)
+			t.Setenv("ROSE_HOST", mockServer.URL)
 			t.Cleanup(mockServer.Close)
 			tempFile, err := os.CreateTemp("", "modelfile")
 			if err != nil {

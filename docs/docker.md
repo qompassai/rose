@@ -1,9 +1,9 @@
-# Ollama Docker image
+# Rose Docker image
 
 ### CPU only
 
 ```shell
-docker run -d -v ollama:/root/.ollama -p 11434:11434 --name ollama ollama/ollama
+docker run -d -v rose:/root/.rose -p 11434:11434 --name rose qompass/rose
 ```
 
 ### Nvidia GPU
@@ -51,18 +51,18 @@ sudo systemctl restart docker
 #### Start the container
 
 ```shell
-docker run -d --gpus=all -v ollama:/root/.ollama -p 11434:11434 --name ollama ollama/ollama
+docker run -d --gpus=all -v rose:/root/.rose -p 11434:11434 --name rose qompass/rose
 ```
 
 > [!NOTE]  
-> If you're running on an NVIDIA JetPack system, Ollama can't automatically discover the correct JetPack version. Pass the environment variable JETSON_JETPACK=5 or JETSON_JETPACK=6 to the container to select version 5 or 6.
+> If you're running on an NVIDIA JetPack system, Rose can't automatically discover the correct JetPack version. Pass the environment variable JETSON_JETPACK=5 or JETSON_JETPACK=6 to the container to select version 5 or 6.
 
 ### AMD GPU
 
-To run Ollama using Docker with AMD GPUs, use the `rocm` tag and the following command:
+To run Rose using Docker with AMD GPUs, use the `rocm` tag and the following command:
 
 ```shell
-docker run -d --device /dev/kfd --device /dev/dri -v ollama:/root/.ollama -p 11434:11434 --name ollama ollama/ollama:rocm
+docker run -d --device /dev/kfd --device /dev/dri -v rose:/root/.rose -p 11434:11434 --name rose qompass/rose:rocm
 ```
 
 ### Run model locally
@@ -70,9 +70,9 @@ docker run -d --device /dev/kfd --device /dev/dri -v ollama:/root/.ollama -p 114
 Now you can run a model:
 
 ```shell
-docker exec -it ollama ollama run llama3.2
+docker exec -it rose rose run llama3.2
 ```
 
 ### Try different models
 
-More models can be found on the [Ollama library](https://ollama.com/library).
+More models can be found on the [Qompass archive](https://qompass.ai/archive).

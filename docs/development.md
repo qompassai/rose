@@ -5,7 +5,7 @@ Install prerequisites:
 - [Go](https://go.dev/doc/install)
 - C/C++ Compiler e.g. Clang on macOS, [TDM-GCC](https://github.com/jmeubank/tdm-gcc/releases/latest) (Windows amd64) or [llvm-mingw](https://github.com/mstorsjo/llvm-mingw) (Windows arm64), GCC/Clang on Linux.
 
-Then build and run Ollama from the root directory of the repository:
+Then build and run Rose from the root directory of the repository:
 
 ```shell
 go run . serve
@@ -13,7 +13,7 @@ go run . serve
 
 ## macOS (Apple Silicon)
 
-macOS Apple Silicon supports Metal which is built-in to the Ollama binary. No additional steps are required.
+macOS Apple Silicon supports Metal which is built-in to the Rose binary. No additional steps are required.
 
 ## macOS (Intel)
 
@@ -28,7 +28,7 @@ cmake -B build
 cmake --build build
 ```
 
-Lastly, run Ollama:
+Lastly, run Rose:
 
 ```shell
 go run . serve
@@ -61,7 +61,7 @@ cmake --build build --config Release
 > ```
 
 
-Lastly, run Ollama:
+Lastly, run Rose:
 
 ```shell
 go run . serve
@@ -92,7 +92,7 @@ cmake -B build
 cmake --build build
 ```
 
-Lastly, run Ollama:
+Lastly, run Rose:
 
 ```shell
 go run . serve
@@ -149,11 +149,11 @@ go test ./...
 
 ## Library detection
 
-Ollama looks for acceleration libraries in the following paths relative to the `ollama` executable:
+Rose looks for acceleration libraries in the following paths relative to the `rose` executable:
 
-* `./lib/ollama` (Windows)
-* `../lib/ollama` (Linux)
+* `./lib/rose` (Windows)
+* `../lib/rose` (Linux)
 * `.` (macOS)
-* `build/lib/ollama` (for development)
+* `build/lib/rose` (for development)
 
-If the libraries are not found, Ollama will not run with any acceleration libraries.
+If the libraries are not found, Rose will not run with any acceleration libraries.

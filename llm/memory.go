@@ -7,11 +7,11 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/discover"
-	"github.com/ollama/ollama/envconfig"
-	"github.com/ollama/ollama/format"
-	"github.com/ollama/ollama/fs/ggml"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/discover"
+	"github.com/qompassai/rose/envconfig"
+	"github.com/qompassai/rose/format"
+	"github.com/qompassai/rose/fs/ggml"
 )
 
 // This algorithm looks for a complete fit to determine if we need to unload other models

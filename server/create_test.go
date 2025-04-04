@@ -9,11 +9,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ollama/ollama/api"
+	"github.com/qompassai/rose/api"
 )
 
 func TestConvertFromSafetensors(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	// Helper function to create a new layer and return its digest
 	makeTemp := func(content string) string {

@@ -59,7 +59,7 @@ void cudart_init(char *cudart_lib_path, cudart_init_resp_t *resp) {
     UNLOAD_LIBRARY(resp->ch.handle);
     resp->ch.handle = NULL;
     if (ret == CUDA_ERROR_INSUFFICIENT_DRIVER) {
-      resp->err = strdup("your nvidia driver is too old or missing.  If you have a CUDA GPU please upgrade to run ollama");
+      resp->err = strdup("your nvidia driver is too old or missing.  If you have a CUDA GPU please upgrade to run rose");
       return;
     }
     snprintf(buf, buflen, "cudart init failure: %d", ret);

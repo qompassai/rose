@@ -1,4 +1,4 @@
-package ollamarunner
+package roserunner
 
 import (
 	"errors"
@@ -7,10 +7,10 @@ import (
 	"math"
 	"time"
 
-	"github.com/ollama/ollama/kvcache"
-	"github.com/ollama/ollama/ml"
-	"github.com/ollama/ollama/model"
-	"github.com/ollama/ollama/model/input"
+	"github.com/qompassai/rose/kvcache"
+	"github.com/qompassai/rose/ml"
+	"github.com/qompassai/rose/model"
+	"github.com/qompassai/rose/model/input"
 )
 
 type InputCache struct {

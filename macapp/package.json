@@ -1,8 +1,8 @@
 {
-  "name": "ollama",
-  "productName": "Ollama",
+  "name": "rose",
+  "productName": "Rose",
   "version": "0.0.0",
-  "description": "ollama",
+  "description": "rose",
   "main": ".webpack/main",
   "scripts": {
     "start": "electron-forge start",

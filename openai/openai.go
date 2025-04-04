@@ -16,8 +16,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/types/model"
 )
 
 var finishReasonToolCalls = "tool_calls"
@@ -117,7 +117,6 @@ type ChatCompletionChunk struct {
 	Usage             *Usage        `json:"usage,omitempty"`
 }
 
-// TODO (https://github.com/ollama/ollama/issues/5259): support []string, []int and [][]int
 type CompletionRequest struct {
 	Model            string         `json:"model"`
 	Prompt           string         `json:"prompt"`
@@ -250,7 +249,7 @@ func toChatCompletion(id string, r api.ChatResponse) ChatCompletion {
 		Object:            "chat.completion",
 		Created:           r.CreatedAt.Unix(),
 		Model:             r.Model,
-		SystemFingerprint: "fp_ollama",
+		SystemFingerprint: "fp_rose",
 		Choices: []Choice{{
 			Index:   0,
 			Message: Message{Role: r.Message.Role, Content: r.Message.Content, ToolCalls: toolCalls},
@@ -275,7 +274,7 @@ func toChunk(id string, r api.ChatResponse, toolCallSent bool) ChatCompletionChu
 		Object:            "chat.completion.chunk",
 		Created:           time.Now().Unix(),
 		Model:             r.Model,
-		SystemFingerprint: "fp_ollama",
+		SystemFingerprint: "fp_rose",
 		Choices: []ChunkChoice{{
 			Index: 0,
 			Delta: Message{Role: "assistant", Content: r.Message.Content, ToolCalls: toolCalls},
@@ -306,7 +305,7 @@ func toCompletion(id string, r api.GenerateResponse) Completion {
 		Object:            "text_completion",
 		Created:           r.CreatedAt.Unix(),
 		Model:             r.Model,
-		SystemFingerprint: "fp_ollama",
+		SystemFingerprint: "fp_rose",
 		Choices: []CompleteChunkChoice{{
 			Text:  r.Response,
 			Index: 0,
@@ -327,7 +326,7 @@ func toCompleteChunk(id string, r api.GenerateResponse) CompletionChunk {
 		Object:            "text_completion",
 		Created:           time.Now().Unix(),
 		Model:             r.Model,
-		SystemFingerprint: "fp_ollama",
+		SystemFingerprint: "fp_rose",
 		Choices: []CompleteChunkChoice{{
 			Text:  r.Response,
 			Index: 0,

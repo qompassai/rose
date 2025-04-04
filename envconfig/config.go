@@ -14,12 +14,12 @@ import (
 	"time"
 )
 
-// Host returns the scheme and host. Host can be configured via the OLLAMA_HOST environment variable.
+// Host returns the scheme and host. Host can be configured via the ROSE_HOST environment variable.
 // Default is scheme "http" and host "127.0.0.1:11434"
 func Host() *url.URL {
 	defaultPort := "11434"
 
-	s := strings.TrimSpace(Var("OLLAMA_HOST"))
+	s := strings.TrimSpace(Var("ROSE_HOST"))
 	scheme, hostport, ok := strings.Cut(s, "://")
 	switch {
 	case !ok:
@@ -53,9 +53,9 @@ func Host() *url.URL {
 	}
 }
 
-// AllowedOrigins returns a list of allowed origins. AllowedOrigins can be configured via the OLLAMA_ORIGINS environment variable.
+// AllowedOrigins returns a list of allowed origins. AllowedOrigins can be configured via the ROSE_ORIGINS environment variable.
 func AllowedOrigins() (origins []string) {
-	if s := Var("OLLAMA_ORIGINS"); s != "" {
+	if s := Var("ROSE_ORIGINS"); s != "" {
 		origins = strings.Split(s, ",")
 	}
 
@@ -79,10 +79,10 @@ func AllowedOrigins() (origins []string) {
 	return origins
 }
 
-// Models returns the path to the models directory. Models directory can be configured via the OLLAMA_MODELS environment variable.
-// Default is $HOME/.ollama/models
+// Models returns the path to the models directory. Models directory can be configured via the ROSE_MODELS environment variable.
+// Default is $HOME/.rose/models
 func Models() string {
-	if s := Var("OLLAMA_MODELS"); s != "" {
+	if s := Var("ROSE_MODELS"); s != "" {
 		return s
 	}
 
@@ -91,15 +91,15 @@ func Models() string {
 		panic(err)
 	}
 
-	return filepath.Join(home, ".ollama", "models")
+	return filepath.Join(home, ".rose", "models")
 }
 
-// KeepAlive returns the duration that models stay loaded in memory. KeepAlive can be configured via the OLLAMA_KEEP_ALIVE environment variable.
+// KeepAlive returns the duration that models stay loaded in memory. KeepAlive can be configured via the ROSE_KEEP_ALIVE environment variable.
 // Negative values are treated as infinite. Zero is treated as no keep alive.
 // Default is 5 minutes.
 func KeepAlive() (keepAlive time.Duration) {
 	keepAlive = 5 * time.Minute
-	if s := Var("OLLAMA_KEEP_ALIVE"); s != "" {
+	if s := Var("ROSE_KEEP_ALIVE"); s != "" {
 		if d, err := time.ParseDuration(s); err == nil {
 			keepAlive = d
 		} else if n, err := strconv.ParseInt(s, 10, 64); err == nil {
@@ -114,12 +114,12 @@ func KeepAlive() (keepAlive time.Duration) {
 	return keepAlive
 }
 
-// LoadTimeout returns the duration for stall detection during model loads. LoadTimeout can be configured via the OLLAMA_LOAD_TIMEOUT environment variable.
+// LoadTimeout returns the duration for stall detection during model loads. LoadTimeout can be configured via the ROSE_LOAD_TIMEOUT environment variable.
 // Zero or Negative values are treated as infinite.
 // Default is 5 minutes.
 func LoadTimeout() (loadTimeout time.Duration) {
 	loadTimeout = 5 * time.Minute
-	if s := Var("OLLAMA_LOAD_TIMEOUT"); s != "" {
+	if s := Var("ROSE_LOAD_TIMEOUT"); s != "" {
 		if d, err := time.ParseDuration(s); err == nil {
 			loadTimeout = d
 		} else if n, err := strconv.ParseInt(s, 10, 64); err == nil {
@@ -151,25 +151,25 @@ func Bool(k string) func() bool {
 
 var (
 	// Debug enabled additional debug information.
-	Debug = Bool("OLLAMA_DEBUG")
+	Debug = Bool("ROSE_DEBUG")
 	// FlashAttention enables the experimental flash attention feature.
-	FlashAttention = Bool("OLLAMA_FLASH_ATTENTION")
+	FlashAttention = Bool("ROSE_FLASH_ATTENTION")
 	// KvCacheType is the quantization type for the K/V cache.
-	KvCacheType = String("OLLAMA_KV_CACHE_TYPE")
+	KvCacheType = String("ROSE_KV_CACHE_TYPE")
 	// NoHistory disables readline history.
-	NoHistory = Bool("OLLAMA_NOHISTORY")
+	NoHistory = Bool("ROSE_NOHISTORY")
 	// NoPrune disables pruning of model blobs on startup.
-	NoPrune = Bool("OLLAMA_NOPRUNE")
+	NoPrune = Bool("ROSE_NOPRUNE")
 	// SchedSpread allows scheduling models across all GPUs.
-	SchedSpread = Bool("OLLAMA_SCHED_SPREAD")
+	SchedSpread = Bool("ROSE_SCHED_SPREAD")
 	// IntelGPU enables experimental Intel GPU detection.
-	IntelGPU = Bool("OLLAMA_INTEL_GPU")
+	IntelGPU = Bool("ROSE_INTEL_GPU")
 	// MultiUserCache optimizes prompt caching for multi-user scenarios
-	MultiUserCache = Bool("OLLAMA_MULTIUSER_CACHE")
-	// Enable the new Ollama engine
-	NewEngine = Bool("OLLAMA_NEW_ENGINE")
+	MultiUserCache = Bool("ROSE_MULTIUSER_CACHE")
+	// Enable the new Rose engine
+	NewEngine = Bool("ROSE_NEW_ENGINE")
 	// ContextLength sets the default context length
-	ContextLength = Uint("OLLAMA_CONTEXT_LENGTH", 2048)
+	ContextLength = Uint("ROSE_CONTEXT_LENGTH", 2048)
 )
 
 func String(s string) func() string {
@@ -179,7 +179,7 @@ func String(s string) func() string {
 }
 
 var (
-	LLMLibrary = String("OLLAMA_LLM_LIBRARY")
+	LLMLibrary = String("ROSE_LLM_LIBRARY")
 
 	CudaVisibleDevices    = String("CUDA_VISIBLE_DEVICES")
 	HipVisibleDevices     = String("HIP_VISIBLE_DEVICES")
@@ -203,14 +203,14 @@ func Uint(key string, defaultValue uint) func() uint {
 }
 
 var (
-	// NumParallel sets the number of parallel model requests. NumParallel can be configured via the OLLAMA_NUM_PARALLEL environment variable.
-	NumParallel = Uint("OLLAMA_NUM_PARALLEL", 0)
-	// MaxRunners sets the maximum number of loaded models. MaxRunners can be configured via the OLLAMA_MAX_LOADED_MODELS environment variable.
-	MaxRunners = Uint("OLLAMA_MAX_LOADED_MODELS", 0)
-	// MaxQueue sets the maximum number of queued requests. MaxQueue can be configured via the OLLAMA_MAX_QUEUE environment variable.
-	MaxQueue = Uint("OLLAMA_MAX_QUEUE", 512)
-	// MaxVRAM sets a maximum VRAM override in bytes. MaxVRAM can be configured via the OLLAMA_MAX_VRAM environment variable.
-	MaxVRAM = Uint("OLLAMA_MAX_VRAM", 0)
+	// NumParallel sets the number of parallel model requests. NumParallel can be configured via the ROSE_NUM_PARALLEL environment variable.
+	NumParallel = Uint("ROSE_NUM_PARALLEL", 0)
+	// MaxRunners sets the maximum number of loaded models. MaxRunners can be configured via the ROSE_MAX_LOADED_MODELS environment variable.
+	MaxRunners = Uint("ROSE_MAX_LOADED_MODELS", 0)
+	// MaxQueue sets the maximum number of queued requests. MaxQueue can be configured via the ROSE_MAX_QUEUE environment variable.
+	MaxQueue = Uint("ROSE_MAX_QUEUE", 512)
+	// MaxVRAM sets a maximum VRAM override in bytes. MaxVRAM can be configured via the ROSE_MAX_VRAM environment variable.
+	MaxVRAM = Uint("ROSE_MAX_VRAM", 0)
 )
 
 func Uint64(key string, defaultValue uint64) func() uint64 {
@@ -228,7 +228,7 @@ func Uint64(key string, defaultValue uint64) func() uint64 {
 }
 
 // Set aside VRAM per GPU
-var GpuOverhead = Uint64("OLLAMA_GPU_OVERHEAD", 0)
+var GpuOverhead = Uint64("ROSE_GPU_OVERHEAD", 0)
 
 type EnvVar struct {
 	Name        string
@@ -238,25 +238,25 @@ type EnvVar struct {
 
 func AsMap() map[string]EnvVar {
 	ret := map[string]EnvVar{
-		"OLLAMA_DEBUG":             {"OLLAMA_DEBUG", Debug(), "Show additional debug information (e.g. OLLAMA_DEBUG=1)"},
-		"OLLAMA_FLASH_ATTENTION":   {"OLLAMA_FLASH_ATTENTION", FlashAttention(), "Enabled flash attention"},
-		"OLLAMA_KV_CACHE_TYPE":     {"OLLAMA_KV_CACHE_TYPE", KvCacheType(), "Quantization type for the K/V cache (default: f16)"},
-		"OLLAMA_GPU_OVERHEAD":      {"OLLAMA_GPU_OVERHEAD", GpuOverhead(), "Reserve a portion of VRAM per GPU (bytes)"},
-		"OLLAMA_HOST":              {"OLLAMA_HOST", Host(), "IP Address for the ollama server (default 127.0.0.1:11434)"},
-		"OLLAMA_KEEP_ALIVE":        {"OLLAMA_KEEP_ALIVE", KeepAlive(), "The duration that models stay loaded in memory (default \"5m\")"},
-		"OLLAMA_LLM_LIBRARY":       {"OLLAMA_LLM_LIBRARY", LLMLibrary(), "Set LLM library to bypass autodetection"},
-		"OLLAMA_LOAD_TIMEOUT":      {"OLLAMA_LOAD_TIMEOUT", LoadTimeout(), "How long to allow model loads to stall before giving up (default \"5m\")"},
-		"OLLAMA_MAX_LOADED_MODELS": {"OLLAMA_MAX_LOADED_MODELS", MaxRunners(), "Maximum number of loaded models per GPU"},
-		"OLLAMA_MAX_QUEUE":         {"OLLAMA_MAX_QUEUE", MaxQueue(), "Maximum number of queued requests"},
-		"OLLAMA_MODELS":            {"OLLAMA_MODELS", Models(), "The path to the models directory"},
-		"OLLAMA_NOHISTORY":         {"OLLAMA_NOHISTORY", NoHistory(), "Do not preserve readline history"},
-		"OLLAMA_NOPRUNE":           {"OLLAMA_NOPRUNE", NoPrune(), "Do not prune model blobs on startup"},
-		"OLLAMA_NUM_PARALLEL":      {"OLLAMA_NUM_PARALLEL", NumParallel(), "Maximum number of parallel requests"},
-		"OLLAMA_ORIGINS":           {"OLLAMA_ORIGINS", AllowedOrigins(), "A comma separated list of allowed origins"},
-		"OLLAMA_SCHED_SPREAD":      {"OLLAMA_SCHED_SPREAD", SchedSpread(), "Always schedule model across all GPUs"},
-		"OLLAMA_MULTIUSER_CACHE":   {"OLLAMA_MULTIUSER_CACHE", MultiUserCache(), "Optimize prompt caching for multi-user scenarios"},
-		"OLLAMA_CONTEXT_LENGTH":    {"OLLAMA_CONTEXT_LENGTH", ContextLength(), "Context length to use unless otherwise specified (default: 2048)"},
-		"OLLAMA_NEW_ENGINE":        {"OLLAMA_NEW_ENGINE", NewEngine(), "Enable the new Ollama engine"},
+		"ROSE_DEBUG":             {"ROSE_DEBUG", Debug(), "Show additional debug information (e.g. ROSE_DEBUG=1)"},
+		"ROSE_FLASH_ATTENTION":   {"ROSE_FLASH_ATTENTION", FlashAttention(), "Enabled flash attention"},
+		"ROSE_KV_CACHE_TYPE":     {"ROSE_KV_CACHE_TYPE", KvCacheType(), "Quantization type for the K/V cache (default: f16)"},
+		"ROSE_GPU_OVERHEAD":      {"ROSE_GPU_OVERHEAD", GpuOverhead(), "Reserve a portion of VRAM per GPU (bytes)"},
+		"ROSE_HOST":              {"ROSE_HOST", Host(), "IP Address for the rose server (default 127.0.0.1:11434)"},
+		"ROSE_KEEP_ALIVE":        {"ROSE_KEEP_ALIVE", KeepAlive(), "The duration that models stay loaded in memory (default \"5m\")"},
+		"ROSE_LLM_LIBRARY":       {"ROSE_LLM_LIBRARY", LLMLibrary(), "Set LLM library to bypass autodetection"},
+		"ROSE_LOAD_TIMEOUT":      {"ROSE_LOAD_TIMEOUT", LoadTimeout(), "How long to allow model loads to stall before giving up (default \"5m\")"},
+		"ROSE_MAX_LOADED_MODELS": {"ROSE_MAX_LOADED_MODELS", MaxRunners(), "Maximum number of loaded models per GPU"},
+		"ROSE_MAX_QUEUE":         {"ROSE_MAX_QUEUE", MaxQueue(), "Maximum number of queued requests"},
+		"ROSE_MODELS":            {"ROSE_MODELS", Models(), "The path to the models directory"},
+		"ROSE_NOHISTORY":         {"ROSE_NOHISTORY", NoHistory(), "Do not preserve readline history"},
+		"ROSE_NOPRUNE":           {"ROSE_NOPRUNE", NoPrune(), "Do not prune model blobs on startup"},
+		"ROSE_NUM_PARALLEL":      {"ROSE_NUM_PARALLEL", NumParallel(), "Maximum number of parallel requests"},
+		"ROSE_ORIGINS":           {"ROSE_ORIGINS", AllowedOrigins(), "A comma separated list of allowed origins"},
+		"ROSE_SCHED_SPREAD":      {"ROSE_SCHED_SPREAD", SchedSpread(), "Always schedule model across all GPUs"},
+		"ROSE_MULTIUSER_CACHE":   {"ROSE_MULTIUSER_CACHE", MultiUserCache(), "Optimize prompt caching for multi-user scenarios"},
+		"ROSE_CONTEXT_LENGTH":    {"ROSE_CONTEXT_LENGTH", ContextLength(), "Context length to use unless otherwise specified (default: 2048)"},
+		"ROSE_NEW_ENGINE":        {"ROSE_NEW_ENGINE", NewEngine(), "Enable the new Rose engine"},
 
 		// Informational
 		"HTTP_PROXY":  {"HTTP_PROXY", String("HTTP_PROXY")(), "HTTP proxy"},
@@ -277,7 +277,7 @@ func AsMap() map[string]EnvVar {
 		ret["ROCR_VISIBLE_DEVICES"] = EnvVar{"ROCR_VISIBLE_DEVICES", RocrVisibleDevices(), "Set which AMD devices are visible by UUID or numeric ID"}
 		ret["GPU_DEVICE_ORDINAL"] = EnvVar{"GPU_DEVICE_ORDINAL", GpuDeviceOrdinal(), "Set which AMD devices are visible by numeric ID"}
 		ret["HSA_OVERRIDE_GFX_VERSION"] = EnvVar{"HSA_OVERRIDE_GFX_VERSION", HsaOverrideGfxVersion(), "Override the gfx used for all detected AMD GPUs"}
-		ret["OLLAMA_INTEL_GPU"] = EnvVar{"OLLAMA_INTEL_GPU", IntelGPU(), "Enable experimental Intel GPU detection"}
+		ret["ROSE_INTEL_GPU"] = EnvVar{"ROSE_INTEL_GPU", IntelGPU(), "Enable experimental Intel GPU detection"}
 	}
 
 	return ret

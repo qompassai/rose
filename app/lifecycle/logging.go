@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/ollama/ollama/envconfig"
+	"github.com/qompassai/rose/envconfig"
 )
 
 func InitLogging() {
@@ -47,7 +47,7 @@ func InitLogging() {
 
 	slog.SetDefault(slog.New(handler))
 
-	slog.Info("ollama app started")
+	slog.Info("rose app started")
 }
 
 func rotateLogs(logFile string) {

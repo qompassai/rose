@@ -51,7 +51,7 @@ func DoUpgrade(cancel context.CancelFunc, done chan int) error {
 	cmd := exec.Command(installerExe, installArgs...)
 
 	if err := cmd.Start(); err != nil {
-		return fmt.Errorf("unable to start ollama app %w", err)
+		return fmt.Errorf("unable to start rose app %w", err)
 	}
 
 	if cmd.Process != nil {

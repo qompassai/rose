@@ -1,6 +1,6 @@
 package input
 
-import "github.com/ollama/ollama/ml"
+import "github.com/qompassai/rose/ml"
 
 // Input represents one token in the input stream
 type Input struct {

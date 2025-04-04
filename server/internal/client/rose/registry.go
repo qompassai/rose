@@ -1,7 +1,7 @@
-// Package ollama provides a client for interacting with an Ollama registry
+// Package rose provides a client for interacting with a Rose registry
 // which pushes and pulls model manifests and layers as defined by the
-// [ollama.com/manifest].
-package ollama
+// [qompass.ai/manifest].
+package rose
 
 import (
 	"bufio"
@@ -36,8 +36,8 @@ import (
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/sync/errgroup"
 
-	"github.com/ollama/ollama/server/internal/cache/blob"
-	"github.com/ollama/ollama/server/internal/internal/names"
+	"github.com/qompassai/rose/server/internal/cache/blob"
+	"github.com/qompassai/rose/server/internal/internal/names"
 
 	_ "embed"
 )
@@ -74,24 +74,24 @@ const (
 )
 
 var defaultCache = sync.OnceValues(func() (*blob.DiskCache, error) {
-	dir := os.Getenv("OLLAMA_MODELS")
+	dir := os.Getenv("ROSE_MODELS")
 	if dir == "" {
 		home, _ := os.UserHomeDir()
 		home = cmp.Or(home, ".")
-		dir = filepath.Join(home, ".ollama", "models")
+		dir = filepath.Join(home, ".rose", "models")
 	}
 	return blob.Open(dir)
 })
 
 // DefaultCache returns the default cache used by the registry. It is
-// configured from the OLLAMA_MODELS environment variable, or defaults to
-// $HOME/.ollama/models, or, if an error occurs obtaining the home directory,
+// configured from the ROSE_MODELS environment variable, or defaults to
+// $HOME/.rose/models, or, if an error occurs obtaining the home directory,
 // it uses the current working directory.
 func DefaultCache() (*blob.DiskCache, error) {
 	return defaultCache()
 }
 
-// Error is the standard error returned by Ollama APIs. It can represent a
+// Error is the standard error returned by Rose APIs. It can represent a
 // single or multiple error response.
 //
 // Single error responses have the following format:
@@ -162,7 +162,7 @@ func (e *Error) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-const DefaultMask = "registry.ollama.ai/library/_:latest"
+const DefaultMask = "harbor.qompass.ai/archive/_:latest"
 
 var defaultMask = func() names.Name {
 	n := names.Parse(DefaultMask)
@@ -180,7 +180,7 @@ func CompleteName(name string) string {
 }
 
 // Registry is a client for performing push and pull operations against an
-// Ollama registry.
+// Rose registry.
 type Registry struct {
 	// Cache is the cache used to store models. If nil, [DefaultCache] is
 	// used.
@@ -242,8 +242,8 @@ func (r *Registry) parseName(name string) (names.Name, error) {
 }
 
 // DefaultRegistry returns a new Registry configured from the environment. The
-// key is read from $HOME/.ollama/id_ed25519, MaxStreams is set to the
-// value of OLLAMA_REGISTRY_MAXSTREAMS, and ChunkingDirectory is set to the
+// key is read from $HOME/.rose/id_ed25519, MaxStreams is set to the
+// value of ROSE_REGISTRY_MAXSTREAMS, and ChunkingDirectory is set to the
 // system's temporary directory.
 //
 // It returns an error if any configuration in the environment is invalid.
@@ -252,7 +252,7 @@ func DefaultRegistry() (*Registry, error) {
 	if err != nil {
 		return nil, err
 	}
-	keyPEM, err := os.ReadFile(filepath.Join(home, ".ollama/id_ed25519"))
+	keyPEM, err := os.ReadFile(filepath.Join(home, ".rose/id_ed25519"))
 	if err != nil && errors.Is(err, fs.ErrNotExist) {
 		return nil, err
 	}
@@ -263,12 +263,12 @@ func DefaultRegistry() (*Registry, error) {
 	if err != nil {
 		return nil, err
 	}
-	maxStreams := os.Getenv("OLLAMA_REGISTRY_MAXSTREAMS")
+	maxStreams := os.Getenv("ROSE_REGISTRY_MAXSTREAMS")
 	if maxStreams != "" {
 		var err error
 		rc.MaxStreams, err = strconv.Atoi(maxStreams)
 		if err != nil {
-			return nil, fmt.Errorf("invalid OLLAMA_REGISTRY_MAXSTREAMS: %w", err)
+			return nil, fmt.Errorf("invalid ROSE_REGISTRY_MAXSTREAMS: %w", err)
 		}
 	}
 	return &rc, nil
@@ -280,14 +280,14 @@ func UserAgent() string {
 	version := buildinfo.Main.Version
 	if version == "(devel)" {
 		// When using `go run .` the version is "(devel)". This is seen
-		// as an invalid version by ollama.com and so it defaults to
+		// as an invalid version by qompass.ai and so it defaults to
 		// "needs upgrade" for some requests, such as pulls. These
 		// checks can be skipped by using the special version "v0.0.0",
 		// so we set it to that here.
 		version = "v0.0.0"
 	}
 
-	return fmt.Sprintf("ollama/%s (%s %s) Go/%s",
+	return fmt.Sprintf("rose/%s (%s %s) Go/%s",
 		version,
 		runtime.GOARCH,
 		runtime.GOOS,
@@ -451,7 +451,7 @@ func (r *trackingReader) Read(p []byte) (n int, err error) {
 // For layers larger then [Registry.MaxChunkSize], the layer is downloaded in
 // chunks of the specified size, and then reassembled and verified. This is
 // typically slower than splitting the model up across layers, and is mostly
-// utilized for layers of type equal to "application/vnd.ollama.image".
+// utilized for layers of type equal to "application/vnd.rose.image".
 func (r *Registry) Pull(ctx context.Context, name string) error {
 	m, err := r.Resolve(ctx, name)
 	if err != nil {
@@ -587,7 +587,7 @@ func (r *Registry) Unlink(name string) (ok bool, _ error) {
 	return c.Unlink(n.String())
 }
 
-// Manifest represents a [ollama.com/manifest].
+// Manifest represents a [qompass.ai/manifest].
 type Manifest struct {
 	Name   string   `json:"-"` // the canonical name of the model
 	Data   []byte   `json:"-"` // the raw data of the manifest
@@ -622,7 +622,7 @@ func (m Manifest) MarshalJSON() ([]byte, error) {
 		// present, it will cause an error to be returned during the
 		// last phase of the commit which expects it, but does nothing
 		// with it. This will be fixed in a future release of
-		// ollama.com.
+		// qompass.ai.
 		Config Layer `json:"config"`
 	}{
 		M: M(m),
@@ -934,10 +934,10 @@ func (r *Registry) send(ctx context.Context, method, path string, body io.Reader
 	return sendRequest(r.client(), req)
 }
 
-// makeAuthToken creates an Ollama auth token for the given private key.
+// makeAuthToken creates a Rose auth token for the given private key.
 //
 // NOTE: This format is OLD, overly complex, and should be replaced. We're
-// inheriting it from the original Ollama client and ollama.com
+// inheriting it from the original Rose client and qompass.ai
 // implementations, so we need to support it for now.
 func makeAuthToken(key crypto.PrivateKey) (string, error) {
 	privKey, _ := key.(*ed25519.PrivateKey)
@@ -945,7 +945,7 @@ func makeAuthToken(key crypto.PrivateKey) (string, error) {
 		return "", fmt.Errorf("unsupported private key type: %T", key)
 	}
 
-	url := fmt.Sprintf("https://ollama.com?ts=%d", time.Now().Unix())
+	url := fmt.Sprintf("https://qompass.ai?ts=%d", time.Now().Unix())
 	// Part 1: the checkData (e.g. the URL with a timestamp)
 
 	// Part 2: the public key
@@ -979,7 +979,7 @@ func makeAuthToken(key crypto.PrivateKey) (string, error) {
 	return b.String(), nil
 }
 
-// The original spec for Ollama tokens was to use the SHA256 of the zero
+// The original spec for Rose tokens was to use the SHA256 of the zero
 // string as part of the signature. I'm not sure why that was, but we still
 // need it to verify the signature.
 var zeroSum = func() string {
@@ -989,7 +989,7 @@ var zeroSum = func() string {
 }()
 
 // checkData takes a URL and creates the original string format of the
-// data signature that is used by the ollama client to sign requests
+// data signature that is used by the rose client to sign requests
 func checkData(url string) string {
 	return fmt.Sprintf("GET,%s,%s", url, zeroSum)
 }
@@ -1061,9 +1061,9 @@ func (r *Registry) parseNameExtended(s string) (scheme string, _ names.Name, _ b
 //
 // Examples:
 //
-//	http://ollama.com/bmizerany/smol:latest@digest
-//	https://ollama.com/bmizerany/smol:latest
-//	ollama.com/bmizerany/smol:latest@digest // returns "https" scheme.
+//	http://qompass.ai/bmizerany/smol:latest@digest
+//	https://qompass.ai/bmizerany/smol:latest
+//	qompass.ai/bmizerany/smol:latest@digest // returns "https" scheme.
 //	model@digest
 //	@digest
 func splitExtended(s string) (scheme, name, digest string) {

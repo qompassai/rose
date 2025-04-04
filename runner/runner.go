@@ -1,8 +1,8 @@
 package runner
 
 import (
-	"github.com/ollama/ollama/runner/llamarunner"
-	"github.com/ollama/ollama/runner/ollamarunner"
+	"github.com/qompassai/rose/runner/llamarunner"
+	"github.com/qompassai/rose/runner/roserunner"
 )
 
 func Execute(args []string) error {
@@ -11,13 +11,13 @@ func Execute(args []string) error {
 	}
 
 	var newRunner bool
-	if args[0] == "--ollama-engine" {
+	if args[0] == "--rose-engine" {
 		args = args[1:]
 		newRunner = true
 	}
 
 	if newRunner {
-		return ollamarunner.Execute(args)
+		return roserunner.Execute(args)
 	} else {
 		return llamarunner.Execute(args)
 	}

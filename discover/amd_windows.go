@@ -10,8 +10,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/ollama/ollama/envconfig"
-	"github.com/ollama/ollama/format"
+	"github.com/qompassai/rose/envconfig"
+	"github.com/qompassai/rose/format"
 )
 
 const (
@@ -162,9 +162,9 @@ func AMDValidateLibDir() (string, error) {
 	}
 
 	// Installer payload (if we're running from some other location)
-	rocmTargetDir := filepath.Join(LibOllamaPath, "rocm")
+	rocmTargetDir := filepath.Join(LibRosePath, "rocm")
 	if rocmLibUsable(rocmTargetDir) {
-		slog.Debug("detected ollama installed ROCm at " + rocmTargetDir)
+		slog.Debug("detected rose installed ROCm at " + rocmTargetDir)
 		return rocmTargetDir, nil
 	}
 

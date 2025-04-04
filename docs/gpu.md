@@ -1,6 +1,6 @@
 # GPU
 ## Nvidia
-Ollama supports Nvidia GPUs with compute capability 5.0+.
+Rose supports Nvidia GPUs with compute capability 5.0+.
 
 Check your compute compatibility to see if your card is supported:
 [https://developer.nvidia.com/cuda-gpus](https://developer.nvidia.com/cuda-gpus)
@@ -32,7 +32,7 @@ For building locally to support older GPUs, see [developer.md](./development.md#
 
 ### GPU Selection
 
-If you have multiple NVIDIA GPUs in your system and want to limit Ollama to use
+If you have multiple NVIDIA GPUs in your system and want to limit Rose to use
 a subset, you can set `CUDA_VISIBLE_DEVICES` to a comma separated list of GPUs.
 Numeric IDs may be used, however ordering may vary, so UUIDs are more reliable.
 You can discover the UUID of your GPUs by running `nvidia-smi -L` If you want to
@@ -40,13 +40,13 @@ ignore the GPUs and force CPU usage, use an invalid GPU ID (e.g., "-1")
 
 ### Linux Suspend Resume
 
-On linux, after a suspend/resume cycle, sometimes Ollama will fail to discover
+On linux, after a suspend/resume cycle, sometimes Rose will fail to discover
 your NVIDIA GPU, and fallback to running on the CPU.  You can workaround this
 driver bug by reloading the NVIDIA UVM driver with `sudo rmmod nvidia_uvm &&
 sudo modprobe nvidia_uvm`
 
 ## AMD Radeon
-Ollama supports the following AMD GPUs:
+Rose supports the following AMD GPUs:
 
 ### Linux Support
 | Family         | Cards and accelerators                                                                                                               |
@@ -65,7 +65,8 @@ With ROCm v6.1, the following GPUs are supported on Windows.
 
 
 ### Overrides on Linux
-Ollama leverages the AMD ROCm library, which does not support all AMD GPUs. In
+Rose leverages the AMD ROCm library, which does not support all AMD GPUs. In
+
 some cases you can force the system to try to use a similar LLVM target that is
 close.  For example The Radeon RX 5400 is `gfx1034` (also known as 10.3.4)
 however, ROCm does not currently support this target. The closest support is
@@ -98,12 +99,10 @@ This table shows some example GPUs that map to these LLVM targets:
 AMD is working on enhancing ROCm v6 to broaden support for families of GPUs in a
 future release which should increase support for more GPUs.
 
-Reach out on [Discord](https://discord.gg/ollama) or file an
-[issue](https://github.com/ollama/ollama/issues) for additional help.
 
 ### GPU Selection
 
-If you have multiple AMD GPUs in your system and want to limit Ollama to use a
+If you have multiple AMD GPUs in your system and want to limit Rose to use a
 subset, you can set `ROCR_VISIBLE_DEVICES` to a comma separated list of GPUs.
 You can see the list of devices with `rocminfo`.  If you want to ignore the GPUs
 and force CPU usage, use an invalid GPU ID (e.g., "-1").  When available, use the
@@ -116,4 +115,4 @@ accessing the AMD GPU devices.  On the host system you can run
 `sudo setsebool container_use_devices=1` to allow containers to use devices.
 
 ### Metal (Apple GPUs)
-Ollama supports GPU acceleration on Apple devices via the Metal API.
+Rose supports GPU acceleration on Apple devices via the Metal API.

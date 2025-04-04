@@ -20,14 +20,14 @@ func TestParseNameParts(t *testing.T) {
 		wantValidDigest bool
 	}{
 		{
-			in: "registry.ollama.ai/library/dolphin-mistral:7b-v2.6-dpo-laser-q6_K",
+			in: "harbor.qompass.ai/library/dolphin-mistral:7b-v2.6-dpo-laser-q6_K",
 			want: Name{
-				Host:      "registry.ollama.ai",
+				Host:      "harbor.qompass.ai",
 				Namespace: "library",
 				Model:     "dolphin-mistral",
 				Tag:       "7b-v2.6-dpo-laser-q6_K",
 			},
-			wantFilepath: filepath.Join("registry.ollama.ai", "library", "dolphin-mistral", "7b-v2.6-dpo-laser-q6_K"),
+			wantFilepath: filepath.Join("harbor.qompass.ai", "archive", "dolphin-mistral", "7b-v2.6-dpo-laser-q6_K"),
 		},
 		{
 			in: "scheme://host:port/namespace/model:tag",
@@ -83,14 +83,14 @@ func TestParseNameParts(t *testing.T) {
 				Namespace: "namespace",
 				Model:     "model",
 			},
-			wantFilepath: filepath.Join("registry.ollama.ai", "namespace", "model", "latest"),
+			wantFilepath: filepath.Join("harbor.qompass.ai", "namespace", "model", "latest"),
 		},
 		{
 			in: "model",
 			want: Name{
 				Model: "model",
 			},
-			wantFilepath: filepath.Join("registry.ollama.ai", "library", "model", "latest"),
+			wantFilepath: filepath.Join("harbor.qompass.ai", "library", "model", "latest"),
 		},
 		{
 			in: "h/nn/mm:t",
@@ -193,7 +193,7 @@ func TestNameparseNameDefault(t *testing.T) {
 	const name = "xx"
 	n := ParseName(name)
 	got := n.String()
-	want := "registry.ollama.ai/library/xx:latest"
+	want := "harbor.qompass.ai/library/xx:latest"
 	if got != want {
 		t.Errorf("parseName(%q).String() = %q; want %q", name, got, want)
 	}
@@ -290,9 +290,9 @@ func TestParseNameFromFilepath(t *testing.T) {
 
 func TestDisplayShortest(t *testing.T) {
 	cases := map[string]string{
-		"registry.ollama.ai/library/model:latest": "model:latest",
-		"registry.ollama.ai/library/model:tag":    "model:tag",
-		"registry.ollama.ai/namespace/model:tag":  "namespace/model:tag",
+		"harbor.qompass.ai/library/model:latest": "model:latest",
+		"harbor.qompass.ai/library/model:tag":    "model:tag",
+		"harbor.qompass.ai/namespace/model:tag":  "namespace/model:tag",
 		"host/namespace/model:tag":                "host/namespace/model:tag",
 		"host/library/model:tag":                  "host/library/model:tag",
 	}

@@ -24,13 +24,13 @@ import (
 
 	"golang.org/x/sync/semaphore"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/discover"
-	"github.com/ollama/ollama/envconfig"
-	"github.com/ollama/ollama/format"
-	"github.com/ollama/ollama/fs/ggml"
-	"github.com/ollama/ollama/llama"
-	"github.com/ollama/ollama/model"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/discover"
+	"github.com/qompassai/rose/envconfig"
+	"github.com/qompassai/rose/format"
+	"github.com/qompassai/rose/fs/ggml"
+	"github.com/qompassai/rose/llama"
+	"github.com/qompassai/rose/model"
 )
 
 type LlamaServer interface {
@@ -61,7 +61,7 @@ type llmServer struct {
 	llamaModel     *llama.Model
 	llamaModelLock sync.Mutex
 
-	// textProcessor handles text encoding/decoding for the model in the Ollama engine
+	// textProcessor handles text encoding/decoding for the model in the Rose engine
 	// nil if this server is running the llama.cpp based engine
 	textProcessor model.TextProcessor
 
@@ -233,9 +233,9 @@ func NewLlamaServer(gpus discover.GpuInfoList, modelPath string, f *ggml.GGML, a
 	}
 
 	libs := make(map[string]string)
-	if entries, err := os.ReadDir(discover.LibOllamaPath); err == nil {
+	if entries, err := os.ReadDir(discover.LibRosePath); err == nil {
 		for _, entry := range entries {
-			libs[entry.Name()] = filepath.Join(discover.LibOllamaPath, entry.Name())
+			libs[entry.Name()] = filepath.Join(discover.LibRosePath, entry.Name())
 		}
 	}
 
@@ -271,11 +271,11 @@ func NewLlamaServer(gpus discover.GpuInfoList, modelPath string, f *ggml.GGML, a
 
 	var llamaModel *llama.Model
 	var textProcessor model.TextProcessor
-	if envconfig.NewEngine() || f.KV().OllamaEngineRequired() {
+	if envconfig.NewEngine() || f.KV().RoseEngineRequired() {
 		textProcessor, err = model.NewTextProcessor(modelPath)
 		if err != nil {
 			// To prepare for opt-out mode, instead of treating this as an error, we fallback to the old runner
-			slog.Debug("model not yet supported by Ollama engine, switching to compatibility mode", "model", modelPath, "error", err)
+			slog.Debug("model not yet supported by Rose engine, switching to compatibility mode", "model", modelPath, "error", err)
 		}
 	}
 	if textProcessor == nil {
@@ -309,7 +309,7 @@ func NewLlamaServer(gpus discover.GpuInfoList, modelPath string, f *ggml.GGML, a
 		if textProcessor != nil {
 			// New engine
 			// TODO - if we have failure to load scenarios, add logic to retry with the old runner
-			finalParams = append(finalParams, "--ollama-engine")
+			finalParams = append(finalParams, "--rose-engine")
 		}
 		finalParams = append(finalParams, params...)
 		finalParams = append(finalParams, "--port", strconv.Itoa(port))
@@ -346,7 +346,7 @@ func NewLlamaServer(gpus discover.GpuInfoList, modelPath string, f *ggml.GGML, a
 		}
 
 		// finally, add the root library path
-		libraryPaths = append(libraryPaths, discover.LibOllamaPath)
+		libraryPaths = append(libraryPaths, discover.LibRosePath)
 
 		s := &llmServer{
 			port:          port,
@@ -448,7 +448,7 @@ func NewLlamaServer(gpus discover.GpuInfoList, modelPath string, f *ggml.GGML, a
 			if err != nil && s.status != nil && s.status.LastErrMsg != "" {
 				slog.Error("llama runner terminated", "error", err)
 				if strings.Contains(s.status.LastErrMsg, "unknown model") {
-					s.status.LastErrMsg = "this model is not supported by your version of Ollama. You may need to upgrade"
+					s.status.LastErrMsg = "this model is not supported by your version of Rose. You may need to upgrade"
 				}
 				s.done <- errors.New(s.status.LastErrMsg)
 			} else {

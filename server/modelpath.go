@@ -10,8 +10,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/ollama/ollama/envconfig"
-	"github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/envconfig"
+	"github.com/qompassai/rose/types/model"
 )
 
 type ModelPath struct {
@@ -23,8 +23,8 @@ type ModelPath struct {
 }
 
 const (
-	DefaultRegistry       = "registry.ollama.ai"
-	DefaultNamespace      = "library"
+	DefaultRegistry       = "harbor.qompass.ai"
+	DefaultNamespace      = "archive"
 	DefaultTag            = "latest"
 	DefaultProtocolScheme = "https"
 )

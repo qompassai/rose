@@ -7,13 +7,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ollama/ollama/api"
+	"github.com/qompassai/rose/api"
 )
 
 func TestLongInputContext(t *testing.T) {
 	// Setting NUM_PARALLEL to 1 ensures the allocated context is exactly what
 	// we asked for and there is nothing extra that we could spill over into
-	t.Setenv("OLLAMA_NUM_PARALLEL", "1")
+	t.Setenv("ROSE_NUM_PARALLEL", "1")
 
 	// Longer needed for small footprint GPUs
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
@@ -40,7 +40,7 @@ func TestLongInputContext(t *testing.T) {
 func TestContextExhaustion(t *testing.T) {
 	// Setting NUM_PARALLEL to 1 ensures the allocated context is exactly what
 	// we asked for and there is nothing extra that we could spill over into
-	t.Setenv("OLLAMA_NUM_PARALLEL", "1")
+	t.Setenv("ROSE_NUM_PARALLEL", "1")
 
 	// Longer needed for small footprint GPUs
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)

@@ -18,7 +18,7 @@ func TestLinuxCPUDetails(t *testing.T) {
 		expThreadCount int
 	}
 	testCases := map[string]*testCase{
-		"#5554 Docker Ollama container inside the LXC": {
+		"#5554 Docker Rose container inside the LXC": {
 			input: `processor	: 0
 vendor_id	: AuthenticAMD
 cpu family	: 25

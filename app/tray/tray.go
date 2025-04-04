@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"runtime"
 
-	"github.com/ollama/ollama/app/assets"
-	"github.com/ollama/ollama/app/tray/commontray"
+	"github.com/qompassai/rose/app/assets"
+	"github.com/qompassai/rose/app/tray/commontray"
 )
 
-func NewTray() (commontray.OllamaTray, error) {
+func NewTray() (commontray.RoseTray, error) {
 	extension := ".png"
 	if runtime.GOOS == "windows" {
 		extension = ".ico"

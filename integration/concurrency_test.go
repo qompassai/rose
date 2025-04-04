@@ -13,8 +13,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/format"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/format"
 )
 
 func TestMultiModelConcurrency(t *testing.T) {
@@ -72,7 +72,7 @@ func TestIntegrationConcurrentPredictOrcaMini(t *testing.T) {
 	reqLimit := len(req)
 	iterLimit := 5
 
-	if s := os.Getenv("OLLAMA_MAX_VRAM"); s != "" {
+	if s := os.Getenv("ROSE_MAX_VRAM"); s != "" {
 		maxVram, err := strconv.ParseUint(s, 10, 64)
 		require.NoError(t, err)
 		// Don't hammer on small VRAM cards...
@@ -108,9 +108,9 @@ func TestIntegrationConcurrentPredictOrcaMini(t *testing.T) {
 
 // Stress the system if we know how much VRAM it has, and attempt to load more models than will fit
 func TestMultiModelStress(t *testing.T) {
-	s := os.Getenv("OLLAMA_MAX_VRAM") // TODO - discover actual VRAM
+	s := os.Getenv("ROSE_MAX_VRAM") // TODO - discover actual VRAM
 	if s == "" {
-		t.Skip("OLLAMA_MAX_VRAM not specified, can't pick the right models for the stress test")
+		t.Skip("ROSE_MAX_VRAM not specified, can't pick the right models for the stress test")
 	}
 
 	maxVram, err := strconv.ParseUint(s, 10, 64)

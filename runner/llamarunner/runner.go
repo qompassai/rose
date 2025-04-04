@@ -22,10 +22,10 @@ import (
 
 	"golang.org/x/sync/semaphore"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/llama"
-	"github.com/ollama/ollama/llm"
-	"github.com/ollama/ollama/runner/common"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/llama"
+	"github.com/qompassai/rose/llm"
+	"github.com/qompassai/rose/runner/common"
 )
 
 // input is an element of the prompt to process, either

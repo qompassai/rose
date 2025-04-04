@@ -1501,7 +1501,7 @@ struct llama_model * common_load_model_from_hf(
 }
 
 /**
- * Allow getting the HF file from the HF repo with tag (like ollama), for example:
+ * Allow getting the HF file from the HF repo with tag (like rose), for example:
  * - bartowski/Llama-3.2-3B-Instruct-GGUF:q4
  * - bartowski/Llama-3.2-3B-Instruct-GGUF:Q4_K_M
  * - bartowski/Llama-3.2-3B-Instruct-GGUF:q5_k_s
@@ -1509,7 +1509,7 @@ struct llama_model * common_load_model_from_hf(
  *
  * Return pair of <repo, file> (with "repo" already having tag removed)
  *
- * Note: we use the Ollama-compatible HF API, but not using the blobId. Instead, we use the special "ggufFile" field which returns the value for "hf_file". This is done to be backward-compatible with existing cache files.
+ * Note: we use the Rose-compatible HF API, but not using the blobId. Instead, we use the special "ggufFile" field which returns the value for "hf_file". This is done to be backward-compatible with existing cache files.
  */
 std::pair<std::string, std::string> common_get_hf_file(const std::string & hf_repo_with_tag, const std::string & hf_token) {
     auto parts = string_split<std::string>(hf_repo_with_tag, ':');

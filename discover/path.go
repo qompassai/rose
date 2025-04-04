@@ -7,13 +7,13 @@ import (
 )
 
 // LibPath is a path to lookup dynamic libraries
-// in development it's usually 'build/lib/ollama'
-// in distribution builds it's 'lib/ollama' on Windows
-// '../lib/ollama' on Linux and the executable's directory on macOS
+// in development it's usually 'build/lib/rose'
+// in distribution builds it's 'lib/rose' on Windows
+// '../lib/rose' on Linux and the executable's directory on macOS
 // note: distribution builds, additional GPU-specific libraries are
 // found in subdirectories of the returned path, such as
 // 'cuda_v11', 'cuda_v12', 'rocm', etc.
-var LibOllamaPath string = func() string {
+var LibRosePath string = func() string {
 	exe, err := os.Executable()
 	if err != nil {
 		return ""
@@ -26,9 +26,9 @@ var LibOllamaPath string = func() string {
 	var libPath string
 	switch runtime.GOOS {
 	case "windows":
-		libPath = filepath.Join(filepath.Dir(exe), "lib", "ollama")
+		libPath = filepath.Join(filepath.Dir(exe), "lib", "rose")
 	case "linux":
-		libPath = filepath.Join(filepath.Dir(exe), "..", "lib", "ollama")
+		libPath = filepath.Join(filepath.Dir(exe), "..", "lib", "rose")
 	case "darwin":
 		libPath = filepath.Dir(exe)
 	}
@@ -42,8 +42,8 @@ var LibOllamaPath string = func() string {
 		libPath,
 
 		// build paths for development
-		filepath.Join(filepath.Dir(exe), "build", "lib", "ollama"),
-		filepath.Join(cwd, "build", "lib", "ollama"),
+		filepath.Join(filepath.Dir(exe), "build", "lib", "rose"),
+		filepath.Join(cwd, "build", "lib", "rose"),
 	}
 
 	for _, p := range paths {

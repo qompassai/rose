@@ -35,7 +35,7 @@ import (
 	"sync"
 	"unsafe"
 
-	_ "github.com/ollama/ollama/ml/backend/ggml/ggml/src/ggml-cpu"
+	_ "github.com/qompassai/rose/ml/backend/ggml/ggml/src/ggml-cpu"
 )
 
 func init() {
@@ -69,10 +69,10 @@ var OnceLoad = sync.OnceFunc(func() {
 		value = filepath.Dir(exe)
 	case "windows":
 		name = "PATH"
-		value = filepath.Join(filepath.Dir(exe), "lib", "ollama")
+		value = filepath.Join(filepath.Dir(exe), "lib", "rose")
 	default:
 		name = "LD_LIBRARY_PATH"
-		value = filepath.Join(filepath.Dir(exe), "..", "lib", "ollama")
+		value = filepath.Join(filepath.Dir(exe), "..", "lib", "rose")
 	}
 
 	paths, ok := os.LookupEnv(name)
@@ -89,8 +89,8 @@ var OnceLoad = sync.OnceFunc(func() {
 			continue
 		}
 
-		if abspath != filepath.Dir(exe) && !strings.Contains(abspath, filepath.FromSlash("lib/ollama")) {
-			slog.Debug("skipping path which is not part of ollama", "path", abspath)
+		if abspath != filepath.Dir(exe) && !strings.Contains(abspath, filepath.FromSlash("lib/rose")) {
+			slog.Debug("skipping path which is not part of rose", "path", abspath)
 			continue
 		}
 

@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/ollama/ollama/api"
+	"github.com/qompassai/rose/api"
 )
 
 func main() {

@@ -14,10 +14,10 @@ import (
 	"strings"
 	"text/template/parse"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/fs/ggml"
-	"github.com/ollama/ollama/template"
-	"github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/fs/ggml"
+	"github.com/qompassai/rose/template"
+	"github.com/qompassai/rose/types/model"
 )
 
 var intermediateBlobs map[string]string = make(map[string]string)
@@ -50,9 +50,9 @@ func parseFromModel(ctx context.Context, name model.Name, fn func(api.ProgressRe
 		}
 
 		switch layer.MediaType {
-		case "application/vnd.ollama.image.model",
-			"application/vnd.ollama.image.projector",
-			"application/vnd.ollama.image.adapter":
+		case "application/vnd.rose.image.model",
+			"application/vnd.rose.image.projector",
+			"application/vnd.rose.image.adapter":
 			blobpath, err := GetBlobsPath(layer.Digest)
 			if err != nil {
 				return nil, err
@@ -84,7 +84,7 @@ func detectChatTemplate(layers []*layerGGML) ([]*layerGGML, error) {
 			if t, err := template.Named(s); err != nil {
 				slog.Debug("template detection", "error", err, "template", s)
 			} else {
-				layer, err := NewLayer(t.Reader(), "application/vnd.ollama.image.template")
+				layer, err := NewLayer(t.Reader(), "application/vnd.rose.image.template")
 				if err != nil {
 					return nil, err
 				}
@@ -98,7 +98,7 @@ func detectChatTemplate(layers []*layerGGML) ([]*layerGGML, error) {
 						return nil, err
 					}
 
-					layer, err := NewLayer(&b, "application/vnd.ollama.image.params")
+					layer, err := NewLayer(&b, "application/vnd.rose.image.params")
 					if err != nil {
 						return nil, err
 					}

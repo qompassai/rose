@@ -8,13 +8,13 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/ollama/ollama/api"
+	"github.com/qompassai/rose/api"
 )
 
 func TestList(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	expectNames := []string{
 		"mistral:7b-instruct-q4_0",

@@ -153,6 +153,8 @@ github.com/nlpodyssey/gopickle v0.3.0 h1:BLUE5gxFLyyNOPzlXxt6GoHEMMxD0qhsE4p0CIQ
 github.com/nlpodyssey/gopickle v0.3.0/go.mod h1:f070HJ/yR+eLi5WmM1OXJEGaTpuJEUiib19olXgYha0=
 github.com/olekukonko/tablewriter v0.0.5 h1:P2Ga83D34wi1o9J6Wh1mRuqd4mF/x/lgBS7N7AbDhec=
 github.com/olekukonko/tablewriter v0.0.5/go.mod h1:hPp6KlRPjbx+hW8ykQs1w3UBbZlj6HuIJcUGPhkA7kY=
+github.com/open-quantum-safe/liboqs-go v0.0.0-20250119172907-28b5301df438 h1:rqhyfDxqF50veu/A7HsgRBShVN8Gqz4mmrgtRr6KnLo=
+github.com/open-quantum-safe/liboqs-go v0.0.0-20250119172907-28b5301df438/go.mod h1:OoIQ+v4rM6S6cF9zLGxsnsXX9vwv7WLp9s0TV2FbD6M=
 github.com/pdevine/tensor v0.0.0-20240510204454-f88f4562727c h1:GwiUUjKefgvSNmv3NCvI/BL0kDebW6Xa+kcdpdc1mTY=
 github.com/pdevine/tensor v0.0.0-20240510204454-f88f4562727c/go.mod h1:PSojXDXF7TbgQiD6kkd98IHOS0QqTyUEaWRiS8+BLu8=
 github.com/pelletier/go-toml/v2 v2.2.2 h1:aYUidT7k73Pcl9nb2gScu7NSrKCSHIDE89b3+6Wq+LM=

@@ -21,8 +21,8 @@ import (
 	"sync"
 	"unsafe"
 
-	"github.com/ollama/ollama/envconfig"
-	"github.com/ollama/ollama/format"
+	"github.com/qompassai/rose/envconfig"
+	"github.com/qompassai/rose/format"
 )
 
 type cudaHandles struct {
@@ -77,7 +77,7 @@ const IGPUMemLimit = 1 * format.GibiByte // 512G is what they typically report, 
 
 // Note: gpuMutex must already be held
 func initCudaHandles() *cudaHandles {
-	// TODO - if the ollama build is CPU only, don't do these checks as they're irrelevant and confusing
+	// TODO - if the rose build is CPU only, don't do these checks as they're irrelevant and confusing
 
 	cHandles := &cudaHandles{}
 	// Short Circuit if we already know which library to use
@@ -100,7 +100,7 @@ func initCudaHandles() *cudaHandles {
 
 	// Aligned with driver, we can't carry as payloads
 	nvcudaMgmtPatterns := NvcudaGlobs
-	cudartMgmtPatterns = append(cudartMgmtPatterns, filepath.Join(LibOllamaPath, "cuda_v*", CudartMgmtName))
+	cudartMgmtPatterns = append(cudartMgmtPatterns, filepath.Join(LibRosePath, "cuda_v*", CudartMgmtName))
 	cudartMgmtPatterns = append(cudartMgmtPatterns, CudartGlobs...)
 
 	if len(NvmlGlobs) > 0 {
@@ -286,7 +286,7 @@ func GetGPUInfo() GpuInfoList {
 
 				// Start with our bundled libraries
 				if variant != "" {
-					variantPath := filepath.Join(LibOllamaPath, "cuda_"+variant)
+					variantPath := filepath.Join(LibRosePath, "cuda_"+variant)
 					if _, err := os.Stat(variantPath); err == nil {
 						// Put the variant directory first in the search path to avoid runtime linking to the wrong library
 						gpuInfo.DependencyPath = append([]string{variantPath}, gpuInfo.DependencyPath...)
@@ -361,7 +361,7 @@ func GetGPUInfo() GpuInfoList {
 						gpuInfo.FreeMemory = uint64(memInfo.free)
 						gpuInfo.ID = C.GoString(&memInfo.gpu_id[0])
 						gpuInfo.Name = C.GoString(&memInfo.gpu_name[0])
-						gpuInfo.DependencyPath = []string{LibOllamaPath}
+						gpuInfo.DependencyPath = []string{LibRosePath}
 						oneapiGPUs = append(oneapiGPUs, gpuInfo)
 					}
 				}
@@ -501,7 +501,7 @@ func FindGPULibs(baseLibName string, defaultPatterns []string) []string {
 	slog.Debug("Searching for GPU library", "name", baseLibName)
 
 	// search our bundled libraries first
-	patterns := []string{filepath.Join(LibOllamaPath, baseLibName)}
+	patterns := []string{filepath.Join(LibRosePath, baseLibName)}
 
 	var ldPaths []string
 	switch runtime.GOOS {
@@ -601,7 +601,7 @@ func loadNVCUDAMgmt(nvcudaLibPaths []string) (int, *C.nvcuda_handle_t, string, e
 				err = fmt.Errorf("no nvidia devices detected by library %s", libPath)
 				slog.Info(err.Error())
 			case C.CUDA_ERROR_UNKNOWN:
-				err = fmt.Errorf("unknown error initializing cuda driver library %s: %s. see https://github.com/ollama/ollama/blob/main/docs/troubleshooting.md for more information", libPath, C.GoString(resp.err))
+				err = fmt.Errorf("unknown error initializing cuda driver library %s: %s. see https://github.com/qompassai/rose/blob/main/docs/troubleshooting.md for more information", libPath, C.GoString(resp.err))
 				slog.Warn(err.Error())
 			default:
 				msg := C.GoString(resp.err)

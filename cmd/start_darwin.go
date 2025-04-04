@@ -7,7 +7,7 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/ollama/ollama/api"
+	"github.com/qompassai/rose/api"
 )
 
 func startApp(ctx context.Context, client *api.Client) error {
@@ -19,11 +19,11 @@ func startApp(ctx context.Context, client *api.Client) error {
 	if err != nil {
 		return err
 	}
-	if !strings.Contains(link, "Ollama.app") {
-		return errors.New("could not find ollama app")
+	if !strings.Contains(link, "Rose.app") {
+		return errors.New("could not find rose app")
 	}
-	path := strings.Split(link, "Ollama.app")
-	if err := exec.Command("/usr/bin/open", "-a", path[0]+"Ollama.app").Run(); err != nil {
+	path := strings.Split(link, "Rose.app")
+	if err := exec.Command("/usr/bin/open", "-a", path[0]+"Rose.app").Run(); err != nil {
 		return err
 	}
 	return waitForServer(ctx, client)

@@ -21,7 +21,7 @@ func TestParseName(t *testing.T) {
 		{"n/m", Name{n: "n", m: "m"}},
 		{strings.Repeat("m", MaxNameLength+1), Name{}},
 		{"h/n/m:t", Name{h: "h", n: "n", m: "m", t: "t"}},
-		{"ollama.com/library/_:latest", Name{h: "ollama.com", n: "library", m: "_", t: "latest"}},
+		{"qompass.ai/archive/_:latest", Name{h: "qompass.ai", n: "archive", m: "_", t: "latest"}},
 
 		// Invalids
 		// TODO: {"n:t/m:t", Name{}},
@@ -49,7 +49,7 @@ func TestString(t *testing.T) {
 		"n/m",
 		"n/m",
 		"h/n/m:t",
-		"ollama.com/library/_:latest",
+		"qompass.ai/archive/_:latest",
 
 		// Special cased to "round trip" without the leading slash.
 		"/m",
@@ -102,8 +102,8 @@ func TestMerge(t *testing.T) {
 		{"o.com/n/m:t", "o.com/n/m:t", "o.com/n/m:t"},
 		{"o.com/n/m:t", "o.com/n/_:t", "o.com/n/m:t"},
 
-		{"bmizerany/smol", "ollama.com/library/_:latest", "ollama.com/bmizerany/smol:latest"},
-		{"localhost:8080/bmizerany/smol", "ollama.com/library/_:latest", "localhost:8080/bmizerany/smol:latest"},
+		{"bmizerany/smol", "qompass.ai/archive/_:latest", "qompass.ai/bmizerany/smol:latest"},
+		{"localhost:8080/bmizerany/smol", "qompass.ai/archive/_:latest", "localhost:8080/bmizerany/smol:latest"},
 	}
 	for _, tt := range cases {
 		t.Run("", func(t *testing.T) {
@@ -127,7 +127,7 @@ func TestParseStringRoundTrip(t *testing.T) {
 		"n/m",
 		"n/m",
 		"h/n/m:t",
-		"ollama.com/library/_:latest",
+		"qompass.ai/archive/_:latest",
 	}
 	for _, s := range cases {
 		t.Run(s, func(t *testing.T) {

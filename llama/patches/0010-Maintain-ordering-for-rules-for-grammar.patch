@@ -1,7 +1,3 @@
-From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: ParthSareen <parth.sareen@ollama.com>
-Date: Wed, 11 Dec 2024 15:37:32 -0800
-Subject: [PATCH] Maintain ordering for rules for grammar
 
 ---
  common/json-schema-to-grammar.cpp | 2 +-

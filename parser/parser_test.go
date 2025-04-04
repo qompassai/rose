@@ -18,8 +18,8 @@ import (
 	"golang.org/x/text/encoding"
 	"golang.org/x/text/encoding/unicode"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/fs/ggml"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/fs/ggml"
 )
 
 func TestParseFileFile(t *testing.T) {

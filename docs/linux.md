@@ -2,34 +2,34 @@
 
 ## Install
 
-To install Ollama, run the following command:
+To install Rose, run the following command:
 
 ```shell
-curl -fsSL https://ollama.com/install.sh | sh
+curl -fsSL https://qompass.ai/install.sh | sh
 ```
 
 ## Manual install
 
 > [!NOTE]
-> If you are upgrading from a prior version, you should remove the old libraries with `sudo rm -rf /usr/lib/ollama` first.
+> If you are upgrading from a prior version, you should remove the old libraries with `sudo rm -rf /usr/lib/rose` first.
 
 Download and extract the package:
 
 ```shell
-curl -L https://ollama.com/download/ollama-linux-amd64.tgz -o ollama-linux-amd64.tgz
-sudo tar -C /usr -xzf ollama-linux-amd64.tgz
+curl -L https://qompass.ai/download/rose-linux-amd64.tgz -o rose-linux-amd64.tgz
+sudo tar -C /usr -xzf rose-linux-amd64.tgz
 ```
 
-Start Ollama:
+Start Rose:
 
 ```shell
-ollama serve
+rose serve
 ```
 
-In another terminal, verify that Ollama is running:
+In another terminal, verify that Rose is running:
 
 ```shell
-ollama -v
+rose -v
 ```
 
 ### AMD GPU install
@@ -37,8 +37,9 @@ ollama -v
 If you have an AMD GPU, also download and extract the additional ROCm package:
 
 ```shell
-curl -L https://ollama.com/download/ollama-linux-amd64-rocm.tgz -o ollama-linux-amd64-rocm.tgz
-sudo tar -C /usr -xzf ollama-linux-amd64-rocm.tgz
+curl -L https://qompass.ai/download/rose-linux-amd64-rocm.tgz -o rose-linux-amd64-rocm.tgz
+tar -C $HOME/.local -xzf rose-linux-amd64-rocm.tgz
+
 ```
 
 ### ARM64 install
@@ -46,30 +47,30 @@ sudo tar -C /usr -xzf ollama-linux-amd64-rocm.tgz
 Download and extract the ARM64-specific package:
 
 ```shell
-curl -L https://ollama.com/download/ollama-linux-arm64.tgz -o ollama-linux-arm64.tgz
-sudo tar -C /usr -xzf ollama-linux-arm64.tgz
+curl -L https://qompass.ai/download/rose-linux-arm64.tgz -o rose-linux-arm64.tgz
+tar -C $HOME/.local /usr -xzf rose-linux-arm64.tgz
 ```
 
-### Adding Ollama as a startup service (recommended)
+### Adding Rose as a startup service (recommended)
 
-Create a user and group for Ollama:
+Create a user and group for Rose:
 
 ```shell
-sudo useradd -r -s /bin/false -U -m -d /usr/share/ollama ollama
-sudo usermod -a -G ollama $(whoami)
+sudo useradd -r -s /bin/false -U -m -d /usr/share/rose rose
+sudo usermod -a -G rose $(whoami)
 ```
 
-Create a service file in `/etc/systemd/system/ollama.service`:
+Create a service file in `/etc/systemd/system/rose.service`:
 
 ```ini
 [Unit]
-Description=Ollama Service
+Description=Rose Service
 After=network-online.target
 
 [Service]
-ExecStart=/usr/bin/ollama serve
-User=ollama
-Group=ollama
+ExecStart=/usr/bin/rose serve
+User=rose
+Group=rose
 Restart=always
 RestartSec=3
 Environment="PATH=$PATH"
@@ -82,7 +83,7 @@ Then start the service:
 
 ```shell
 sudo systemctl daemon-reload
-sudo systemctl enable ollama
+sudo systemctl enable rose
 ```
 
 ### Install CUDA drivers (optional)
@@ -99,13 +100,13 @@ nvidia-smi
 
 [Download and Install](https://rocm.docs.amd.com/projects/install-on-linux/en/latest/tutorial/quick-start.html) ROCm v6.
 
-### Start Ollama
+### Start Rose
 
-Start Ollama and verify it is running:
+Start Rose and verify it is running:
 
 ```shell
-sudo systemctl start ollama
-sudo systemctl status ollama
+systemctl --user start rose
+systemctl --user status rose
 ```
 
 > [!NOTE]
@@ -120,10 +121,10 @@ sudo systemctl status ollama
 To customize the installation of Rose, you can edit the systemd service file or the environment variables by running:
 
 ```shell
-sudo systemctl edit rose
+systemctl --user edit rose
 ```
 
-Alternatively, create an override file manually in `/etc/systemd/system/ollama.service.d/override.conf`:
+Alternatively, create an override file manually in `/etc/systemd/system/rose.service.d/override.conf`:
 
 ```ini
 [Service]
@@ -135,29 +136,29 @@ Environment="ROSE_DEBUG=1"
 Update Rose by running the install script again:
 
 ```shell
-curl -fsSL https://ollama.com/install.sh | sh
+curl -fsSL https://qompass.ai/install.sh | sh
 ```
 
 Or by re-downloading Rose:
 
 ```shell
-curl -L https://ollama.com/download/ollama-linux-amd64.tgz -o ollama-linux-amd64.tgz
-sudo tar -C /usr -xzf ollama-linux-amd64.tgz
+curl -L https://qompass.ai/download/rose-linux-amd64.tgz -o rose-linux-amd64.tgz
+tar -C $HOME/.local -xzf rose-linux-amd64.tgz
 ```
 
 ## Installing specific versions
 
-Use `ROSE_VERSION` environment variable with the install script to install a specific version of Ollama, including pre-releases. You can find the version numbers in the [releases page](https://github.com/qompassai/rose/releases).
+Use `ROSE_VERSION` environment variable with the install script to install a specific version of Rose, including pre-releases. You can find the version numbers in the [releases page](https://github.com/qompassai/rose/releases).
 
 For example:
 
 ```shell
-curl -fsSL https://ollama.com/install.sh | OLLAMA_VERSION=0.5.7 sh
+curl -fsSL https://qompass.ai/install.sh | ROSE_VERSION=1.01 sh
 ```
 
 ## Viewing logs
 
-To view logs of Ollama running as a startup service, run:
+To view logs of Rose running as a startup service, run:
 
 ```shell
 journalctl -e -u rose
@@ -165,30 +166,30 @@ journalctl -e -u rose
 
 ## Uninstall
 
-Remove the ollama service:
+Remove the rose service:
 
 ```shell
-sudo systemctl stop ollama
-sudo systemctl disable ollama
-sudo rm /etc/systemd/system/ollama.service
+systemctl --user stop rose
+systemctl --user disable rose
+rm ~/.config/user/systemd/system/rose.service
 ```
 
-Remove the ollama binary from your bin directory (either `/usr/local/bin`, `/usr/bin`, or `/bin`):
+Remove the rose binary from your bin directory (either `/usr/local/bin`, `/usr/bin`, or `/bin`):
 
 ```shell
-sudo rm $(which ollama)
+sudo rm $(which rose)
 ```
 
-Remove the downloaded models and Ollama service user and group:
+Remove the downloaded models and Rose service user and group:
 
 ```shell
-sudo rm -r /usr/share/ollama
-sudo userdel ollama
-sudo groupdel ollama
+sudo rm -r /usr/share/rose
+sudo userdel rose
+sudo groupdel rose
 ```
 
 Remove installed libraries:
 
 ```shell
-sudo rm -rf /usr/local/lib/ollama
+sudo rm -rf /usr/local/lib/rose
 ```

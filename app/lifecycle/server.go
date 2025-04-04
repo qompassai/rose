@@ -11,7 +11,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/ollama/ollama/api"
+	"github.com/qompassai/rose/api"
 )
 
 func getCLIFullPath(command string) string {
@@ -70,11 +70,11 @@ func start(ctx context.Context, command string) (*exec.Cmd, error) {
 	_, err = os.Stat(logDir)
 	if err != nil {
 		if !errors.Is(err, os.ErrNotExist) {
-			return nil, fmt.Errorf("stat ollama server log dir %s: %v", logDir, err)
+			return nil, fmt.Errorf("stat rose server log dir %s: %v", logDir, err)
 		}
 
 		if err := os.MkdirAll(logDir, 0o755); err != nil {
-			return nil, fmt.Errorf("create ollama server log dir %s: %v", logDir, err)
+			return nil, fmt.Errorf("create rose server log dir %s: %v", logDir, err)
 		}
 	}
 
@@ -124,9 +124,9 @@ func start(ctx context.Context, command string) (*exec.Cmd, error) {
 		return nil, fmt.Errorf("failed to start server %w", err)
 	}
 	if cmd.Process != nil {
-		slog.Info(fmt.Sprintf("started ollama server with pid %d", cmd.Process.Pid))
+		slog.Info(fmt.Sprintf("started rose server with pid %d", cmd.Process.Pid))
 	}
-	slog.Info(fmt.Sprintf("ollama server logs %s", ServerLogFile))
+	slog.Info(fmt.Sprintf("rose server logs %s", ServerLogFile))
 
 	return cmd, nil
 }

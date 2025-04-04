@@ -9,10 +9,10 @@ import (
 	"log/slog"
 	"strings"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/llm"
-	"github.com/ollama/ollama/model/models/mllama"
-	"github.com/ollama/ollama/template"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/llm"
+	"github.com/qompassai/rose/model/models/mllama"
+	"github.com/qompassai/rose/template"
 )
 
 type tokenizeFunc func(context.Context, string) ([]int, error)

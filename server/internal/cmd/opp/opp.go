@@ -19,15 +19,15 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/ollama/ollama/server/internal/cache/blob"
-	"github.com/ollama/ollama/server/internal/client/ollama"
-	"github.com/ollama/ollama/server/internal/cmd/opp/internal/safetensors"
+	"github.com/qompassai/rose/server/internal/cache/blob"
+	"github.com/qompassai/rose/server/internal/client/rose"
+	"github.com/qompassai/rose/server/internal/cmd/opp/internal/safetensors"
 	"golang.org/x/sync/errgroup"
 )
 
 var stdout io.Writer = os.Stdout
 
-const usage = `Opp is a tool for pushing and pulling Ollama models.
+const usage = `Opp is a tool for pushing and pulling Rose models.
 
 Usage:
 
@@ -35,16 +35,16 @@ Usage:
 
 Commands:
 
-    push    Upload a model to the Ollama server.
-    pull    Download a model from the Ollama server.
+    push    Upload a model to the Rose server.
+    pull    Download a model from the Rose server.
     import  Import a model from a local safetensor directory.
 
 Examples:
 
-    # Pull a model from the Ollama server.
+    # Pull a model from the Rose server.
     opp pull library/llama3.2:latest
 
-    # Push a model to the Ollama server.
+    # Push a model to the Rose server.
     opp push username/my_model:8b 
 
     # Import a model from a local safetensor directory.
@@ -52,9 +52,9 @@ Examples:
 
 Envionment Variables:
 
-    OLLAMA_MODELS
+    ROSE_MODELS
         The directory where models are pushed and pulled from
-	(default ~/.ollama/models).
+	(default ~/.rose/models).
 `
 
 func main() {
@@ -68,20 +68,20 @@ func main() {
 	err := func() error {
 		switch cmd := flag.Arg(0); cmd {
 		case "pull":
-			rc, err := ollama.DefaultRegistry()
+			rc, err := rose.DefaultRegistry()
 			if err != nil {
 				log.Fatal(err)
 			}
 
 			return cmdPull(ctx, rc)
 		case "push":
-			rc, err := ollama.DefaultRegistry()
+			rc, err := rose.DefaultRegistry()
 			if err != nil {
 				log.Fatal(err)
 			}
 			return cmdPush(ctx, rc)
 		case "import":
-			c, err := ollama.DefaultCache()
+			c, err := rose.DefaultCache()
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -102,7 +102,7 @@ func main() {
 	}
 }
 
-func cmdPull(ctx context.Context, rc *ollama.Registry) error {
+func cmdPull(ctx context.Context, rc *rose.Registry) error {
 	model := flag.Arg(1)
 	if model == "" {
 		flag.Usage()
@@ -133,9 +133,9 @@ func cmdPull(ctx context.Context, rc *ollama.Registry) error {
 		io.Copy(stdout, &pb)
 	}
 
-	ctx = ollama.WithTrace(ctx, &ollama.Trace{
-		Update: func(l *ollama.Layer, n int64, err error) {
-			if err != nil && !errors.Is(err, ollama.ErrCached) {
+	ctx = rose.WithTrace(ctx, &rose.Trace{
+		Update: func(l *rose.Layer, n int64, err error) {
+			if err != nil && !errors.Is(err, rose.ErrCached) {
 				fmt.Fprintf(stdout, "opp: pull %s ! %v\n", l.Digest.Short(), err)
 				return
 			}
@@ -164,7 +164,7 @@ func cmdPull(ctx context.Context, rc *ollama.Registry) error {
 	}
 }
 
-func cmdPush(ctx context.Context, rc *ollama.Registry) error {
+func cmdPush(ctx context.Context, rc *rose.Registry) error {
 	args := flag.Args()[1:]
 	flag := flag.NewFlagSet("push", flag.ExitOnError)
 	flagFrom := flag.String("from", "", "Use the manifest from a model by another name.")
@@ -185,17 +185,17 @@ func cmdPush(ctx context.Context, rc *ollama.Registry) error {
 		return err
 	}
 
-	ctx = ollama.WithTrace(ctx, &ollama.Trace{
-		Update: func(l *ollama.Layer, n int64, err error) {
+	ctx = rose.WithTrace(ctx, &rose.Trace{
+		Update: func(l *rose.Layer, n int64, err error) {
 			switch {
-			case errors.Is(err, ollama.ErrCached):
+			case errors.Is(err, rose.ErrCached):
 				fmt.Fprintf(stdout, "opp: uploading %s %d (existed)", l.Digest.Short(), n)
 			case err != nil:
 				fmt.Fprintf(stdout, "opp: uploading %s %d ! %v\n", l.Digest.Short(), n, err)
 			case n == 0:
 				l := m.Layer(l.Digest)
 				mt, p, _ := mime.ParseMediaType(l.MediaType)
-				mt, _ = strings.CutPrefix(mt, "application/vnd.ollama.image.")
+				mt, _ = strings.CutPrefix(mt, "application/vnd.rose.image.")
 				switch mt {
 				case "tensor":
 					fmt.Fprintf(stdout, "opp: uploading tensor %s %s\n", l.Digest.Short(), p["name"])
@@ -206,7 +206,7 @@ func cmdPush(ctx context.Context, rc *ollama.Registry) error {
 		},
 	})
 
-	return rc.Push(ctx, model, &ollama.PushParams{
+	return rc.Push(ctx, model, &rose.PushParams{
 		From: from,
 	})
 }
@@ -234,7 +234,7 @@ func cmdImport(ctx context.Context, c *blob.DiskCache) error {
 	if *flagAs == "" {
 		return fmt.Errorf("missing -as flag")
 	}
-	as := ollama.CompleteName(*flagAs)
+	as := rose.CompleteName(*flagAs)
 
 	dir := cmp.Or(flag.Arg(0), ".")
 	fmt.Fprintf(os.Stderr, "Reading %s\n", dir)
@@ -257,7 +257,7 @@ func cmdImport(ctx context.Context, c *blob.DiskCache) error {
 	var n atomic.Int64
 	done := make(chan error)
 	go func() {
-		layers := make([]*ollama.Layer, len(tt))
+		layers := make([]*rose.Layer, len(tt))
 		var g errgroup.Group
 		g.SetLimit(runtime.GOMAXPROCS(0))
 		var ctxErr error
@@ -290,10 +290,10 @@ func cmdImport(ctx context.Context, c *blob.DiskCache) error {
 					return err
 				}
 
-				layers[i] = &ollama.Layer{
+				layers[i] = &rose.Layer{
 					Digest: d,
 					Size:   t.Size(),
-					MediaType: mime.FormatMediaType("application/vnd.ollama.image.tensor", map[string]string{
+					MediaType: mime.FormatMediaType("application/vnd.rose.image.tensor", map[string]string{
 						"name":  t.Name(),
 						"dtype": t.DataType(),
 						"shape": t.Shape().String(),
@@ -308,7 +308,7 @@ func cmdImport(ctx context.Context, c *blob.DiskCache) error {
 			if err := errors.Join(g.Wait(), ctxErr); err != nil {
 				return err
 			}
-			m := &ollama.Manifest{Layers: layers}
+			m := &rose.Manifest{Layers: layers}
 			data, err := json.MarshalIndent(m, "", "  ")
 			if err != nil {
 				return err

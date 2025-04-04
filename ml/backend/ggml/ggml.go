@@ -23,10 +23,10 @@ import (
 	"unicode"
 	"unsafe"
 
-	"github.com/ollama/ollama/format"
-	fs "github.com/ollama/ollama/fs/ggml"
-	"github.com/ollama/ollama/ml"
-	ggml "github.com/ollama/ollama/ml/backend/ggml/ggml/src"
+	"github.com/qompassai/rose/format"
+	fs "github.com/qompassai/rose/fs/ggml"
+	"github.com/qompassai/rose/ml"
+	ggml "github.com/qompassai/rose/ml/backend/ggml/ggml/src"
 	"golang.org/x/sync/errgroup"
 )
 

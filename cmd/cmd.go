@@ -32,15 +32,15 @@ import (
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/term"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/envconfig"
-	"github.com/ollama/ollama/format"
-	"github.com/ollama/ollama/parser"
-	"github.com/ollama/ollama/progress"
-	"github.com/ollama/ollama/runner"
-	"github.com/ollama/ollama/server"
-	"github.com/ollama/ollama/types/model"
-	"github.com/ollama/ollama/version"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/envconfig"
+	"github.com/qompassai/rose/format"
+	"github.com/qompassai/rose/parser"
+	"github.com/qompassai/rose/progress"
+	"github.com/qompassai/rose/runner"
+	"github.com/qompassai/rose/server"
+	"github.com/qompassai/rose/types/model"
+	"github.com/qompassai/rose/version"
 )
 
 var errModelfileNotFound = errors.New("specified Modelfile wasn't found")
@@ -435,8 +435,8 @@ func PushHandler(cmd *cobra.Command, args []string) error {
 	spinner.Stop()
 
 	destination := n.String()
-	if strings.HasSuffix(n.Host, ".ollama.ai") || strings.HasSuffix(n.Host, ".ollama.com") {
-		destination = "https://ollama.com/" + strings.TrimSuffix(n.DisplayShortest(), ":latest")
+	if strings.HasSuffix(n.Host, ".qompass.ai") || strings.HasSuffix(n.Host, ".qompass.ai") {
+		destination = "https://qompass.ai/" + strings.TrimSuffix(n.DisplayShortest(), ":latest")
 	}
 	fmt.Printf("\nYou can find your model at:\n\n")
 	fmt.Printf("\t%s\n", destination)
@@ -1336,7 +1336,7 @@ func NewCLI() *cobra.Command {
 
 	envVars := envconfig.AsMap()
 
-	envs := []envconfig.EnvVar{envVars["OLLAMA_HOST"]}
+	envs := []envconfig.EnvVar{envVars["ROSE_HOST"]}
 
 	for _, cmd := range []*cobra.Command{
 		createCmd,
@@ -1353,25 +1353,25 @@ func NewCLI() *cobra.Command {
 	} {
 		switch cmd {
 		case runCmd:
-			appendEnvDocs(cmd, []envconfig.EnvVar{envVars["OLLAMA_HOST"], envVars["OLLAMA_NOHISTORY"]})
+			appendEnvDocs(cmd, []envconfig.EnvVar{envVars["ROSE_HOST"], envVars["ROSE_NOHISTORY"]})
 		case serveCmd:
 			appendEnvDocs(cmd, []envconfig.EnvVar{
-				envVars["OLLAMA_DEBUG"],
-				envVars["OLLAMA_HOST"],
-				envVars["OLLAMA_KEEP_ALIVE"],
-				envVars["OLLAMA_MAX_LOADED_MODELS"],
-				envVars["OLLAMA_MAX_QUEUE"],
-				envVars["OLLAMA_MODELS"],
-				envVars["OLLAMA_NUM_PARALLEL"],
-				envVars["OLLAMA_NOPRUNE"],
-				envVars["OLLAMA_ORIGINS"],
-				envVars["OLLAMA_SCHED_SPREAD"],
-				envVars["OLLAMA_TMPDIR"],
-				envVars["OLLAMA_FLASH_ATTENTION"],
-				envVars["OLLAMA_KV_CACHE_TYPE"],
-				envVars["OLLAMA_LLM_LIBRARY"],
-				envVars["OLLAMA_GPU_OVERHEAD"],
-				envVars["OLLAMA_LOAD_TIMEOUT"],
+				envVars["ROSE_DEBUG"],
+				envVars["ROSE_HOST"],
+				envVars["ROSE_KEEP_ALIVE"],
+				envVars["ROSE_MAX_LOADED_MODELS"],
+				envVars["ROSE_MAX_QUEUE"],
+				envVars["ROSE_MODELS"],
+				envVars["ROSE_NUM_PARALLEL"],
+				envVars["ROSE_NOPRUNE"],
+				envVars["ROSE_ORIGINS"],
+				envVars["ROSE_SCHED_SPREAD"],
+				envVars["ROSE_TMPDIR"],
+				envVars["ROSE_FLASH_ATTENTION"],
+				envVars["ROSE_KV_CACHE_TYPE"],
+				envVars["ROSE_LLM_LIBRARY"],
+				envVars["ROSE_GPU_OVERHEAD"],
+				envVars["ROSE_LOAD_TIMEOUT"],
 			})
 		default:
 			appendEnvDocs(cmd, envs)

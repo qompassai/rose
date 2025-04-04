@@ -1,10 +1,10 @@
 package tray
 
 import (
-	"github.com/ollama/ollama/app/tray/commontray"
-	"github.com/ollama/ollama/app/tray/wintray"
+	"github.com/qompassai/rose/app/tray/commontray"
+	"github.com/qompassai/rose/app/tray/wintray"
 )
 
-func InitPlatformTray(icon, updateIcon []byte) (commontray.OllamaTray, error) {
+func InitPlatformTray(icon, updateIcon []byte) (commontray.RoseTray, error) {
 	return wintray.InitTray(icon, updateIcon)
 }

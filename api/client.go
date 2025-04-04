@@ -1,7 +1,7 @@
 // Package api implements the client-side API for code wishing to interact
-// with the ollama service. The methods of the [Client] type correspond to
-// the ollama REST API as described in [the API documentation].
-// The ollama command-line client itself uses this package to interact with
+// with the rose service. The methods of the [Client] type correspond to
+// the rose REST API as described in [the API documentation].
+// The rose command-line client itself uses this package to interact with
 // the backend service.
 //
 // # Examples
@@ -9,8 +9,8 @@
 // Several examples of using this package are available [in the GitHub
 // repository].
 //
-// [the API documentation]: https://github.com/ollama/ollama/blob/main/docs/api.md
-// [in the GitHub repository]: https://github.com/ollama/ollama/tree/main/api/examples
+// [the API documentation]: https://github.com/qompassai/rose/blob/main/docs/api.md
+// [in the GitHub repository]: https://github.com/qompassai/rose/tree/main/api/examples
 package api
 
 import (
@@ -25,12 +25,12 @@ import (
 	"net/url"
 	"runtime"
 
-	"github.com/ollama/ollama/envconfig"
-	"github.com/ollama/ollama/format"
-	"github.com/ollama/ollama/version"
+	"github.com/qompassai/rose/envconfig"
+	"github.com/qompassai/rose/format"
+	"github.com/qompassai/rose/version"
 )
 
-// Client encapsulates client state for interacting with the ollama
+// Client encapsulates client state for interacting with the rose
 // service. Use [ClientFromEnvironment] to create new Clients.
 type Client struct {
 	base *url.URL
@@ -54,13 +54,13 @@ func checkError(resp *http.Response, body []byte) error {
 }
 
 // ClientFromEnvironment creates a new [Client] using configuration from the
-// environment variable OLLAMA_HOST, which points to the network host and
-// port on which the ollama service is listening. The format of this variable
+// environment variable ROSE_HOST, which points to the network host and
+// port on which the rose service is listening. The format of this variable
 // is:
 //
 //	<scheme>://<host>:<port>
 //
-// If the variable is not specified, a default ollama host and port will be
+// If the variable is not specified, a default rose host and port will be
 // used.
 func ClientFromEnvironment() (*Client, error) {
 	return &Client{
@@ -104,7 +104,7 @@ func (c *Client) do(ctx context.Context, method, path string, reqData, respData 
 
 	request.Header.Set("Content-Type", "application/json")
 	request.Header.Set("Accept", "application/json")
-	request.Header.Set("User-Agent", fmt.Sprintf("ollama/%s (%s %s) Go/%s", version.Version, runtime.GOARCH, runtime.GOOS, runtime.Version()))
+	request.Header.Set("User-Agent", fmt.Sprintf("rose/%s (%s %s) Go/%s", version.Version, runtime.GOARCH, runtime.GOOS, runtime.Version()))
 
 	respObj, err := c.http.Do(request)
 	if err != nil {
@@ -150,7 +150,7 @@ func (c *Client) stream(ctx context.Context, method, path string, data any, fn f
 
 	request.Header.Set("Content-Type", "application/json")
 	request.Header.Set("Accept", "application/x-ndjson")
-	request.Header.Set("User-Agent", fmt.Sprintf("ollama/%s (%s %s) Go/%s", version.Version, runtime.GOARCH, runtime.GOOS, runtime.Version()))
+	request.Header.Set("User-Agent", fmt.Sprintf("rose/%s (%s %s) Go/%s", version.Version, runtime.GOARCH, runtime.GOOS, runtime.Version()))
 
 	response, err := c.http.Do(request)
 	if err != nil {
@@ -236,7 +236,7 @@ func (c *Client) Chat(ctx context.Context, req *ChatRequest, fn ChatResponseFunc
 // returns an error, [Client.Pull] will stop the process and return this error.
 type PullProgressFunc func(ProgressResponse) error
 
-// Pull downloads a model from the ollama library. fn is called each time
+// Pull downloads a model from the rose library. fn is called each time
 // progress is made on the request and can be used to display a progress bar,
 // etc.
 func (c *Client) Pull(ctx context.Context, req *PullRequest, fn PullProgressFunc) error {
@@ -255,7 +255,7 @@ func (c *Client) Pull(ctx context.Context, req *PullRequest, fn PullProgressFunc
 // It's similar to other progress function types like [PullProgressFunc].
 type PushProgressFunc func(ProgressResponse) error
 
-// Push uploads a model to the model library; requires registering for ollama.ai
+// Push uploads a model to the model library; requires registering for qompass.ai
 // and adding a public key first. fn is called each time progress is made on
 // the request and can be used to display a progress bar, etc.
 func (c *Client) Push(ctx context.Context, req *PushRequest, fn PushProgressFunc) error {
@@ -277,7 +277,7 @@ type CreateProgressFunc func(ProgressResponse) error
 // Create creates a model from a [Modelfile]. fn is a progress function that
 // behaves similarly to other methods (see [Client.Pull]).
 //
-// [Modelfile]: https://github.com/ollama/ollama/blob/main/docs/modelfile.md
+// [Modelfile]: https://github.com/qompassai/rose/blob/main/docs/modelfile.md
 func (c *Client) Create(ctx context.Context, req *CreateRequest, fn CreateProgressFunc) error {
 	return c.stream(ctx, http.MethodPost, "/api/create", req, func(bts []byte) error {
 		var resp ProgressResponse
@@ -366,7 +366,7 @@ func (c *Client) CreateBlob(ctx context.Context, digest string, r io.Reader) err
 	return c.do(ctx, http.MethodPost, fmt.Sprintf("/api/blobs/%s", digest), r, nil)
 }
 
-// Version returns the Ollama server version as a string.
+// Version returns the Rose server version as a string.
 func (c *Client) Version(ctx context.Context) (string, error) {
 	var version struct {
 		Version string `json:"version"`

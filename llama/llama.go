@@ -37,10 +37,10 @@ import (
 	"strings"
 	"unsafe"
 
-	_ "github.com/ollama/ollama/llama/llama.cpp/common"
-	_ "github.com/ollama/ollama/llama/llama.cpp/examples/llava"
-	_ "github.com/ollama/ollama/llama/llama.cpp/src"
-	ggml "github.com/ollama/ollama/ml/backend/ggml/ggml/src"
+	_ "github.com/qompassai/rose/llama/llama.cpp/common"
+	_ "github.com/qompassai/rose/llama/llama.cpp/examples/llava"
+	_ "github.com/qompassai/rose/llama/llama.cpp/src"
+	ggml "github.com/qompassai/rose/ml/backend/ggml/ggml/src"
 )
 
 func init() {

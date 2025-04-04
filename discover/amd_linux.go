@@ -15,8 +15,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/ollama/ollama/envconfig"
-	"github.com/ollama/ollama/format"
+	"github.com/qompassai/rose/envconfig"
+	"github.com/qompassai/rose/format"
 )
 
 // Discovery logic for AMD/ROCm GPUs
@@ -58,7 +58,7 @@ func AMDGetGPUInfo() ([]RocmGPUInfo, error) {
 	driverMajor, driverMinor, err := AMDDriverVersion()
 	if err != nil {
 		// TODO - if we see users crash and burn with the upstreamed kernel this can be adjusted to hard-fail rocm support and fallback to CPU
-		slog.Warn("ollama recommends running the https://www.amd.com/en/support/linux-drivers", "error", err)
+		slog.Warn("rose recommends running the https://www.amd.com/en/support/linux-drivers", "error", err)
 	}
 
 	// Determine if the user has already pre-selected which GPUs to look at, then ignore the others
@@ -380,7 +380,7 @@ func AMDGetGPUInfo() ([]RocmGPUInfo, error) {
 				})
 
 				// TODO - consider discrete markdown just for ROCM troubleshooting?
-				slog.Warn("See https://github.com/ollama/ollama/blob/main/docs/gpu.md#overrides for HSA_OVERRIDE_GFX_VERSION usage")
+				slog.Warn("See https://github.com/qompassai/rose/blob/main/docs/gpu.md#overrides for HSA_OVERRIDE_GFX_VERSION usage")
 				continue
 			} else {
 				slog.Info("amdgpu is supported", "gpu", gpuInfo.ID, "gpu_type", gfx)
@@ -433,14 +433,14 @@ func AMDValidateLibDir() (string, error) {
 		return libDir, nil
 	}
 
-	// Well known ollama installer path
-	installedRocmDir := "/usr/share/ollama/lib/rocm"
+	// Well known rose installer path
+	installedRocmDir := "/usr/share/rose/lib/rocm"
 	if rocmLibUsable(installedRocmDir) {
 		return installedRocmDir, nil
 	}
 
 	// If we still haven't found a usable rocm, the user will have to install it on their own
-	slog.Warn("amdgpu detected, but no compatible rocm library found.  Either install rocm v6, or follow manual install instructions at https://github.com/ollama/ollama/blob/main/docs/linux.md#manual-install")
+	slog.Warn("amdgpu detected, but no compatible rocm library found.  Either install rocm v6, or follow manual install instructions at https://github.com/qompassai/rose/blob/main/docs/linux.md#manual-install")
 	return "", errors.New("no suitable rocm found, falling back to CPU")
 }
 
@@ -509,7 +509,7 @@ func verifyKFDDriverAccess() error {
 	fd, err := os.OpenFile("/dev/kfd", os.O_RDWR, 0o666)
 	if err != nil {
 		if errors.Is(err, fs.ErrPermission) {
-			return fmt.Errorf("permissions not set up properly.  Either run ollama as root, or add you user account to the render group. %w", err)
+			return fmt.Errorf("permissions not set up properly.  Either run rose as root, or add you user account to the render group. %w", err)
 		} else if errors.Is(err, fs.ErrNotExist) {
 			// Container runtime failure?
 			return fmt.Errorf("kfd driver not loaded.  If running in a container, remember to include '--device /dev/kfd --device /dev/dri'")

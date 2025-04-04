@@ -12,7 +12,7 @@ import (
 func GetStarted() error {
 	const CREATE_NEW_CONSOLE = 0x00000010
 	var err error
-	bannerScript := filepath.Join(AppDir, "ollama_welcome.ps1")
+	bannerScript := filepath.Join(AppDir, "rose_welcome.ps1")
 	args := []string{
 		// TODO once we're signed, the execution policy bypass should be removed
 		"powershell", "-noexit", "-ExecutionPolicy", "Bypass", "-nologo", "-file", bannerScript,

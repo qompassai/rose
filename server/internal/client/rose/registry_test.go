@@ -1,4 +1,4 @@
-package ollama
+package rose
 
 import (
 	"bytes"
@@ -21,8 +21,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ollama/ollama/server/internal/cache/blob"
-	"github.com/ollama/ollama/server/internal/testutil"
+	"github.com/qompassai/rose/server/internal/cache/blob"
+	"github.com/qompassai/rose/server/internal/testutil"
 )
 
 func ExampleRegistry_cancelOnFirstError() {

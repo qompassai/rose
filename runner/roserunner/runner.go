@@ -1,4 +1,4 @@
-package ollamarunner
+package roserunner
 
 import (
 	"context"
@@ -23,15 +23,15 @@ import (
 
 	"golang.org/x/sync/semaphore"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/llm"
-	"github.com/ollama/ollama/ml"
-	"github.com/ollama/ollama/model"
-	"github.com/ollama/ollama/model/input"
-	"github.com/ollama/ollama/runner/common"
-	"github.com/ollama/ollama/sample"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/llm"
+	"github.com/qompassai/rose/ml"
+	"github.com/qompassai/rose/model"
+	"github.com/qompassai/rose/model/input"
+	"github.com/qompassai/rose/runner/common"
+	"github.com/qompassai/rose/sample"
 
-	_ "github.com/ollama/ollama/model/models"
+	_ "github.com/qompassai/rose/model/models"
 )
 
 type contextList struct {
@@ -273,7 +273,7 @@ type Server struct {
 
 	// vocab is a llama.cpp vocab required for gammar-based
 	// constrained generation (json mode, structured outputs)
-	// TODO: this is temporary until Ollama sampling supports
+	// TODO: this is temporary until Rose sampling supports
 	// constrained generation
 	vocab *sample.Vocab
 }
@@ -762,7 +762,7 @@ func Execute(args []string) error {
 		},
 	})
 	slog.SetDefault(slog.New(handler))
-	slog.Info("starting ollama engine")
+	slog.Info("starting rose engine")
 
 	server := &Server{
 		batchSize: *batchSize,

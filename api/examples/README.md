@@ -1,4 +1,4 @@
-# Ollama API Examples
+# Rose API Examples
 
 Run the examples in this directory with:
 
