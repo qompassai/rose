@@ -16,7 +16,7 @@ import (
 
 	"github.com/qompassai/rose/api"
 	"github.com/qompassai/rose/discover"
-	"github.com/qompssai/rose/envconfig"
+	"github.com/qompassai/rose/envconfig"
 	"github.com/qompassai/rose/format"
 	"github.com/qompassai/rose/fs/ggml"
 	"github.com/qompassai/rose/llm"
