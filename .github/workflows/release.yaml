@@ -264,7 +264,7 @@ jobs:
           Expand-Archive -Path "${{ runner.temp }}\plugin.zip" -DestinationPath "${{ runner.temp }}\plugin\"
           & "${{ runner.temp }}\plugin\*\kmscng.msi" /quiet
 
-          echo "${{ vars.OLLAMA_CERT }}" >rose_inc.crt
+          echo "${{ vars.ROSE_CERT }}" >rose_inc.crt
       - uses: actions/download-artifact@v4
         with:
           pattern: build-windows-*
