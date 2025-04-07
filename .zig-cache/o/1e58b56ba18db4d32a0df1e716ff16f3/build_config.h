@@ -1,0 +1,5 @@
+#pragma once
+#cmakedefine ENABLE_CPU_OPTIMIZATIONS
+#cmakedefine ENABLE_CUDA
+#cmakedefine ENABLE_INTEL_GPU
+#cmakedefine ENABLE_QUANTUM_CRYPTO
