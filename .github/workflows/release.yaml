@@ -20,7 +20,7 @@ jobs:
       - name: Set environment
         id: goflags
         run: |
-          echo GOFLAGS="'-ldflags=-w -s \"-X=github.com/ollama/ollama/version.Version=${GITHUB_REF_NAME#v}\" \"-X=github.com/ollama/ollama/server.mode=release\"'" >>$GITHUB_OUTPUT
+          echo GOFLAGS="'-ldflags=-w -s \"-X=github.com/qompassai/rose/version.Version=${GITHUB_REF_NAME#v}\" \"-X=github.com/qompassai/rose/server.mode=release\"'" >>$GITHUB_OUTPUT
 
   darwin-build:
     runs-on: macos-13
@@ -93,8 +93,8 @@ jobs:
         with:
           name: dist-darwin
           path: |
-            dist/Ollama-darwin.zip
-            dist/ollama-darwin.tgz
+            dist/Rose-darwin.zip
+            dist/rose-darwin.tgz
 
   windows-depends:
     strategy:
@@ -253,7 +253,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: google-github-actions/auth@v2
         with:
-          project_id: ollama
+          project_id: rose
           credentials_json: ${{ secrets.GOOGLE_SIGNING_CREDENTIALS }}
       - run: |
           $ErrorActionPreference = "Stop"
@@ -264,7 +264,7 @@ jobs:
           Expand-Archive -Path "${{ runner.temp }}\plugin.zip" -DestinationPath "${{ runner.temp }}\plugin\"
           & "${{ runner.temp }}\plugin\*\kmscng.msi" /quiet
 
-          echo "${{ vars.OLLAMA_CERT }}" >ollama_inc.crt
+          echo "${{ vars.OLLAMA_CERT }}" >rose_inc.crt
       - uses: actions/download-artifact@v4
         with:
           pattern: build-windows-*
@@ -283,8 +283,8 @@ jobs:
         with:
           name: dist-windows
           path: |
-            dist\OllamaSetup.exe
-            dist\ollama-windows-*.zip
+            dist\RoseSetup.exe
+            dist\rose-windows-*.zip
 
   linux-build:
     strategy:
@@ -317,18 +317,18 @@ jobs:
             CGO_CFLAGS=${{ env.CGO_CFLAGS }}
             CGO_CXXFLAGS=${{ env.CGO_CXXFLAGS }}
           outputs: type=local,dest=dist/${{ matrix.os }}-${{ matrix.arch }}
-          cache-from: type=registry,ref=ollama/ollama:latest
+          cache-from: type=registry,ref=qompass/rose:latest
           cache-to: type=inline
       - run: |
-          for COMPONENT in bin/* lib/ollama/*; do
+          for COMPONENT in bin/* lib/rose/*; do
             case "$COMPONENT" in
-              bin/ollama)               echo $COMPONENT >>ollama-${{ matrix.os }}-${{ matrix.arch }}.tar.in ;;
-              lib/ollama/*.so)          echo $COMPONENT >>ollama-${{ matrix.os }}-${{ matrix.arch }}.tar.in ;;
-              lib/ollama/cuda_v11)      echo $COMPONENT >>ollama-${{ matrix.os }}-${{ matrix.arch }}.tar.in ;;
-              lib/ollama/cuda_v12)      echo $COMPONENT >>ollama-${{ matrix.os }}-${{ matrix.arch }}.tar.in ;;
-              lib/ollama/cuda_jetpack5) echo $COMPONENT >>ollama-${{ matrix.os }}-${{ matrix.arch }}-jetpack5.tar.in ;;
-              lib/ollama/cuda_jetpack6) echo $COMPONENT >>ollama-${{ matrix.os }}-${{ matrix.arch }}-jetpack6.tar.in ;;
-              lib/ollama/rocm)          echo $COMPONENT >>ollama-${{ matrix.os }}-${{ matrix.arch }}-rocm.tar.in ;;
+              bin/rose)               echo $COMPONENT >>rose-${{ matrix.os }}-${{ matrix.arch }}.tar.in ;;
+              lib/rose/*.so)          echo $COMPONENT >>rose-${{ matrix.os }}-${{ matrix.arch }}.tar.in ;;
+              lib/rose/cuda_v11)      echo $COMPONENT >>rose-${{ matrix.os }}-${{ matrix.arch }}.tar.in ;;
+              lib/rose/cuda_v12)      echo $COMPONENT >>rose-${{ matrix.os }}-${{ matrix.arch }}.tar.in ;;
+              lib/rose/cuda_jetpack5) echo $COMPONENT >>rose-${{ matrix.os }}-${{ matrix.arch }}-jetpack5.tar.in ;;
+              lib/rose/cuda_jetpack6) echo $COMPONENT >>rose-${{ matrix.os }}-${{ matrix.arch }}-jetpack6.tar.in ;;
+              lib/rose/rocm)          echo $COMPONENT >>rose-${{ matrix.os }}-${{ matrix.arch }}-rocm.tar.in ;;
             esac
           done
         working-directory: dist/${{ matrix.os }}-${{ matrix.arch }}
@@ -385,8 +385,8 @@ jobs:
           context: .
           platforms: ${{ matrix.os }}/${{ matrix.arch }}
           build-args: ${{ matrix.build-args }}
-          outputs: type=image,name=ollama/ollama,push-by-digest=true,name-canonical=true,push=true
-          cache-from: type=registry,ref=ollama/ollama:latest
+          outputs: type=image,name=qompassai/rose,push-by-digest=true,name-canonical=true,push=true
+          cache-from: type=registry,ref=qompassai/rose:latest
           cache-to: type=inline
       - run: |
           mkdir -p ${{ matrix.os }}-${{ matrix.arch }}
@@ -418,7 +418,7 @@ jobs:
             latest=false
             suffix=${{ matrix.suffix }}
           images: |
-            ollama/ollama
+            qompass/rose
           tags: |
             type=ref,enable=true,priority=600,prefix=pr-,event=pr
             type=semver,pattern={{version}}
@@ -428,8 +428,8 @@ jobs:
           path: ${{ runner.temp }}
           merge-multiple: true
       - run: |
-          docker buildx imagetools create $(echo '${{ steps.metadata.outputs.json }}' | jq -cr '.tags | map("-t", .) | join(" ")') $(cat *-${{ matrix.suffix }}.txt | xargs printf 'ollama/ollama@%s ')
-          docker buildx imagetools inspect ollama/ollama:${{ steps.metadata.outputs.version }}
+          docker buildx imagetools create $(echo '${{ steps.metadata.outputs.json }}' | jq -cr '.tags | map("-t", .) | join(" ")') $(cat *-${{ matrix.suffix }}.txt | xargs printf 'qompass/rose@%s ')
+          docker buildx imagetools inspect qompass/rose:${{ steps.metadata.outputs.version }}
         working-directory: ${{ runner.temp }}
 
   # Aggregate all the assets and ship a release
