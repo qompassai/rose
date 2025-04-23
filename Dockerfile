@@ -5,7 +5,7 @@ ARG FLAVOR=${TARGETARCH}
 ARG ROCMVERSION=6.3.3
 ARG JETPACK5VERSION=r35.4.1
 ARG JETPACK6VERSION=r36.4.0
-ARG CMAKEVERSION=3.31.2
+ARG CMAKEVERSION=4.0.0
 
 # CUDA v11 requires gcc v10.  v10.3 has regressions, so the rockylinux 8.5 AppStream has the latest compatible version
 FROM --platform=linux/amd64 rocm/dev-almalinux-8:${ROCMVERSION}-complete AS base-amd64
@@ -26,7 +26,7 @@ ENV CC=clang CXX=clang++
 FROM base-${TARGETARCH} AS base
 ARG CMAKEVERSION
 RUN curl -fsSL https://github.com/Kitware/CMake/releases/download/v${CMAKEVERSION}/cmake-${CMAKEVERSION}-linux-$(uname -m).tar.gz | tar xz -C /usr/local --strip-components 1
-COPY CMakeLists.txt CMakePresets.json .
+COPY CMakeLists.txt CMakePresets.json ./
 COPY ml/backend/ggml/ggml ml/backend/ggml/ggml
 ENV LDFLAGS=-s
 
@@ -67,7 +67,7 @@ FROM --platform=linux/arm64 nvcr.io/nvidia/l4t-jetpack:${JETPACK5VERSION} AS jet
 ARG CMAKEVERSION
 RUN apt-get update && apt-get install -y curl ccache \
     && curl -fsSL https://github.com/Kitware/CMake/releases/download/v${CMAKEVERSION}/cmake-${CMAKEVERSION}-linux-$(uname -m).tar.gz | tar xz -C /usr/local --strip-components 1
-COPY CMakeLists.txt CMakePresets.json .
+COPY CMakeLists.txt CMakePresets.json ./
 COPY ml/backend/ggml/ggml ml/backend/ggml/ggml
 RUN --mount=type=cache,target=/root/.ccache \
     cmake --preset 'JetPack 5' \
@@ -95,7 +95,7 @@ COPY . .
 ARG GOFLAGS="'-ldflags=-w -s'"
 ENV CGO_ENABLED=1
 RUN --mount=type=cache,target=/root/.cache/go-build \
-    go build -trimpath -buildmode=pie -o /bin/rose .
+    go build -trimpath -buildmode=pie -o /bin/rose ./
 
 FROM --platform=linux/amd64 scratch AS amd64
 COPY --from=cuda-11 dist/lib/rose/cuda_v11 /lib/rose/cuda_v11

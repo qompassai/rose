@@ -41,11 +41,11 @@ Install the [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-
     sudo yum install -y nvidia-container-toolkit
     ```
 
-#### Configure Docker to use Nvidia driver
+#### Configure Rootless Docker to use Nvidia driver
 
 ```shell
-sudo nvidia-ctk runtime configure --runtime=docker
-sudo systemctl restart docker
+nvidia-ctk runtime configure --runtime=docker
+systemctl --user restart docker
 ```
 
 #### Start the container
