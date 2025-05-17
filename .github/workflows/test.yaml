@@ -19,7 +19,7 @@ on:
 
 jobs:
   changes:
-    runs-on: ubuntu-latest
+     runs-on: [self-hosted, linux, x64] 
     outputs:
       changed: ${{ steps.changes.outputs.changed }}
     steps:
@@ -141,7 +141,7 @@ jobs:
           CMAKE_GENERATOR: Ninja
 
   go_mod_tidy:
-    runs-on: ubuntu-latest
+     runs-on: [self-hosted, linux, x64] 
     steps:
       - uses: actions/checkout@v4
       - name: check that 'go mod tidy' is clean
@@ -232,7 +232,7 @@ jobs:
           key: ${{ github.job }}-${{ runner.os }}-${{ matrix.goarch }}-${{ matrix.buildflags }}-go-3-${{ hashFiles('**/go.sum') }}-${{ github.run_id }}
 
   patches:
-    runs-on: ubuntu-latest
+     runs-on: [self-hosted, linux, x64] 
     steps:
       - uses: actions/checkout@v4
       - name: Verify patches apply cleanly and do not change files

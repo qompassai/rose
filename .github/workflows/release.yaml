@@ -11,7 +11,7 @@ env:
 
 jobs:
   setup-environment:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64] 
     environment: release
     outputs:
       GOFLAGS: ${{ steps.goflags.outputs.GOFLAGS }}
