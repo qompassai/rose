@@ -1,38 +1,33 @@
 {
-  "title": "The Responsible Open Science Engine",
-  "description": "Empowering you to navigate the Deep Waters of Deep Tech.",
-  "license": ["AGPL-3.0", "Q-CDA"],
-  "related_identifiers": [
-    {
-      "identifier": "https://github.com/qompassai/rose",
-      "relation": "isSupplementTo",
-      "resource_type": "software"
-    }
-  ],
+  "title": "rose",
+  "description": "",
+  "license": "Q-CDA-1.0",
+  "language": "eng",
   "upload_type": "software",
   "access_right": "open",
-  "version": "2025.04.02",
+  "version": "56fc87e",
+  "publication_date": "2025-05-17",
   "creators": [
     {
       "name": "Porter, Matthew A.",
       "affiliation": "Qompass AI",
-      "orcid": "0000-0002-0302-4812"
+      "orcid": "0000-0002-0302-4812",
+      "type": "Author"
     }
   ],
-  "notes": "This software is dual-licensed under AGPL-3.0 and the Qompass Commercial Distribution Agreement (Q-CDA). The AGPL-3.0 applies to the source code, while the Q-CDA provides additional permissions and constraints for distribution.",
-  "keywords": [
-    "AI",
-    "LLM",
-    "Large Language Models",
-    "Local Inference",
-    "Quantum-Safe",
-    "Open Source",
-    "GGUF"
+  "keywords": ["AI","Education","Healthcare","Post-Quantum Cryptography","Quantum","cloud native","concurrency","go"],
+  "related_identifiers": [
+    { "identifier": "https://github.com/qompassai/rose", "relation": "isSupplementTo", "resource_type": "software" },
+    { "identifier": "https://github.com/qompassai/rose/releases/tag/v2025-05-17", "relation": "isIdenticalTo", "resource_type": "software" },
+    { "identifier": "https://orcid.org/0000-0002-0302-4812", "relation": "isAuthorOf", "resource_type": "person" },
+    { "identifier": "https://github.com/qompassai/rose/actions", "relation": "isCompiledBy", "resource_type": "workflow" },
+    { "identifier": "https://loop.frontiersin.org/people/2230223", "relation": "isAuthorOf", "resource_type": "person" },
+    { "identifier": "https://www.webofscience.com/wos/author/HNQ-0292-2023", "relation": "isIdenticalTo", "resource_type": "person" },
+    { "identifier": "https://www.scopus.com/authid/detail.uri?authorId=57385910700", "relation": "isIdenticalTo", "resource_type": "person" }
   ],
-  "grants": [
-    {
-      "id": "Service Disabled Veteran Owned Business"
-    }
+  "communities": [ { "identifier": "qompassai" } ],
+  "contributors": [
+    { "name": "Porter, Matthew A.", "orcid": "https://orcid.org/0000-0002-0302-4812", "type": "Author" },
+    { "name": "Qompass AI", "type": "Sponsor" }
   ]
 }
-
