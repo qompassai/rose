@@ -11,7 +11,8 @@ export OSXCROSS_SDK="/opt/osxcross/SDK/MacOSX15.4.sdk"
 export CGO_ENABLED=1
 
 OUTPUT_DIR="releases"
-mkdir -p "$OUTPUT_DIR"
+mkdir -p "$OUTPUT_DIR" || exit 1
+build_failed=0
 
 TARGETS=(
   "linux/amd64:tar.gz"
@@ -60,8 +61,6 @@ build_standard() {
     fi
   fi
   
-  export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/opt/liboqs/lib/pkgconfig
-  
   GOOS=$goos GOARCH=$goarch go build \
     -ldflags "-X main.EnabledBackends=standard -X main.Version=$PACKAGE_VERSION" \
     -o "$output_file" ./main.go
@@ -76,11 +75,15 @@ if [[ "$(uname)" == "Linux" ]]; then
   native_output="$OUTPUT_DIR/$PACKAGE_NAME-$PACKAGE_VERSION-native"
   
   if build_with_cuda_vulkan "$native_output"; then
-    tar -czvf "${native_output}.tar.gz" "$native_output"
-    rm "$native_output"
-    echo "✅ Native build with CUDA/Vulkan completed successfully!"
+    if tar -czvf "${native_output}.tar.gz" "$native_output" && rm "$native_output"; then
+      echo "Native build with CUDA/Vulkan completed successfully."
+    else
+      echo "Native build packaging failed." >&2
+      build_failed=1
+    fi
   else
     echo "❌ Native build with CUDA/Vulkan failed!"
+    build_failed=1
   fi
 fi
 
@@ -98,26 +101,35 @@ for target in "${TARGETS[@]}"; do
     output_file="${output_file}.exe"
   fi
   
-  build_standard "$output_file" "$goos" "$goarch"
-  
-  if [ $? -ne 0 ]; then
+  if ! build_standard "$output_file" "$goos" "$goarch"; then
     echo "❌ Build failed for $goos/$goarch"
+    build_failed=1
     continue
   fi
   
   if [ "$goos" = "windows" ]; then
-    (cd "$OUTPUT_DIR" && zip "${file_name}.zip" "$(basename "$output_file")" && rm "$(basename "$output_file")")
+    if ! (cd "$OUTPUT_DIR" && zip "${file_name}.zip" "$(basename "$output_file")" && rm "$(basename "$output_file")"); then
+      build_failed=1
+      continue
+    fi
   else
-    tar -czvf "${output_file}.tar.gz" "$output_file"
-    rm "$output_file"
+    if ! { tar -czvf "${output_file}.tar.gz" "$output_file" && rm "$output_file"; }; then
+      build_failed=1
+      continue
+    fi
   fi
   
   echo "✅ Finished building for $goos/$goarch"
 done
 
+if [ "$build_failed" -ne 0 ]; then
+  echo "One or more builds or archives failed; this is not a complete release." >&2
+  exit 1
+fi
+
 echo "All builds completed successfully! Binaries available in $OUTPUT_DIR/"
 
 echo "Generating checksums..."
-(cd "$OUTPUT_DIR" && sha256sum * > checksums.txt)
+(cd "$OUTPUT_DIR" && sha256sum -- *.tar.gz *.zip > checksums.txt) || exit 1
 
 echo "Build process complete!"

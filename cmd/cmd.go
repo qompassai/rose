@@ -35,6 +35,7 @@ import (
 	"github.com/qompassai/rose/api"
 	"github.com/qompassai/rose/envconfig"
 	"github.com/qompassai/rose/format"
+	"github.com/qompassai/rose/internal/transport"
 	"github.com/qompassai/rose/parser"
 	"github.com/qompassai/rose/progress"
 	"github.com/qompassai/rose/runner"
@@ -1073,14 +1074,22 @@ func generate(cmd *cobra.Command, opts runOptions) error {
 }
 
 func RunServer(_ *cobra.Command, _ []string) error {
+	host, err := envconfig.HostURL()
+	if err != nil {
+		return err
+	}
+	if _, err := transport.ServerTLSConfig(host, envconfig.TLSFiles()); err != nil {
+		return err
+	}
 	if err := initializeKeypair(); err != nil {
 		return err
 	}
 
-	ln, err := net.Listen("tcp", envconfig.Host().Host)
+	ln, err := net.Listen("tcp", host.Host)
 	if err != nil {
 		return err
 	}
+	defer ln.Close()
 
 	err = server.Serve(ln)
 	if errors.Is(err, http.ErrServerClosed) {

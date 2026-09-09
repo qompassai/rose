@@ -156,7 +156,7 @@ func TestRoutes(t *testing.T) {
 				if err != nil {
 					t.Fatalf("failed to read response body: %v", err)
 				}
-				expectedBody := fmt.Sprintf(`{"version":"%s"}`, version.Version)
+				expectedBody := fmt.Sprintf(`{"version":"%s","backend":"rose","protocol":"rose-hybrid-mtls-v1"}`, version.Version)
 				if string(body) != expectedBody {
 					t.Errorf("expected body %s, got %s", expectedBody, string(body))
 				}

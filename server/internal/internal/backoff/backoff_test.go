@@ -1,11 +1,8 @@
-//go:build goexperiment.synctest
-
 package backoff
 
 import (
 	"context"
 	"testing"
-	"testing/synctest"
 	"time"
 )
 
@@ -30,11 +27,11 @@ func TestLoopAllocs(t *testing.T) {
 
 func BenchmarkLoop(b *testing.B) {
 	ctx := context.Background()
-	synctest.Run(func() {
-		for n := range Loop(ctx, 100*time.Millisecond) {
-			if n == b.N {
-				break
-			}
+	// synctest.Test accepts tests, not benchmarks. Keep the real timer wait
+	// minimal so this measures loop/timer overhead rather than backoff latency.
+	for n := range Loop(ctx, time.Nanosecond) {
+		if n == b.N {
+			break
 		}
-	})
+	}
 }

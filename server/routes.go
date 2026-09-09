@@ -31,6 +31,7 @@ import (
 	"github.com/qompassai/rose/discover"
 	"github.com/qompassai/rose/envconfig"
 	"github.com/qompassai/rose/fs/ggml"
+	"github.com/qompassai/rose/internal/transport"
 	"github.com/qompassai/rose/llm"
 	"github.com/qompassai/rose/model/models/mllama"
 	"github.com/qompassai/rose/openai"
@@ -1175,8 +1176,8 @@ func (s *Server) GenerateRoutes(rc *rose.Registry) (http.Handler, error) {
 	// General
 	r.HEAD("/", func(c *gin.Context) { c.String(http.StatusOK, "Rose is running") })
 	r.GET("/", func(c *gin.Context) { c.String(http.StatusOK, "Rose is running") })
-	r.HEAD("/api/version", func(c *gin.Context) { c.JSON(http.StatusOK, gin.H{"version": version.Version}) })
-	r.GET("/api/version", func(c *gin.Context) { c.JSON(http.StatusOK, gin.H{"version": version.Version}) })
+	r.HEAD("/api/version", versionHandler)
+	r.GET("/api/version", versionHandler)
 
 	// Local model cache management (new implementation is at end of function)
 	r.POST("/api/pull", s.PullHandler)
@@ -1221,13 +1222,43 @@ func (s *Server) GenerateRoutes(rc *rose.Registry) (http.Handler, error) {
 	return r, nil
 }
 
+func versionHandler(c *gin.Context) {
+	c.JSON(http.StatusOK, api.VersionResponse{
+		Version: version.Version, Backend: "rose", Protocol: "rose-hybrid-mtls-v1",
+	})
+}
+
+// Serve owns ln on every return path. Configuration and the actual listener
+// address are validated before filesystem or model initialization.
 func Serve(ln net.Listener) error {
+	if ln == nil {
+		return errors.New("server listener is nil")
+	}
+	defer ln.Close()
+	host, err := envconfig.HostURL()
+	if err != nil {
+		return err
+	}
+	config, err := transport.ServerTLSConfig(host, envconfig.TLSFiles())
+	if err != nil {
+		return err
+	}
+	listener, err := transport.WrapListener(ln, config)
+	if err != nil {
+		return err
+	}
+	defer listener.Close()
+	configureServerLogging()
+	slog.Info("server config", "host", host.String(), "tls", config != nil)
+	return serve(listener)
+}
+
+func configureServerLogging() {
 	level := slog.LevelInfo
 	if envconfig.Debug() {
 		level = slog.LevelDebug
 	}
 
-	slog.Info("server config", "env", envconfig.Values())
 	handler := slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{
 		Level:     level,
 		AddSource: true,
@@ -1242,7 +1273,9 @@ func Serve(ln net.Listener) error {
 	})
 
 	slog.SetDefault(slog.New(handler))
+}
 
+func prepareModelStorage() error {
 	blobsDir, err := GetBlobsPath("")
 	if err != nil {
 		return err
@@ -1270,7 +1303,13 @@ func Serve(ln net.Listener) error {
 			}
 		}
 	}
+	return nil
+}
 
+func serve(ln net.Listener) error {
+	if err := prepareModelStorage(); err != nil {
+		return err
+	}
 	s := &Server{addr: ln.Addr()}
 
 	var rc *rose.Registry
@@ -1287,51 +1326,51 @@ func Serve(ln net.Listener) error {
 		return err
 	}
 
-	http.Handle("/", h)
-
-	ctx, done := context.WithCancel(context.Background())
-	schedCtx, schedDone := context.WithCancel(ctx)
-	sched := InitScheduler(schedCtx)
-	s.sched = sched
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	s.sched = InitScheduler(ctx)
+	defer s.sched.unloadAllRunners()
+	defer stop()
 
 	slog.Info(fmt.Sprintf("Listening on %s (version %s)", ln.Addr(), version.Version))
-	srvr := &http.Server{
-		// Use http.DefaultServeMux so we get net/http/pprof for
-		// free.
-		//
-		// TODO(bmizerany): Decide if we want to make this
-		// configurable so it is not exposed by default, or allow
-		// users to bind it to a different port. This was a quick
-		// and easy way to get pprof, but it may not be the best
-		// way.
-		Handler: nil,
-	}
-
-	// listen for a ctrl+c and stop any loaded llm
-	signals := make(chan os.Signal, 1)
-	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
-	go func() {
-		<-signals
-		srvr.Close()
-		schedDone()
-		sched.unloadAllRunners()
-		done()
-	}()
-
-	s.sched.Run(schedCtx)
+	srvr := newHTTPServer(h, ctx)
+	defer srvr.Close()
+	s.sched.Run(ctx)
 
 	// At startup we retrieve GPU information so we can get log messages before loading a model
 	// This will log warnings to the log in case we have problems with detected GPUs
 	gpus := discover.GetGPUInfo()
 	gpus.LogDetails()
 
-	err = srvr.Serve(ln)
-	// If server is closed from the signal handler, wait for the ctx to be done
-	// otherwise error out quickly
-	if !errors.Is(err, http.ErrServerClosed) {
+	return serveHTTP(ctx, srvr, ln)
+}
+
+func newHTTPServer(h http.Handler, ctx context.Context) *http.Server {
+	return &http.Server{
+		Handler: h, ReadHeaderTimeout: transport.ReadHeaderTimeout,
+		IdleTimeout: transport.IdleTimeout, MaxHeaderBytes: transport.MaxHeaderBytes,
+		BaseContext: func(net.Listener) context.Context { return ctx },
+	}
+}
+
+func serveHTTP(ctx context.Context, srvr *http.Server, ln net.Listener) error {
+	stopped := make(chan struct{})
+	watcherDone := make(chan struct{})
+	defer func() {
+		close(stopped)
+		<-watcherDone
+		srvr.Close()
+	}()
+	go func() {
+		defer close(watcherDone)
+		select {
+		case <-ctx.Done():
+			srvr.Close()
+		case <-stopped:
+		}
+	}()
+	if err := srvr.Serve(ln); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		return err
 	}
-	<-ctx.Done()
 	return nil
 }
 

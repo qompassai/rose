@@ -12,6 +12,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/qompassai/rose/internal/transport"
 )
 
 // Host returns the scheme and host. Host can be configured via the ROSE_HOST environment variable.
@@ -42,7 +44,7 @@ func Host() *url.URL {
 	}
 
 	if n, err := strconv.ParseInt(port, 10, 32); err != nil || n > 65535 || n < 0 {
-		slog.Warn("invalid port, using default", "port", port, "default", defaultPort)
+		slog.Warn("invalid ROSE_HOST port, using default", "default", defaultPort)
 		port = defaultPort
 	}
 
@@ -50,6 +52,20 @@ func Host() *url.URL {
 		Scheme: scheme,
 		Host:   net.JoinHostPort(host, port),
 		Path:   path,
+	}
+}
+
+// HostURL is the strict, error-returning endpoint parser used for network I/O.
+// Host remains a compatibility formatter, not a security validation function.
+func HostURL() (*url.URL, error) {
+	return transport.ParseEndpoint(Var("ROSE_HOST"))
+}
+
+// TLSFiles returns credential paths; it never reads or logs credential contents.
+func TLSFiles() transport.Files {
+	return transport.Files{
+		CertFile: Var("ROSE_TLS_CERT"), KeyFile: Var("ROSE_TLS_KEY"),
+		ClientCAFile: Var("ROSE_TLS_CLIENT_CA"), CAFile: Var("ROSE_TLS_CA"),
 	}
 }
 
@@ -243,6 +259,10 @@ func AsMap() map[string]EnvVar {
 		"ROSE_KV_CACHE_TYPE":     {"ROSE_KV_CACHE_TYPE", KvCacheType(), "Quantization type for the K/V cache (default: f16)"},
 		"ROSE_GPU_OVERHEAD":      {"ROSE_GPU_OVERHEAD", GpuOverhead(), "Reserve a portion of VRAM per GPU (bytes)"},
 		"ROSE_HOST":              {"ROSE_HOST", Host(), "IP Address for the rose server (default 127.0.0.1:11434)"},
+		"ROSE_TLS_CERT":          {"ROSE_TLS_CERT", Var("ROSE_TLS_CERT"), "PEM identity certificate chain for explicit HTTPS"},
+		"ROSE_TLS_KEY":           {"ROSE_TLS_KEY", Var("ROSE_TLS_KEY"), "PEM private key file for explicit HTTPS (owner-only permissions)"},
+		"ROSE_TLS_CLIENT_CA":     {"ROSE_TLS_CLIENT_CA", Var("ROSE_TLS_CLIENT_CA"), "PEM CA bundle required to verify HTTPS client certificates on the server"},
+		"ROSE_TLS_CA":            {"ROSE_TLS_CA", Var("ROSE_TLS_CA"), "PEM CA bundle replacing system server roots for the HTTPS API client"},
 		"ROSE_KEEP_ALIVE":        {"ROSE_KEEP_ALIVE", KeepAlive(), "The duration that models stay loaded in memory (default \"5m\")"},
 		"ROSE_LLM_LIBRARY":       {"ROSE_LLM_LIBRARY", LLMLibrary(), "Set LLM library to bypass autodetection"},
 		"ROSE_LOAD_TIMEOUT":      {"ROSE_LOAD_TIMEOUT", LoadTimeout(), "How long to allow model loads to stall before giving up (default \"5m\")"},
@@ -286,7 +306,22 @@ func AsMap() map[string]EnvVar {
 func Values() map[string]string {
 	vals := make(map[string]string)
 	for k, v := range AsMap() {
-		vals[k] = fmt.Sprintf("%v", v.Value)
+		switch {
+		case k == "ROSE_HOST":
+			if host, err := HostURL(); err == nil {
+				vals[k] = host.String()
+			} else {
+				vals[k] = "[invalid endpoint]"
+			}
+		case strings.HasSuffix(strings.ToUpper(k), "_PROXY") || strings.HasPrefix(k, "ROSE_TLS_"):
+			if Var(k) != "" {
+				vals[k] = "[configured]"
+			} else {
+				vals[k] = ""
+			}
+		default:
+			vals[k] = fmt.Sprintf("%v", v.Value)
+		}
 	}
 	return vals
 }

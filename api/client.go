@@ -27,6 +27,7 @@ import (
 
 	"github.com/qompassai/rose/envconfig"
 	"github.com/qompassai/rose/format"
+	"github.com/qompassai/rose/internal/transport"
 	"github.com/qompassai/rose/version"
 )
 
@@ -61,14 +62,25 @@ func checkError(resp *http.Response, body []byte) error {
 //	<scheme>://<host>:<port>
 //
 // If the variable is not specified, a default rose host and port will be
-// used.
+// used. Plaintext requires a literal loopback IP. Explicit HTTPS requires
+// ROSE_TLS_CERT and ROSE_TLS_KEY, with optional ROSE_TLS_CA server roots.
+// Redirects and environment proxies are disabled. Use request contexts to bound
+// overall duration; streaming responses and blob uploads have no total size cap.
 func ClientFromEnvironment() (*Client, error) {
-	return &Client{
-		base: envconfig.Host(),
-		http: http.DefaultClient,
-	}, nil
+	base, err := envconfig.HostURL()
+	if err != nil {
+		return nil, err
+	}
+	client, err := transport.NewHTTPClient(base, envconfig.TLSFiles())
+	if err != nil {
+		return nil, err
+	}
+	return NewClient(base, client), nil
 }
 
+// NewClient is an explicit integration API. The caller owns the supplied HTTP
+// client's TLS, authentication, proxy, redirect and timeout policy; unlike
+// ClientFromEnvironment, this function does not harden or validate it.
 func NewClient(base *url.URL, http *http.Client) *Client {
 	return &Client{
 		base: base,
@@ -112,7 +124,7 @@ func (c *Client) do(ctx context.Context, method, path string, reqData, respData 
 	}
 	defer respObj.Body.Close()
 
-	respBody, err := io.ReadAll(respObj.Body)
+	respBody, err := readJSONResponse(respObj.Body)
 	if err != nil {
 		return err
 	}
@@ -127,6 +139,17 @@ func (c *Client) do(ctx context.Context, method, path string, reqData, respData 
 		}
 	}
 	return nil
+}
+
+func readJSONResponse(body io.Reader) ([]byte, error) {
+	data, err := io.ReadAll(io.LimitReader(body, transport.MaxJSONResponseBytes+1))
+	if err != nil {
+		return nil, err
+	}
+	if len(data) > transport.MaxJSONResponseBytes {
+		return nil, fmt.Errorf("API JSON response exceeds %d bytes", transport.MaxJSONResponseBytes)
+	}
+	return data, nil
 }
 
 const maxBufferSize = 512 * format.KiloByte
@@ -157,6 +180,13 @@ func (c *Client) stream(ctx context.Context, method, path string, data any, fn f
 		return err
 	}
 	defer response.Body.Close()
+	if response.StatusCode >= http.StatusBadRequest {
+		body, err := readJSONResponse(response.Body)
+		if err != nil {
+			return err
+		}
+		return checkError(response, body)
+	}
 
 	scanner := bufio.NewScanner(response.Body)
 	// increase the buffer size to avoid running out of space
@@ -176,20 +206,12 @@ func (c *Client) stream(ctx context.Context, method, path string, data any, fn f
 			return errors.New(errorResponse.Error)
 		}
 
-		if response.StatusCode >= http.StatusBadRequest {
-			return StatusError{
-				StatusCode:   response.StatusCode,
-				Status:       response.Status,
-				ErrorMessage: errorResponse.Error,
-			}
-		}
-
 		if err := fn(bts); err != nil {
 			return err
 		}
 	}
 
-	return nil
+	return scanner.Err()
 }
 
 // GenerateResponseFunc is a function that [Client.Generate] invokes every time
@@ -366,15 +388,28 @@ func (c *Client) CreateBlob(ctx context.Context, digest string, r io.Reader) err
 	return c.do(ctx, http.MethodPost, fmt.Sprintf("/api/blobs/%s", digest), r, nil)
 }
 
+// VersionResponse retains the compatible version field and identifies Rose's
+// protocol capability. These fields do not attest to the current connection.
+type VersionResponse struct {
+	Version  string `json:"version"`
+	Backend  string `json:"backend,omitempty"`
+	Protocol string `json:"protocol,omitempty"`
+}
+
+// VersionInfo returns typed backend identity and protocol capability metadata.
+func (c *Client) VersionInfo(ctx context.Context) (*VersionResponse, error) {
+	var response VersionResponse
+	if err := c.do(ctx, http.MethodGet, "/api/version", nil, &response); err != nil {
+		return nil, err
+	}
+	return &response, nil
+}
+
 // Version returns the Rose server version as a string.
 func (c *Client) Version(ctx context.Context) (string, error) {
-	var version struct {
-		Version string `json:"version"`
-	}
-
-	if err := c.do(ctx, http.MethodGet, "/api/version", nil, &version); err != nil {
+	response, err := c.VersionInfo(ctx)
+	if err != nil {
 		return "", err
 	}
-
-	return version.Version, nil
+	return response.Version, nil
 }

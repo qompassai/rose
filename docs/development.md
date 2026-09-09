@@ -2,7 +2,9 @@
 
 Install prerequisites:
 
-- [Go](https://go.dev/doc/install)
+- [Go 1.27.1](https://go.dev/doc/devel/release) or a later patched Go 1.27 toolchain.
+  The minimum is recorded in `go.mod`; cryptography uses the Go standard library,
+  not a separately installed liboqs shared library.
 - C/C++ Compiler e.g. Clang on macOS, [TDM-GCC](https://github.com/jmeubank/tdm-gcc/releases/latest) (Windows amd64) or [llvm-mingw](https://github.com/mstorsjo/llvm-mingw) (Windows arm64), GCC/Clang on Linux.
 
 Then build and run Rose from the root directory of the repository:
@@ -118,34 +120,13 @@ To run tests, use `go test`:
 go test ./...
 ```
 
-> NOTE: In rare cirumstances, you may nedd to change a package using the new
-> "synctest" package in go1.24.
->
-> If you do not have the "synctest" package enabled, you will not see build or
-> test failures resulting from your change(s), if any, locally, but CI will
-> break.
->
-> If you see failures in CI, you can either keep pushing changes to see if the
-> CI build passes, or you can enable the "synctest" package locally to see the
-> failures before pushing.
->
-> To enable the "synctest" package for testing, run the following command:
->
-> ```shell
-> GOEXPERIMENT=synctest go test ./...
-> ```
->
-> If you wish to enable synctest for all go commands, you can set the
-> `GOEXPERIMENT` environment variable in your shell profile or by using:
->
-> ```shell
-> go env -w GOEXPERIMENT=synctest
-> ```
->
-> Which will enable the "synctest" package for all go commands without needing
-> to set it for all shell sessions.
->
-> The synctest package is not required for production builds.
+Concurrency tests use the stable `testing/synctest.Test` API and run without
+experimental build tags. Remove any old `GOEXPERIMENT=synctest` setting from your
+test command or shell configuration; do not exclude these tests to obtain a pass.
+
+For integration and security changes, follow [the engineering playbook](../SKILLS.md).
+Full inference builds still need the platform's C/C++ and acceleration dependencies;
+passing the pure-Go transport and authentication tests is not a full inference test.
 
 ## Library detection
 

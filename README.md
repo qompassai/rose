@@ -5,6 +5,16 @@
 
 <h2> Qompass AI Responsible Open Science Engine aka Qompass "Rose" </h2>
 
+## Rose with Neovim
+
+Rose is the default local backend for [rose.nvim](https://github.com/qompassai/rose.nvim).
+Build with Go 1.27.1 or a later patched Go 1.27 toolchain, run `rose serve`, and
+configure the editor with `require("rose").setup({})`.
+
+The default endpoint is `http://127.0.0.1:11434`. Plain HTTP is loopback-only;
+remote access requires mutual TLS 1.3 with hybrid X25519 + ML-KEM-768 key exchange.
+See [Neovim setup](docs/neovim.md), [security and key migration](docs/security.md),
+and [development](docs/development.md) before exposing a listener.
 
 ![Repository Views](https://komarev.com/ghpvc/?username=qompassai-rose)
 ![GitHub all releases](https://img.shields.io/github/downloads/qompassai/rose/total?style=flat-square)

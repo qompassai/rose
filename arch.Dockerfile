@@ -85,8 +85,10 @@ RUN --mount=type=cache,target=/root/.ccache \
 FROM base AS build
 WORKDIR /go/src/github.com/qompassai/rose
 COPY go.mod go.sum ./
-RUN pacman -S --noconfirm go && \
-    go mod download
+COPY --from=golang:1.27.1 /usr/local/go /usr/local/go
+ENV PATH=/usr/local/go/bin:$PATH
+ENV GOTOOLCHAIN=local
+RUN test "$(go env GOVERSION)" = "go$(awk '/^go / { print $2 }' go.mod)" && go mod download
 COPY . .
 ARG GOFLAGS="'-ldflags=-w -s'"
 ENV CGO_ENABLED=1
@@ -120,8 +122,7 @@ COPY --from=archive /lib/rose /usr/lib/rose
 ENV LD_LIBRARY_PATH=/usr/local/nvidia/lib:/usr/local/nvidia/lib64
 ENV NVIDIA_DRIVER_CAPABILITIES=compute,utility
 ENV NVIDIA_VISIBLE_DEVICES=all
-ENV ROSE_HOST=0.0.0.0:11434
+ENV ROSE_HOST=127.0.0.1:11434
 EXPOSE 11434
 ENTRYPOINT ["/bin/rose"]
 CMD ["serve"]
-
