@@ -77,7 +77,11 @@ type LlamaServer interface {
 }
 
 type LlamaServerConfig struct {
-	DisableJinja         bool
+	DisableJinja bool
+	// ChatTemplateFile, when set, is a jinja chat template file that
+	// llama-server must use in place of the model's GGUF-embedded
+	// chat template (a template supplied at model-create time).
+	ChatTemplateFile     string
 	ContextShift         bool
 	EnableMTP            bool
 	ManifestDigest       string

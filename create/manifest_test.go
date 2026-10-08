@@ -326,3 +326,73 @@ func readManifestLayerJSON(t *testing.T, layer manifest.Layer, dst any) {
 		t.Fatal(err)
 	}
 }
+
+const jinjaToolTemplate = `{%- if tools %}
+{%- for tool in tools %}{{ tool | tojson }}
+{% endfor %}
+{%- endif %}
+{%- for message in messages %}<|im_start|>{{ message.role }}
+{{ message.content }}<|im_end|>
+{% endfor %}`
+
+func TestApplyModelfileLayersStoresJinjaAsChatTemplate(t *testing.T) {
+	t.Setenv("ROSE_MODELS", t.TempDir())
+
+	// Start from a Go template layer: a jinja TEMPLATE must replace it,
+	// not coexist with it.
+	layers, err := ApplyModelfileLayers(nil, ModelfileLayerOptions{Template: "{{ .Prompt }}"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	layers, err = ApplyModelfileLayers(layers, ModelfileLayerOptions{Template: jinjaToolTemplate})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	counts := make(map[string]int)
+	var got string
+	for _, layer := range layers {
+		counts[layer.MediaType]++
+		if layer.MediaType == manifest.MediaTypeImageChatTemplate {
+			got = readManifestLayerString(t, layer)
+		}
+	}
+	if counts[manifest.MediaTypeImageChatTemplate] != 1 {
+		t.Fatalf("chat_template layer count = %d, want 1 (layers: %v)", counts[manifest.MediaTypeImageChatTemplate], counts)
+	}
+	if counts["application/vnd.ollama.image.template"] != 0 {
+		t.Fatalf("template layer count = %d, want 0", counts["application/vnd.ollama.image.template"])
+	}
+	if got != jinjaToolTemplate {
+		t.Fatalf("chat template layer = %q, want the supplied jinja verbatim", got)
+	}
+
+	// And the reverse: a Go TEMPLATE replaces a jinja chat template.
+	layers, err = ApplyModelfileLayers(layers, ModelfileLayerOptions{Template: "{{ .Prompt }}"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	counts = make(map[string]int)
+	for _, layer := range layers {
+		counts[layer.MediaType]++
+	}
+	if counts[manifest.MediaTypeImageChatTemplate] != 0 {
+		t.Fatalf("chat_template layer count after Go override = %d, want 0", counts[manifest.MediaTypeImageChatTemplate])
+	}
+	if counts["application/vnd.ollama.image.template"] != 1 {
+		t.Fatalf("template layer count after Go override = %d, want 1", counts["application/vnd.ollama.image.template"])
+	}
+}
+
+func TestApplyModelfileLayersRejectsMalformedJinja(t *testing.T) {
+	t.Setenv("ROSE_MODELS", t.TempDir())
+
+	for name, tmpl := range map[string]string{
+		"unclosed for": `{% for m in messages %}{{ m.content }}`,
+		"stray endif":  `{% endif %}`,
+	} {
+		if _, err := ApplyModelfileLayers(nil, ModelfileLayerOptions{Template: tmpl}); !errors.Is(err, ErrBadTemplate) {
+			t.Fatalf("%s: ApplyModelfileLayers() error = %v, want ErrBadTemplate", name, err)
+		}
+	}
+}

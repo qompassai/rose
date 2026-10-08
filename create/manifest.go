@@ -177,13 +177,21 @@ func safetensorsDraftMetadata(draftDir string) (*model.Draft, error) {
 // are appended.
 func ApplyModelfileLayers(layers []manifest.Layer, opts ModelfileLayerOptions) ([]manifest.Layer, error) {
 	if opts.Template != "" {
-		if _, err := template.Parse(opts.Template); err != nil {
+		kind, err := template.ClassifyTemplate(opts.Template)
+		if err != nil {
 			return nil, fmt.Errorf("%w: %s", ErrBadTemplate, err)
 		}
 		layers = removeLayersByMediaType(layers, "application/vnd.ollama.image.prompt")
 		layers = removeLayersByMediaType(layers, "application/vnd.ollama.image.template")
-		var err error
-		layers, err = appendTextLayer(layers, "application/vnd.ollama.image.template", opts.Template)
+		layers = removeLayersByMediaType(layers, manifest.MediaTypeImageChatTemplate)
+		// Go templates keep the historical template layer. A jinja
+		// template is stored as a chat template instead: it is rendered
+		// by the native chat path, never by the Go template engine.
+		mediaType := "application/vnd.ollama.image.template"
+		if kind == template.KindJinja {
+			mediaType = manifest.MediaTypeImageChatTemplate
+		}
+		layers, err = appendTextLayer(layers, mediaType, opts.Template)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create template layer: %w", err)
 		}

@@ -2483,6 +2483,16 @@ func TestAppendJinjaArgs(t *testing.T) {
 			config: LlamaServerConfig{DisableJinja: true},
 			want:   []string{"base", "--no-jinja", "--chat-template", "chatml"},
 		},
+		{
+			name:   "supplied chat template overrides the GGUF template",
+			config: LlamaServerConfig{ChatTemplateFile: "/models/blobs/sha256-abc"},
+			want:   []string{"base", "--chat-template-file", "/models/blobs/sha256-abc"},
+		},
+		{
+			name:   "disabled jinja wins over a supplied chat template",
+			config: LlamaServerConfig{DisableJinja: true, ChatTemplateFile: "/models/blobs/sha256-abc"},
+			want:   []string{"base", "--no-jinja", "--chat-template", "chatml"},
+		},
 	}
 
 	for _, tt := range tests {

@@ -89,6 +89,12 @@ type Model struct {
 	Template       *template.Template
 	templateDigest string
 
+	// chatTemplate is a jinja chat template supplied at create time
+	// (MediaTypeImageChatTemplate layer). It takes precedence over the
+	// GGUF-embedded tokenizer.chat_template and any Go template.
+	chatTemplate     string
+	chatTemplatePath string // blob path of the supplied chat template layer
+
 	// Metadata of the model blob and of each projector, read from their
 	// metadata files when the model is loaded.
 	metadata          ggufMetadata
@@ -208,10 +214,10 @@ func (m *Model) ggufCapabilities(capabilities []model.Capability, source templat
 	switch source {
 	case templateCapabilitySelected:
 		if !usesOllamaRenderedChat(m) {
-			capabilities = chatTemplateCapabilities(capabilities, m.metadata.String("tokenizer.chat_template"))
+			capabilities = chatTemplateCapabilities(capabilities, m.effectiveChatTemplate())
 		}
 	case templateCapabilityChat:
-		capabilities = chatTemplateCapabilities(capabilities, m.metadata.String("tokenizer.chat_template"))
+		capabilities = chatTemplateCapabilities(capabilities, m.effectiveChatTemplate())
 	}
 	switch {
 	case m.metadata.String("decision.type") != "":
@@ -230,6 +236,16 @@ func (m *Model) ggufCapabilities(capabilities []model.Capability, source templat
 	}
 
 	return capabilities, m.metadata.String("general.architecture")
+}
+
+// effectiveChatTemplate returns the chat template that governs this
+// model: the create-time supplied jinja template when present, else
+// the GGUF-embedded tokenizer.chat_template.
+func (m *Model) effectiveChatTemplate() string {
+	if m.chatTemplate != "" {
+		return m.chatTemplate
+	}
+	return m.metadata.String("tokenizer.chat_template")
 }
 
 func chatTemplateCapabilities(capabilities []model.Capability, chatTemplate string) []model.Capability {
@@ -377,6 +393,8 @@ func selectedTemplateSource(m *Model, usesHarmony bool) string {
 		return "parser"
 	case usesHarmony:
 		return "harmony"
+	case m.chatTemplate != "":
+		return "supplied_chat_template"
 	case shouldUseGoTemplate(m):
 		return "go_template"
 	case m.HasChatTemplate:
@@ -815,6 +833,15 @@ func GetModelForRunner(name, runner string) (*Model, error) {
 			if err != nil {
 				return nil, err
 			}
+		case manifest.MediaTypeImageChatTemplate:
+			bts, err := os.ReadFile(filename)
+			if err != nil {
+				return nil, err
+			}
+
+			m.chatTemplate = string(bts)
+			m.chatTemplatePath = filename
+			m.HasChatTemplate = true
 		case "application/vnd.ollama.image.system":
 			bts, err := os.ReadFile(filename)
 			if err != nil {
@@ -852,10 +879,18 @@ func GetModelForRunner(name, runner string) (*Model, error) {
 		}
 	}
 
-	ggufCaps := chatTemplateCapabilities(nil, ggufChatTemplate)
+	ggufCaps := chatTemplateCapabilities(nil, m.effectiveChatTemplate())
 	goCaps := goTemplateCapabilities(m.Template)
 	usesHarmony := m.Template != nil && shouldUseHarmony(m)
-	if !goTemplateEnvSet() && m.HasGoTemplate && ggufChatTemplate != "" && m.Config.Renderer == "" && m.Config.Parser == "" && !usesHarmony && shouldPreferChatTemplate(ggufChatTemplate, ggufCaps, m.Template, goCaps) {
+	if !goTemplateEnvSet() && m.HasGoTemplate && ggufChatTemplate != "" && m.Config.Renderer == "" && m.Config.Parser == "" && !usesHarmony && shouldPreferChatTemplate(m.effectiveChatTemplate(), ggufCaps, m.Template, goCaps) {
+		m.PreferChatTemplate = true
+	}
+
+	// A supplied jinja chat template is the most recent explicit
+	// template instruction, so it always wins the native path over an
+	// inherited Go template (an operator ROSE_GO_TEMPLATE override can
+	// still force the Go path in shouldUseGoTemplate).
+	if m.chatTemplate != "" {
 		m.PreferChatTemplate = true
 	}
 
