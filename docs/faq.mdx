@@ -232,9 +232,7 @@ Refer to the section [above](#how-do-i-configure-rose-server) for how to set env
 
 ## Where are models stored?
 
-- macOS: `~/.rose/models`
-- Linux: `/usr/share/rose/.rose/models`
-- Windows: `C:\Users\%username%\.rose\models`
+Rose stores models in `$XDG_DATA_HOME/rose/models`. When `XDG_DATA_HOME` is unset, the default is `~/.local/share/rose/models`.
 
 ### How do I set them to a different location?
 

@@ -23,7 +23,7 @@ After the pristine import, apply the fork delta in small, ordered commits:
 
 1. Run `scripts/rebrand-rose.pl` to apply the mechanical Rose identity. The script is the reusable source of this layer; improve the script when a new mechanical case is found rather than hand-editing hundreds of files.
 2. Verify Rose's identity rule: the command is `rose` and configuration uses `ROSE_*` variables only. Do not introduce an `ollama` command alias, `OLLAMA_*` environment alias, or an Ollama-first default.
-3. Preserve the current model-store behavior during intake, but treat the stock-store preference as a **compat shim pending Matt's deviation ruling**, not settled design. Do not expand it, and do not change the default store without a separate migration plan that avoids stranding existing local stores.
+3. Preserve Rose's deliberate XDG default store: `$XDG_DATA_HOME/rose/models`, or `~/.local/share/rose/models` when `XDG_DATA_HOME` is unset. `ROSE_MODELS` remains an explicit override. Do not restore a stock-store preference or another Ollama-derived default during intake.
 4. Re-apply Rose's default registry behavior. Preserve the existing public-host union during intake only as a **compat shim pending Matt's deviation ruling**, not settled design; any change belongs in a separate compatibility and migration decision.
 5. Carry forward Rose's paper and repository documentation, including the AGPL and Q-CDA licenses and the protected storage-format namespaces. Manifest media types are a storage and wire format, not branding, and must remain compatible.
 6. Port functional fork features only as separate commits, each with its own tests and rationale. Do not fold security, template, or integration changes into the rebrand commit.

@@ -325,6 +325,46 @@ func TestVarIgnoresOllamaNamespace(t *testing.T) {
 	}
 }
 
+func TestModels(t *testing.T) {
+	home := t.TempDir()
+	setTestHome(t, home)
+
+	for _, legacy := range []string{
+		filepath.Join(home, ".ollama", "models"),
+		filepath.Join(home, ".rose", "models"),
+	} {
+		if err := os.MkdirAll(legacy, 0o755); err != nil {
+			t.Fatalf("create legacy store %q: %v", legacy, err)
+		}
+	}
+
+	t.Run("default is under home local share", func(t *testing.T) {
+		expect := filepath.Join(home, ".local", "share", "rose", "models")
+		if got := Models(); got != expect {
+			t.Errorf("expected %q, got %q", expect, got)
+		}
+	})
+
+	t.Run("XDG data home is used when set", func(t *testing.T) {
+		dataHome := filepath.Join(home, "xdg-data")
+		t.Setenv("XDG_DATA_HOME", dataHome)
+		expect := filepath.Join(dataHome, "rose", "models")
+		if got := Models(); got != expect {
+			t.Errorf("expected %q, got %q", expect, got)
+		}
+	})
+
+	t.Run("ROSE_MODELS wins over XDG data home", func(t *testing.T) {
+		dataHome := filepath.Join(home, "xdg-data")
+		models := filepath.Join(home, "custom-models")
+		t.Setenv("XDG_DATA_HOME", dataHome)
+		t.Setenv("ROSE_MODELS", models)
+		if got := Models(); got != models {
+			t.Errorf("expected %q, got %q", models, got)
+		}
+	})
+}
+
 func TestContextLength(t *testing.T) {
 	cases := map[string]uint{
 		"":     0,

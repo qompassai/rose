@@ -18,11 +18,10 @@ delta re-applied as discrete commits:
    verbatim — they are live services, not brand text.
 2. **Environment identity** — Rose configuration uses `ROSE_*`
    variables only. `OLLAMA_*` variables are not aliases.
-3. **Store compat shim (pending deviation ruling)** — `envconfig.Models`
-   currently serves an existing stock `~/.ollama/models` store in place;
-   fresh installs use `~/.rose/models`, and `ROSE_MODELS` always wins
-   when set. This behavior is retained pending a separate ruling and
-   migration plan; it is not settled Rose design.
+3. **Default store (deliberate deviation)** — `envconfig.Models` uses
+   `$XDG_DATA_HOME/rose/models`, or `~/.local/share/rose/models` when
+   `XDG_DATA_HOME` is unset. `ROSE_MODELS` always wins when set. Rose
+   does not fall back to a stock `~/.ollama/models` store.
 4. **Default registry** — unqualified model names resolve against
    `harbor.qompass.ai` (Matt's registry), not `registry.ollama.ai`.
 5. **Host compat shim (pending deviation ruling)** — manifest handling
