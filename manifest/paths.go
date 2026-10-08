@@ -24,8 +24,13 @@ const (
 	v2DirName         = "manifests-v2"
 	defaultPublicHost = "harbor.qompass.ai"
 	v2CanonicalHost   = "ollama.com"
-	defaultNamespace  = "library"
-	defaultTag        = "latest"
+	// upstreamPublicHost is stock Ollama's default registry host. Rose
+	// keeps recognizing it as a public host so a store written by stock
+	// Ollama — whose legacy manifests live under this host — resolves
+	// identically under Rose, and one store can be shared by both.
+	upstreamPublicHost = "registry.ollama.ai"
+	defaultNamespace   = "library"
+	defaultTag         = "latest"
 )
 
 // a manifest spells a digest with ":", a filename with "-"
@@ -286,15 +291,16 @@ func legacyNameCandidates(n model.Name) []model.Name {
 		return names
 	}
 
-	alt := n
-	switch {
-	case strings.EqualFold(n.Host, defaultPublicHost):
-		alt.Host = v2CanonicalHost
-	default:
-		alt.Host = defaultPublicHost
+	for _, host := range []string{defaultPublicHost, v2CanonicalHost, upstreamPublicHost} {
+		if strings.EqualFold(n.Host, host) {
+			continue
+		}
+		alt := n
+		alt.Host = host
+		names = append(names, alt)
 	}
 
-	return append(names, alt)
+	return names
 }
 
 func legacyManifestPathSupported(n model.Name) bool {
@@ -303,7 +309,7 @@ func legacyManifestPathSupported(n model.Name) bool {
 }
 
 func isDefaultPublicHost(host string) bool {
-	return strings.EqualFold(host, defaultPublicHost) || strings.EqualFold(host, v2CanonicalHost)
+	return strings.EqualFold(host, defaultPublicHost) || strings.EqualFold(host, v2CanonicalHost) || strings.EqualFold(host, upstreamPublicHost)
 }
 
 // DigestReference parses a bare local manifest blob reference in sha256-<hex>
