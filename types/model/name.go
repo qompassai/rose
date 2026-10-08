@@ -36,7 +36,7 @@ func Unqualified(n Name) error {
 const MissingPart = "!MISSING!"
 
 const (
-	defaultHost           = "registry.ollama.ai"
+	defaultHost           = "harbor.qompass.ai"
 	defaultNamespace      = "library"
 	defaultTag            = "latest"
 	defaultProtocolScheme = "https"
@@ -45,7 +45,7 @@ const (
 // DefaultName returns a name with the default values for the host, namespace,
 // tag, and protocol scheme parts. The model and digest parts are empty.
 //
-//   - The default host is ("registry.ollama.ai")
+//   - The default host is ("harbor.qompass.ai")
 //   - The default namespace is ("library")
 //   - The default tag is ("latest")
 //   - The default protocol scheme is ("https")
