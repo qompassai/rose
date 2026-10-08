@@ -1,0 +1,54 @@
+---
+title: Pool
+---
+
+Pool is Poolside's software agent for the terminal, built for enterprise development workflows.
+
+## Install
+
+Install [Pool](https://github.com/poolsideai/pool):
+
+## Usage with Rose
+
+### Quick setup
+
+```shell
+rose launch pool
+```
+
+### Run directly with a model
+
+```shell
+rose launch pool --model kimi-k2.6:cloud
+```
+
+### Pass arguments through to Pool
+
+Arguments after `--` are passed directly to Pool:
+
+```shell
+rose launch pool -- --help
+```
+
+## Manual setup
+
+Pool connects to Rose using the OpenAI-compatible API via environment variables.
+
+1. Set the environment variables:
+
+```shell
+export POOLSIDE_STANDALONE_BASE_URL=http://localhost:11434/v1
+export POOLSIDE_API_KEY=rose
+```
+
+2. Run Pool with an Rose model:
+
+```shell
+pool -m kimi-k2.6:cloud
+```
+
+Or run with environment variables inline:
+
+```shell
+POOLSIDE_STANDALONE_BASE_URL=http://localhost:11434/v1 POOLSIDE_API_KEY=rose pool -m kimi-k2.6:cloud
+```

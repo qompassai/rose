@@ -1,0 +1,199 @@
+---
+title: Linux
+---
+
+## Install
+
+To install Rose, run the following command:
+
+```shell
+curl -fsSL https://ollama.com/install.sh | sh
+```
+
+## Manual install
+
+<Note>
+  If you are upgrading from a prior version, you should remove the old libraries
+  with `sudo rm -rf /usr/lib/rose` first.
+</Note>
+
+Download and extract the package:
+
+```shell
+curl -fsSL https://ollama.com/download/rose-linux-amd64.tar.zst \
+    | sudo tar x -C /usr
+```
+
+Start Rose:
+
+```shell
+rose serve
+```
+
+In another terminal, verify that Rose is running:
+
+```shell
+rose -v
+```
+
+### AMD GPU install
+
+If you have an AMD GPU, also download and extract the additional ROCm package:
+
+```shell
+curl -fsSL https://ollama.com/download/rose-linux-amd64-rocm.tar.zst \
+    | sudo tar x -C /usr
+```
+
+### ARM64 install
+
+Download and extract the ARM64-specific package:
+
+```shell
+curl -fsSL https://ollama.com/download/rose-linux-arm64.tar.zst \
+    | sudo tar x -C /usr
+```
+
+### Adding Rose as a startup service (recommended)
+
+Create a user and group for Rose:
+
+```shell
+sudo useradd -r -s /bin/false -U -m -d /usr/share/rose rose
+sudo usermod -a -G rose $(whoami)
+```
+
+Create a service file in `/etc/systemd/system/rose.service`:
+
+```ini
+[Unit]
+Description=Rose Service
+After=network-online.target
+
+[Service]
+ExecStart=/usr/bin/rose serve
+User=rose
+Group=rose
+Restart=always
+RestartSec=3
+Environment="PATH=$PATH"
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Then start the service:
+
+```shell
+sudo systemctl daemon-reload
+sudo systemctl enable rose
+```
+
+### Install CUDA drivers (optional)
+
+[Download and install](https://developer.nvidia.com/cuda-downloads) CUDA.
+
+Verify that the drivers are installed by running the following command, which should print details about your GPU:
+
+```shell
+nvidia-smi
+```
+
+### Install AMD ROCm drivers (optional)
+
+[Download and Install](https://rocm.docs.amd.com/projects/install-on-linux/en/latest/tutorial/quick-start.html) ROCm v7.
+
+### Start Rose
+
+Start Rose and verify it is running:
+
+```shell
+sudo systemctl start rose
+sudo systemctl status rose
+```
+
+<Note>
+  While AMD has contributed the `amdgpu` driver upstream to the official linux
+  kernel source, the version is older and may not support all ROCm features. We
+  recommend you install the latest driver from
+  https://www.amd.com/en/support/download/linux-drivers.html for best support of your Radeon
+  GPU.
+</Note>
+
+## Customizing
+
+To customize the installation of Rose, you can edit the systemd service file or the environment variables by running:
+
+```shell
+sudo systemctl edit rose
+```
+
+Alternatively, create an override file manually in `/etc/systemd/system/rose.service.d/override.conf`:
+
+```ini
+[Service]
+Environment="ROSE_DEBUG=1"
+```
+
+## Updating
+
+Update Rose by running the install script again:
+
+```shell
+curl -fsSL https://ollama.com/install.sh | sh
+```
+
+Or by re-downloading Rose:
+
+```shell
+curl -fsSL https://ollama.com/download/rose-linux-amd64.tar.zst \
+    | sudo tar x -C /usr
+```
+
+## Installing specific versions
+
+Use `ROSE_VERSION` environment variable with the install script to install a specific version of Rose, including pre-releases. You can find the version numbers in the [releases page](https://github.com/qompassai/rose/releases).
+
+For example:
+
+```shell
+curl -fsSL https://ollama.com/install.sh | ROSE_VERSION=0.5.7 sh
+```
+
+## Viewing logs
+
+To view logs of Rose running as a startup service, run:
+
+```shell
+journalctl -e -u rose
+```
+
+## Uninstall
+
+Remove the rose service:
+
+```shell
+sudo systemctl stop rose
+sudo systemctl disable rose
+sudo rm /etc/systemd/system/rose.service
+```
+
+Remove rose libraries from your lib directory (either `/usr/local/lib`, `/usr/lib`, or `/lib`):
+
+```shell
+sudo rm -r $(which rose | tr 'bin' 'lib')
+```
+
+Remove the rose binary from your bin directory (either `/usr/local/bin`, `/usr/bin`, or `/bin`):
+
+```shell
+sudo rm $(which rose)
+```
+
+Remove the downloaded models and Rose service user and group:
+
+```shell
+sudo userdel rose
+sudo groupdel rose
+sudo rm -r /usr/share/rose
+```

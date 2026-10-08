@@ -20,22 +20,23 @@ func TestParseNameParts(t *testing.T) {
 		wantValidDigest bool
 	}{
 		{
-			in: "harbor.qompass.ai/library/dolphin-mistral:7b-v2.6-dpo-laser-q6_K",
+			in: "registry.ollama.ai/library/dolphin-mistral:7b-v2.6-dpo-laser-q6_K",
 			want: Name{
-				Host:      "harbor.qompass.ai",
+				Host:      "registry.ollama.ai",
 				Namespace: "library",
 				Model:     "dolphin-mistral",
 				Tag:       "7b-v2.6-dpo-laser-q6_K",
 			},
-			wantFilepath: filepath.Join("harbor.qompass.ai", "archive", "dolphin-mistral", "7b-v2.6-dpo-laser-q6_K"),
+			wantFilepath: filepath.Join("registry.ollama.ai", "library", "dolphin-mistral", "7b-v2.6-dpo-laser-q6_K"),
 		},
 		{
 			in: "scheme://host:port/namespace/model:tag",
 			want: Name{
-				Host:      "host:port",
-				Namespace: "namespace",
-				Model:     "model",
-				Tag:       "tag",
+				Host:           "host:port",
+				Namespace:      "namespace",
+				Model:          "model",
+				Tag:            "tag",
+				ProtocolScheme: "scheme",
 			},
 			wantFilepath: filepath.Join("host:port", "namespace", "model", "tag"),
 		},
@@ -293,8 +294,8 @@ func TestDisplayShortest(t *testing.T) {
 		"harbor.qompass.ai/library/model:latest": "model:latest",
 		"harbor.qompass.ai/library/model:tag":    "model:tag",
 		"harbor.qompass.ai/namespace/model:tag":  "namespace/model:tag",
-		"host/namespace/model:tag":                "host/namespace/model:tag",
-		"host/library/model:tag":                  "host/library/model:tag",
+		"host/namespace/model:tag":               "host/namespace/model:tag",
+		"host/library/model:tag":                 "host/library/model:tag",
 	}
 
 	for in, want := range cases {

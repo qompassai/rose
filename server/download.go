@@ -24,13 +24,17 @@ import (
 
 	"github.com/qompassai/rose/api"
 	"github.com/qompassai/rose/format"
+	"github.com/qompassai/rose/manifest"
+	"github.com/qompassai/rose/transfer"
+	"github.com/qompassai/rose/types/model"
 )
 
 const maxRetries = 6
 
 var (
-	errMaxRetriesExceeded = errors.New("max retries exceeded")
-	errPartStalled        = errors.New("part stalled")
+	errMaxRetriesExceeded   = errors.New("max retries exceeded")
+	errPartStalled          = errors.New("part stalled")
+	errMaxRedirectsExceeded = errors.New("maximum redirects exceeded (10) for directURL")
 )
 
 var blobDownloadManager sync.Map
@@ -98,6 +102,8 @@ const (
 	minDownloadPartSize int64 = 100 * format.MegaByte
 	maxDownloadPartSize int64 = 1000 * format.MegaByte
 )
+
+var downloadStallTimeout = 30 * time.Second
 
 func (p *blobDownloadPart) Name() string {
 	return strings.Join([]string{
@@ -236,7 +242,7 @@ func (b *blobDownload) run(ctx context.Context, requestURL *url.URL, opts *regis
 
 			newOpts.CheckRedirect = func(req *http.Request, via []*http.Request) error {
 				if len(via) > 10 {
-					return errors.New("maximum redirects exceeded (10) for directURL")
+					return errMaxRedirectsExceeded
 				}
 
 				// if the hostname is the same, allow the redirect
@@ -262,12 +268,22 @@ func (b *blobDownload) run(ctx context.Context, requestURL *url.URL, opts *regis
 			if resp.StatusCode != http.StatusTemporaryRedirect && resp.StatusCode != http.StatusOK {
 				return nil, fmt.Errorf("unexpected status code %d", resp.StatusCode)
 			}
-			return resp.Location()
+			loc, err := resp.Location()
+			if err != nil {
+				return nil, err
+			}
+			if err := transfer.ValidateRedirectTarget(ctx, loc, requestURL.String(), opts.Insecure); err != nil {
+				return nil, err
+			}
+			return loc, nil
 		}
 	}()
 	if err != nil {
 		return err
 	}
+
+	client := transfer.NewRedirectClient(requestURL.String(), opts.Insecure)
+	defer client.CloseIdleConnections()
 
 	g, inner := errgroup.WithContext(ctx)
 	g.SetLimit(numDownloadParts)
@@ -281,7 +297,7 @@ func (b *blobDownload) run(ctx context.Context, requestURL *url.URL, opts *regis
 			var err error
 			for try := 0; try < maxRetries; try++ {
 				w := io.NewOffsetWriter(file, part.StartsAt())
-				err = b.downloadChunk(inner, directURL, w, part)
+				err = b.downloadChunk(inner, client, directURL, w, part)
 				switch {
 				case errors.Is(err, context.Canceled), errors.Is(err, syscall.ENOSPC):
 					// return immediately if the context is canceled or the device is out of space
@@ -325,15 +341,19 @@ func (b *blobDownload) run(ctx context.Context, requestURL *url.URL, opts *regis
 	return nil
 }
 
-func (b *blobDownload) downloadChunk(ctx context.Context, requestURL *url.URL, w io.Writer, part *blobDownloadPart) error {
+func (b *blobDownload) downloadChunk(ctx context.Context, client *http.Client, requestURL *url.URL, w io.Writer, part *blobDownloadPart) error {
 	g, ctx := errgroup.WithContext(ctx)
+	attemptStarted := time.Now()
+	transferDone := make(chan struct{})
 	g.Go(func() error {
+		defer close(transferDone)
+
 		req, err := http.NewRequestWithContext(ctx, http.MethodGet, requestURL.String(), nil)
 		if err != nil {
 			return err
 		}
 		req.Header.Set("Range", fmt.Sprintf("bytes=%d-%d", part.StartsAt(), part.StopsAt()-1))
-		resp, err := http.DefaultClient.Do(req)
+		resp, err := client.Do(req)
 		if err != nil {
 			return err
 		}
@@ -356,19 +376,21 @@ func (b *blobDownload) downloadChunk(ctx context.Context, requestURL *url.URL, w
 	})
 
 	g.Go(func() error {
-		ticker := time.NewTicker(time.Second)
+		ticker := time.NewTicker(min(time.Second, downloadStallTimeout/2))
+		defer ticker.Stop()
 		for {
 			select {
+			case <-transferDone:
+				return nil
 			case <-ticker.C:
-				if part.Completed.Load() >= part.Size {
-					return nil
-				}
-
 				part.lastUpdatedMu.Lock()
 				lastUpdated := part.lastUpdated
 				part.lastUpdatedMu.Unlock()
+				if lastUpdated.Before(attemptStarted) {
+					lastUpdated = attemptStarted
+				}
 
-				if !lastUpdated.IsZero() && time.Since(lastUpdated) > 30*time.Second {
+				if time.Since(lastUpdated) > downloadStallTimeout {
 					const msg = "%s part %d stalled; retrying. If this persists, press ctrl-c to exit, then 'rose pull' to find a faster connection."
 					slog.Info(fmt.Sprintf(msg, b.Digest[7:19], part.N))
 					// reset last updated
@@ -455,7 +477,7 @@ func (b *blobDownload) Wait(ctx context.Context, fn func(api.ProgressResponse)) 
 }
 
 type downloadOpts struct {
-	mp      ModelPath
+	n       model.Name
 	digest  string
 	regOpts *registryOptions
 	fn      func(api.ProgressResponse)
@@ -463,7 +485,11 @@ type downloadOpts struct {
 
 // downloadBlob downloads a blob from the registry and stores it in the blobs directory
 func downloadBlob(ctx context.Context, opts downloadOpts) (cacheHit bool, _ error) {
-	fp, err := GetBlobsPath(opts.digest)
+	if opts.digest == "" {
+		return false, fmt.Errorf("%s: %s", opts.n.DisplayNamespaceModel(), "digest is empty")
+	}
+
+	fp, err := manifest.BlobsPath(opts.digest)
 	if err != nil {
 		return false, err
 	}
@@ -487,8 +513,8 @@ func downloadBlob(ctx context.Context, opts downloadOpts) (cacheHit bool, _ erro
 	data, ok := blobDownloadManager.LoadOrStore(opts.digest, &blobDownload{Name: fp, Digest: opts.digest})
 	download := data.(*blobDownload)
 	if !ok {
-		requestURL := opts.mp.BaseURL()
-		requestURL = requestURL.JoinPath("v2", opts.mp.GetNamespaceRepository(), "blobs", opts.digest)
+		requestURL := opts.n.BaseURL()
+		requestURL = requestURL.JoinPath("v2", opts.n.DisplayNamespaceModel(), "blobs", opts.digest)
 		if err := download.Prepare(ctx, requestURL, opts.regOpts); err != nil {
 			blobDownloadManager.Delete(opts.digest)
 			return false, err

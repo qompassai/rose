@@ -1,0 +1,145 @@
+---
+title: CLI Reference
+---
+
+### Run a model
+
+```
+rose run gemma4
+```
+
+### Launch integrations
+
+```
+rose launch
+```
+
+Configure and launch external applications to use Rose models. This provides an interactive way to set up and start integrations with supported apps.
+
+#### Supported integrations
+
+- **OpenCode** - Open-source coding assistant
+- **Claude Code** - Anthropic's agentic coding tool
+- **Codex** - OpenAI's coding assistant
+- **VS Code** - Microsoft's IDE with built-in AI chat
+- **Droid** - Factory's AI coding agent
+
+#### Examples
+
+Launch an integration interactively:
+
+```
+rose launch
+```
+
+Launch a specific integration:
+
+```
+rose launch claude
+```
+
+Launch with a specific model:
+
+```
+rose launch claude --model qwen3.5
+```
+
+Configure without launching:
+
+```
+rose launch droid --config
+```
+
+#### Multiline input
+
+For multiline input, you can wrap text with `"""`:
+
+```
+>>> """Hello,
+... world!
+... """
+I'm a basic program that prints the famous "Hello, world!" message to the console.
+```
+
+#### Multimodal models
+
+```
+rose run gemma4 "What's in this image? /Users/jmorgan/Desktop/smile.png"
+```
+
+### Generate embeddings
+
+```
+rose run embeddinggemma "Hello world"
+```
+
+Output is a JSON array:
+
+```
+echo "Hello world" | rose run nomic-embed-text
+```
+
+### Download a model
+
+```
+rose pull gemma4
+```
+
+### Remove a model
+
+```
+rose rm gemma4
+```
+
+### List models
+
+```
+rose ls
+```
+
+### Sign in to Rose
+
+```
+rose signin
+```
+
+### Sign out of Rose
+
+```
+rose signout
+```
+
+### Create a customized model
+
+First, create a `Modelfile`
+
+```
+FROM gemma4
+SYSTEM """You are a happy cat."""
+```
+
+Then run `rose create`:
+
+```
+rose create -f Modelfile
+```
+
+### List running models
+
+```
+rose ps
+```
+
+### Stop a running model
+
+```
+rose stop gemma4
+```
+
+### Start Rose
+
+```
+rose serve
+```
+
+To view a list of environment variables that can be set run `rose serve --help`

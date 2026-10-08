@@ -8,9 +8,7 @@ export GOFLAGS="'-ldflags=-w -s \"-X=github.com/qompassai/rose/version.Version=$
 docker build \
     --push \
     --platform=linux/arm64,linux/amd64 \
-    --build-arg=VERSION \
     --build-arg=GOFLAGS \
     -f Dockerfile \
-    -t qompassai/rose -t qompassai/rose:$VERSION \
+    -t rose/rose -t rose/rose:$VERSION \
     .
-

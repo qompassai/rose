@@ -1,0 +1,11 @@
+.vscode
+rose
+app
+macapp
+dist
+build
+.env
+.cache
+test_data
+.git
+

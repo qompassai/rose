@@ -4,23 +4,43 @@ export VERSION=${VERSION:-$(git describe --tags --first-parent --abbrev=7 --long
 export GOFLAGS="'-ldflags=-w -s \"-X=github.com/qompassai/rose/version.Version=$VERSION\" \"-X=github.com/qompassai/rose/server.mode=release\"'"
 # TODO - consider `docker buildx ls --format=json` to autodiscover platform capability
 PLATFORM=${PLATFORM:-"linux/arm64,linux/amd64"}
-DOCKER_ORG=${DOCKER_ORG:-"qompassai"}
+DOCKER_ORG=${DOCKER_ORG:-"rose"}
 FINAL_IMAGE_REPO=${FINAL_IMAGE_REPO:-"${DOCKER_ORG}/rose"}
-ROSE_COMMON_BUILD_ARGS="--build-arg=VERSION \
-    --build-arg=GOFLAGS \
-    --build-arg=ROSE_CUSTOM_CPU_DEFS \
-    --build-arg=ROSE_SKIP_CUDA_GENERATE \
-    --build-arg=ROSE_SKIP_CUDA_11_GENERATE \
-    --build-arg=ROSE_SKIP_CUDA_12_GENERATE \
-    --build-arg=CUDA_V11_ARCHITECTURES \
-    --build-arg=CUDA_V12_ARCHITECTURES \
-    --build-arg=ROSE_SKIP_ROCM_GENERATE \
-    --build-arg=ROSE_FAST_BUILD \
-    --build-arg=CUSTOM_CPU_FLAGS \
-    --build-arg=GPU_RUNNER_CPU_FLAGS \
-    --build-arg=AMDGPU_TARGETS"
+ROSE_COMMON_BUILD_ARGS="--build-arg=GOFLAGS"
 
+add_build_arg() {
+    eval "_value=\"\${$1:-}\""
+    if [ -n "$_value" ]; then
+        ROSE_COMMON_BUILD_ARGS="$ROSE_COMMON_BUILD_ARGS --build-arg=$1"
+    fi
+}
+
+for arg in \
+    CGO_CFLAGS \
+    CGO_CXXFLAGS \
+    CMAKEVERSION \
+    NINJAVERSION \
+    ROCMVERSION \
+    JETPACK5VERSION \
+    JETPACK6VERSION \
+    CUDA12VERSION \
+    CUDA13VERSION \
+    VULKANVERSION \
+    MLX_CUDA_RAM_MB \
+    APT_MIRROR \
+    ROSE_MLX_BUILD_JOBS \
+    ROSE_MLX_NVCC_THREADS
+do
+    add_build_arg "$arg"
+done
+
+# Forward local MLX source overrides as Docker build contexts
+if [ -n "${ROSE_MLX_SOURCE:-}" ]; then
+    ROSE_COMMON_BUILD_ARGS="$ROSE_COMMON_BUILD_ARGS --build-context local-mlx=$(cd "$ROSE_MLX_SOURCE" && pwd)"
+fi
+if [ -n "${ROSE_MLX_C_SOURCE:-}" ]; then
+    ROSE_COMMON_BUILD_ARGS="$ROSE_COMMON_BUILD_ARGS --build-context local-mlx-c=$(cd "$ROSE_MLX_C_SOURCE" && pwd)"
+fi
 echo "Building Rose"
 echo "VERSION=$VERSION"
 echo "PLATFORM=$PLATFORM"
-

@@ -1,0 +1,50 @@
+---
+title: DeepSeek Harness
+---
+
+[DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) is an open-source coding agent.
+
+<Note>DeepSeek Harness is currently a developer preview. Its upstream configuration may change between releases.</Note>
+
+## Setup
+
+```shell
+rose launch dsh
+```
+
+Rose installs `@deepseek-ai/dsh` if needed. To choose a model:
+
+```shell
+rose launch dsh --model qwen3.8
+rose launch dsh --model deepseek-v4-flash:cloud
+```
+
+To configure without starting:
+
+```shell
+rose launch dsh --config
+```
+
+## Web search
+
+Web search is enabled automatically. It requires Rose cloud access and a model that supports tools. Run `rose signin` if needed.
+
+## Configuration
+
+Rose stores its settings in `~/.rose/launch/dsh/settings.yaml`. These settings load last and set the model, provider, and web search connection. Repeated launches preserve other settings in this file. Rose does not change `~/.dsh/settings.yaml`, profiles, sessions, or credentials.
+
+Launch rejects additional `--patch` arguments. Pass other Harness arguments after `--`:
+
+```shell
+rose launch dsh -- --port 3081
+```
+
+## Manual install
+
+DeepSeek Harness requires Node.js. To install it manually:
+
+```shell
+npm install -g @deepseek-ai/dsh@latest
+```
+
+Then run `rose launch dsh`. On Windows, install Node.js for Windows.

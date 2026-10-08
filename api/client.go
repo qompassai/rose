@@ -24,7 +24,10 @@ import (
 	"net/http"
 	"net/url"
 	"runtime"
+	"strconv"
+	"time"
 
+	"github.com/qompassai/rose/auth"
 	"github.com/qompassai/rose/envconfig"
 	"github.com/qompassai/rose/format"
 	"github.com/qompassai/rose/version"
@@ -40,6 +43,12 @@ type Client struct {
 func checkError(resp *http.Response, body []byte) error {
 	if resp.StatusCode < http.StatusBadRequest {
 		return nil
+	}
+
+	if resp.StatusCode == http.StatusUnauthorized {
+		authError := AuthorizationError{StatusCode: resp.StatusCode}
+		json.Unmarshal(body, &authError)
+		return authError
 	}
 
 	apiError := StatusError{StatusCode: resp.StatusCode}
@@ -76,6 +85,14 @@ func NewClient(base *url.URL, http *http.Client) *Client {
 	}
 }
 
+func getAuthorizationToken(ctx context.Context, challenge string) (string, error) {
+	token, err := auth.Sign(ctx, []byte(challenge))
+	if err != nil {
+		return "", err
+	}
+	return token, nil
+}
+
 func (c *Client) do(ctx context.Context, method, path string, reqData, respData any) error {
 	var reqBody io.Reader
 	var data []byte
@@ -97,6 +114,21 @@ func (c *Client) do(ctx context.Context, method, path string, reqData, respData 
 	}
 
 	requestURL := c.base.JoinPath(path)
+
+	var token string
+	if envconfig.UseAuth() || c.base.Hostname() == "ollama.com" {
+		now := strconv.FormatInt(time.Now().Unix(), 10)
+		chal := fmt.Sprintf("%s,%s?ts=%s", method, path, now)
+		token, err = getAuthorizationToken(ctx, chal)
+		if err != nil {
+			return err
+		}
+
+		q := requestURL.Query()
+		q.Set("ts", now)
+		requestURL.RawQuery = q.Encode()
+	}
+
 	request, err := http.NewRequestWithContext(ctx, method, requestURL.String(), reqBody)
 	if err != nil {
 		return err
@@ -105,6 +137,10 @@ func (c *Client) do(ctx context.Context, method, path string, reqData, respData 
 	request.Header.Set("Content-Type", "application/json")
 	request.Header.Set("Accept", "application/json")
 	request.Header.Set("User-Agent", fmt.Sprintf("rose/%s (%s %s) Go/%s", version.Version, runtime.GOARCH, runtime.GOOS, runtime.Version()))
+
+	if token != "" {
+		request.Header.Set("Authorization", token)
+	}
 
 	respObj, err := c.http.Do(request)
 	if err != nil {
@@ -129,7 +165,7 @@ func (c *Client) do(ctx context.Context, method, path string, reqData, respData 
 	return nil
 }
 
-const maxBufferSize = 512 * format.KiloByte
+const maxBufferSize = 8 * format.MegaByte
 
 func (c *Client) stream(ctx context.Context, method, path string, data any, fn func([]byte) error) error {
 	var buf io.Reader
@@ -143,6 +179,22 @@ func (c *Client) stream(ctx context.Context, method, path string, data any, fn f
 	}
 
 	requestURL := c.base.JoinPath(path)
+
+	var token string
+	if envconfig.UseAuth() || c.base.Hostname() == "ollama.com" {
+		var err error
+		now := strconv.FormatInt(time.Now().Unix(), 10)
+		chal := fmt.Sprintf("%s,%s?ts=%s", method, path, now)
+		token, err = getAuthorizationToken(ctx, chal)
+		if err != nil {
+			return err
+		}
+
+		q := requestURL.Query()
+		q.Set("ts", now)
+		requestURL.RawQuery = q.Encode()
+	}
+
 	request, err := http.NewRequestWithContext(ctx, method, requestURL.String(), buf)
 	if err != nil {
 		return err
@@ -151,6 +203,10 @@ func (c *Client) stream(ctx context.Context, method, path string, data any, fn f
 	request.Header.Set("Content-Type", "application/json")
 	request.Header.Set("Accept", "application/x-ndjson")
 	request.Header.Set("User-Agent", fmt.Sprintf("rose/%s (%s %s) Go/%s", version.Version, runtime.GOARCH, runtime.GOOS, runtime.Version()))
+
+	if token != "" {
+		request.Header.Set("Authorization", token)
+	}
 
 	response, err := c.http.Do(request)
 	if err != nil {
@@ -164,19 +220,29 @@ func (c *Client) stream(ctx context.Context, method, path string, data any, fn f
 	scanner.Buffer(scanBuf, maxBufferSize)
 	for scanner.Scan() {
 		var errorResponse struct {
-			Error string `json:"error,omitempty"`
+			Error     string `json:"error,omitempty"`
+			SigninURL string `json:"signin_url,omitempty"`
 		}
 
 		bts := scanner.Bytes()
 		if err := json.Unmarshal(bts, &errorResponse); err != nil {
-			return fmt.Errorf("unmarshal: %w", err)
+			if response.StatusCode >= http.StatusBadRequest {
+				return StatusError{
+					StatusCode:   response.StatusCode,
+					Status:       response.Status,
+					ErrorMessage: string(bts),
+				}
+			}
+			return errors.New(string(bts))
 		}
 
-		if errorResponse.Error != "" {
-			return errors.New(errorResponse.Error)
-		}
-
-		if response.StatusCode >= http.StatusBadRequest {
+		if response.StatusCode == http.StatusUnauthorized {
+			return AuthorizationError{
+				StatusCode: response.StatusCode,
+				Status:     response.Status,
+				SigninURL:  errorResponse.SigninURL,
+			}
+		} else if response.StatusCode >= http.StatusBadRequest {
 			return StatusError{
 				StatusCode:   response.StatusCode,
 				Status:       response.Status,
@@ -184,9 +250,17 @@ func (c *Client) stream(ctx context.Context, method, path string, data any, fn f
 			}
 		}
 
+		if errorResponse.Error != "" {
+			return errors.New(errorResponse.Error)
+		}
+
 		if err := fn(bts); err != nil {
 			return err
 		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		return err
 	}
 
 	return nil
@@ -255,7 +329,7 @@ func (c *Client) Pull(ctx context.Context, req *PullRequest, fn PullProgressFunc
 // It's similar to other progress function types like [PullProgressFunc].
 type PushProgressFunc func(ProgressResponse) error
 
-// Push uploads a model to the model library; requires registering for qompass.ai
+// Push uploads a model to the model library; requires registering for ollama.ai
 // and adding a public key first. fn is called each time progress is made on
 // the request and can be used to display a progress bar, etc.
 func (c *Client) Push(ctx context.Context, req *PushRequest, fn PushProgressFunc) error {
@@ -277,7 +351,7 @@ type CreateProgressFunc func(ProgressResponse) error
 // Create creates a model from a [Modelfile]. fn is a progress function that
 // behaves similarly to other methods (see [Client.Pull]).
 //
-// [Modelfile]: https://github.com/qompassai/rose/blob/main/docs/modelfile.md
+// [Modelfile]: https://github.com/qompassai/rose/blob/main/docs/modelfile.mdx
 func (c *Client) Create(ctx context.Context, req *CreateRequest, fn CreateProgressFunc) error {
 	return c.stream(ctx, http.MethodPost, "/api/create", req, func(bts []byte) error {
 		var resp ProgressResponse
@@ -298,6 +372,16 @@ func (c *Client) List(ctx context.Context) (*ListResponse, error) {
 	return &lr, nil
 }
 
+// ModelRecommendationsExperimental lists model recommendations from the local
+// server's experimental recommendations endpoint.
+func (c *Client) ModelRecommendationsExperimental(ctx context.Context) (*ModelRecommendationsResponse, error) {
+	var resp ModelRecommendationsResponse
+	if err := c.do(ctx, http.MethodGet, "/api/experimental/model-recommendations", nil, &resp); err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
 // ListRunning lists running models.
 func (c *Client) ListRunning(ctx context.Context) (*ProcessResponse, error) {
 	var lr ProcessResponse
@@ -308,12 +392,14 @@ func (c *Client) ListRunning(ctx context.Context) (*ProcessResponse, error) {
 }
 
 // Copy copies a model - creating a model with another name from an existing
-// model.
-func (c *Client) Copy(ctx context.Context, req *CopyRequest) error {
-	if err := c.do(ctx, http.MethodPost, "/api/copy", req, nil); err != nil {
-		return err
+// model. Status carries a warning when the copy drops manifest list children
+// that are not held locally.
+func (c *Client) Copy(ctx context.Context, req *CopyRequest) (*ProgressResponse, error) {
+	var resp ProgressResponse
+	if err := c.do(ctx, http.MethodPost, "/api/copy", req, &resp); err != nil {
+		return nil, err
 	}
-	return nil
+	return &resp, nil
 }
 
 // Delete deletes a model and its data.
@@ -328,6 +414,21 @@ func (c *Client) Delete(ctx context.Context, req *DeleteRequest) error {
 func (c *Client) Show(ctx context.Context, req *ShowRequest) (*ShowResponse, error) {
 	var resp ShowResponse
 	if err := c.do(ctx, http.MethodPost, "/api/show", req, &resp); err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+// ShowManifests obtains model information for all manifests in a manifest list.
+func (c *Client) ShowManifests(ctx context.Context, req *ShowRequest) (*ShowManifestsResponse, error) {
+	showReq := &ShowRequest{AllManifests: true}
+	if req != nil {
+		*showReq = *req
+		showReq.AllManifests = true
+	}
+
+	var resp ShowManifestsResponse
+	if err := c.do(ctx, http.MethodPost, "/api/show", showReq, &resp); err != nil {
 		return nil, err
 	}
 	return &resp, nil
@@ -366,6 +467,19 @@ func (c *Client) CreateBlob(ctx context.Context, digest string, r io.Reader) err
 	return c.do(ctx, http.MethodPost, fmt.Sprintf("/api/blobs/%s", digest), r, nil)
 }
 
+// HeadBlob checks if a blob exists on the server. It returns false for a 404
+// and an error for any unexpected response.
+func (c *Client) HeadBlob(ctx context.Context, digest string) (bool, error) {
+	if err := c.do(ctx, http.MethodHead, fmt.Sprintf("/api/blobs/%s", digest), nil, nil); err != nil {
+		var statusErr StatusError
+		if errors.As(err, &statusErr) && statusErr.StatusCode == http.StatusNotFound {
+			return false, nil
+		}
+		return false, err
+	}
+	return true, nil
+}
+
 // Version returns the Rose server version as a string.
 func (c *Client) Version(ctx context.Context) (string, error) {
 	var version struct {
@@ -377,4 +491,52 @@ func (c *Client) Version(ctx context.Context) (string, error) {
 	}
 
 	return version.Version, nil
+}
+
+// CloudStatusExperimental returns whether cloud features are disabled on the server.
+func (c *Client) CloudStatusExperimental(ctx context.Context) (*StatusResponse, error) {
+	var status StatusResponse
+	if err := c.do(ctx, http.MethodGet, "/api/status", nil, &status); err != nil {
+		return nil, err
+	}
+
+	return &status, nil
+}
+
+// WebSearchExperimental searches the web through the local server's
+// experimental web search endpoint.
+func (c *Client) WebSearchExperimental(ctx context.Context, req *WebSearchRequest) (*WebSearchResponse, error) {
+	var resp WebSearchResponse
+	if err := c.do(ctx, http.MethodPost, "/api/experimental/web_search", req, &resp); err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+// WebFetchExperimental fetches web page content through the local server's
+// experimental web fetch endpoint.
+func (c *Client) WebFetchExperimental(ctx context.Context, req *WebFetchRequest) (*WebFetchResponse, error) {
+	var resp WebFetchResponse
+	if err := c.do(ctx, http.MethodPost, "/api/experimental/web_fetch", req, &resp); err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+// Signout will signout a client for a local rose server.
+func (c *Client) Signout(ctx context.Context) error {
+	return c.do(ctx, http.MethodPost, "/api/signout", nil, nil)
+}
+
+// Disconnect will disconnect an rose instance from ollama.com.
+func (c *Client) Disconnect(ctx context.Context, encodedKey string) error {
+	return c.do(ctx, http.MethodDelete, fmt.Sprintf("/api/user/keys/%s", encodedKey), nil, nil)
+}
+
+func (c *Client) Whoami(ctx context.Context) (*UserResponse, error) {
+	var resp UserResponse
+	if err := c.do(ctx, http.MethodPost, "/api/me", nil, &resp); err != nil {
+		return nil, err
+	}
+	return &resp, nil
 }

@@ -1,0 +1,35 @@
+---
+title: Oh My Pi
+---
+
+Oh My Pi (OMP) is a terminal coding agent with IDE-style tools built in. It combines chat, project context, structured code edits, language server support, debugging tools, browser access, plugins, and subagents in one terminal workflow.
+
+Rose can configure OMP to use Rose as its model provider and launch an interactive session.
+
+![Oh My Pi with Rose](http://files.ollama.com/omp.png)
+
+## Quick setup
+
+```bash
+rose launch omp
+```
+
+This configures Rose as a provider, sets up web search tools, and starts OMP.
+
+### Run directly with a model
+
+```shell
+rose launch omp --model <model>
+```
+
+## Plugins
+
+OMP supports plugins for extra tools and capabilities. When launching OMP through Rose, the Rose web search plugin is managed automatically.
+
+## Manual setup
+
+Install OMP from [omp.sh](https://omp.sh), then run:
+
+```bash
+rose launch omp --config
+```

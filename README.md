@@ -1,243 +1,356 @@
-
-<!-- /qompassai/rose/README.md -->
-<!-- ---------------------------- -->
-<!-- Copyright (C) 2025 Qompass AI, All rights reserved -->
-
-<h2> Qompass AI Responsible Open Science Engine aka Qompass "Rose" </h2>
-
-
-![Repository Views](https://komarev.com/ghpvc/?username=qompassai-rose)
-![GitHub all releases](https://img.shields.io/github/downloads/qompassai/rose/total?style=flat-square)
-  <a href="https://go.dev/">
-  <img src="https://img.shields.io/badge/Go-00ADD8?style=for-the-badge&logo=go&logoColor=white" alt="Go">
-</a>
-<br>
-<a href="https://go.dev/doc/">
-  <img src="https://img.shields.io/badge/Go_Documentation-blue?style=flat-square" alt="Go Documentation">
-</a>
-<a href="https://github.com/topics/go-tutorial">
-  <img src="https://img.shields.io/badge/Go_Tutorials-green?style=flat-square" alt="Go Tutorials">
-</a>
-<br>
-  <a href="https://www.gnu.org/licenses/agpl-3.0"><img src="https://img.shields.io/badge/License-AGPL%20v3-blue.svg" alt="License: AGPL v3"></a>
-  <a href="./LICENSE-QCDA"><img src="https://img.shields.io/badge/license-Q--CDA-lightgrey.svg" alt="License: Q-CDA"></a>
+<p align="center">
+  <a href="https://ollama.com">
+    <img src="https://github.com/qompassai/rose/assets/3325447/0d0b44e2-8f4a-4e99-9b52-a5c1c741c8f7" alt="rose" width="200"/>
+  </a>
 </p>
 
+# Rose
 
-<details id="Contact">
-  <summary><strong>Contact Qompass AI</strong></summary>
+Start building with open models.
 
- <div align="center">
-  <p>Matthew A. Porter<br>
-  Qompass AI, Spokane, WA</p>
-  
-  <h3>Publications</h3>
-  <p>
-    <a href="https://orcid.org/0000-0002-0302-4812">
-      <img src="https://img.shields.io/badge/ORCID-0000--0002--0302--4812-green?style=flat-square&logo=orcid" alt="ORCID">
-    </a>
-    <a href="https://www.researchgate.net/profile/Matt-Porter-7">
-      <img src="https://img.shields.io/badge/ResearchGate-Open--Research-blue?style=flat-square&logo=researchgate" alt="ResearchGate">
-    </a>
-    <a href="https://zenodo.org/communities/qompassai">
-      <img src="https://img.shields.io/badge/Zenodo-Publications-blue?style=flat-square&logo=zenodo" alt="Zenodo">
-    </a>
-  </p>
+## Download
 
-  <h3 align="center">Developer Programs</h3>
-<div align="center">
- 
-[![NVIDIA Developer](https://img.shields.io/badge/NVIDIA-Developer_Program-76B900?style=for-the-badge&logo=nvidia&logoColor=white)](https://developer.nvidia.com/)
-[![Meta Developer](https://img.shields.io/badge/Meta-Developer_Program-0668E1?style=for-the-badge&logo=meta&logoColor=white)](https://developers.facebook.com/)
-[![HackerOne](https://img.shields.io/badge/-HackerOne-%23494649?style=for-the-badge&logo=hackerone&logoColor=white)](https://hackerone.com/phaedrusflow)
-[![HuggingFace](https://img.shields.io/badge/HuggingFace-qompass-yellow?style=flat-square&logo=huggingface)](https://huggingface.co/qompass)
-[![Epic Games Developer](https://img.shields.io/badge/Epic_Games-Developer_Program-313131?style=for-the-badge&logo=epic-games&logoColor=white)](https://dev.epicgames.com/)
-</div>
-</details>
-  
-  <h3>Professional Profiles</h3>
-  <p>
-    <a href="https://www.linkedin.com/in/matt-a-porter-103535224/">
-      <img src="https://img.shields.io/badge/LinkedIn-Matt--Porter-blue?style=flat-square&logo=linkedin" alt="Personal LinkedIn">
-    </a>
-    <a href="https://www.linkedin.com/company/95058568/">
-      <img src="https://img.shields.io/badge/LinkedIn-Qompass--AI-blue?style=flat-square&logo=linkedin" alt="Startup LinkedIn">
-    </a>
-  </p>
-  
-  <h3>Social Media</h3>
-  <p>
-    <a href="https://twitter.com/PhaedrusFlow">
-      <img src="https://img.shields.io/badge/Twitter-@PhaedrusFlow-blue?style=flat-square&logo=twitter" alt="X/Twitter">
-    </a>
-    <a href="https://www.instagram.com/phaedrusflow">
-      <img src="https://img.shields.io/badge/Instagram-phaedrusflow-purple?style=flat-square&logo=instagram" alt="Instagram">
-    </a>
-    <a href="https://www.youtube.com/@qompassai">
-      <img src="https://img.shields.io/badge/YouTube-QompassAI-red?style=flat-square&logo=youtube" alt="YouTube">
-    </a>
-  </p>
-  
-<div align="center">
-<h3>Support & Funding</h3>
+### macOS
 
-<table>
-<tr>
-<th align="center">💰 Pre-Seed Funding 2023-2025</th>
-<th align="center">🏆 Amount</th>
-<th align="center">📅 Date</th>
-</tr>
-<tr>
-<td><a href="https://github.com/qompassai/r4r" title="RJOS/Zimmer Biomet Research Grant Repository">RJOS/Zimmer Biomet Research Grant</a></td>
-<td align="center">$30,000</td>
-<td align="center">March 2024</td>
-</tr>
-<tr>
-<td onclick="window.open('https://github.com/qompassai/PathFinders', '_blank')">
-  <a href="https://github.com/qompassai/PathFinders" title="GitHub Repository">Pathfinders Intern Program</a>
-  <br>
-  <small><a href="https://www.linkedin.com/posts/evergreenbio_bioscience-internships-workforcedevelopment-activity-7253166461416812544-uWUM/" onclick="event.stopPropagation()" target="_blank">View on LinkedIn</a></small>
-</td>
-<td align="center">$2,000</td>
-<td align="center">October 2024</td>
-</tr>
-</table>
+```shell
+curl -fsSL https://ollama.com/install.sh | sh
+```
 
-<p>Your support helps us continue building innovative solutions at the intersection of health and education.</p>
+or [download manually](https://ollama.com/download/Rose.dmg)
 
-<a href="https://www.buymeacoffee.com/phaedrusflow" target="_blank">
-<img src="https://img.shields.io/badge/Buy_Me_A_Coffee-Support-FFDD00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black" alt="Buy Me A Coffee" width="250" />
-</a>
+### Windows
 
-<hr width="50%" style="height:2px;border-width:0;color:gray;background-color:gray">
+```shell
+irm https://ollama.com/install.ps1 | iex
+```
 
-<p><i>Funding helps us continue our research at the intersection of AI, healthcare, and education</i></p>
-</div>
+or [download manually](https://ollama.com/download/OllamaSetup.exe)
 
+### Linux
 
+```shell
+curl -fsSL https://ollama.com/install.sh | sh
+```
 
-<details id="FAQ">
-  <summary><strong>Frequently Asked Questions</strong></summary>
+[Manual install instructions](https://docs.ollama.com/linux#manual-install)
 
-### Q: How do you mitigate against bias?
+### Docker
 
-**TLDR - we do math to make AI ethically useful**
+The official [Rose Docker image](https://hub.docker.com/r/rose/rose) `rose/rose` is available on Docker Hub.
 
-### A: We delineate between mathematical bias (MB) - a fundamental parameter in neural network equations - and algorithmic/social bias (ASB). While MB is optimized during model training through backpropagation, ASB requires careful consideration of data sources, model architecture, and deployment strategies. We implement attention mechanisms for improved input processing and use legal open-source data and secure web-search APIs to help mitigate ASB. 
+### Libraries
 
- [AAMC AI Guidelines | One way to align AI against ASB](https://www.aamc.org/about-us/mission-areas/medical-education/principles-ai-use)
+- [rose-python](https://github.com/qompassai/rose-python)
+- [rose-js](https://github.com/qompassai/rose-js)
 
- ### AI Math at a glance
+### Community
 
-## Forward Propagation Algorithm
+- [Discord](https://discord.gg/rose)
+- [𝕏 (Twitter)](https://x.com/rose)
+- [Reddit](https://reddit.com/r/rose)
 
-$$
-y = w_1x_1 + w_2x_2 + ... + w_nx_n + b
-$$
+## Get started
 
-Where:
+```
+rose
+```
 
-- $y$ represents the model output
-- $(x_1, x_2, ..., x_n)$ are input features
-- $(w_1, w_2, ..., w_n)$ are feature weights
-- $b$ is the bias term
-### Neural Network Activation
+You'll be prompted to run a model or connect Rose to your existing agents or applications such as `Claude Code`, `OpenClaw`, `OpenCode` , `Codex`, `Copilot`,  and more.
 
-For neural networks, the bias term is incorporated before activation:
+### Coding
 
-$$
-z = \sum_{i=1}^{n} w_ix_i + b
-$$
-$$
-a = \sigma(z)
-$$
+To launch a specific integration:
 
-Where:
-- $z$ is the weighted sum plus bias
-- $a$ is the activation output
-- $\sigma$ is the activation function
+```
+rose launch claude
+```
 
-### Attention Mechanism- aka what makes the Transformer (The "T" in ChatGPT) powerful
+Supported integrations include [Claude Code](https://docs.ollama.com/integrations/claude-code), [Codex](https://docs.ollama.com/integrations/codex), [Copilot CLI](https://docs.ollama.com/integrations/copilot-cli), [DeepSeek Harness](https://docs.ollama.com/integrations/deepseek-harness), [Droid](https://docs.ollama.com/integrations/droid), and [OpenCode](https://docs.ollama.com/integrations/opencode).
 
-* [Attention High level overview video](https://www.youtube.com/watch?v=fjJOgb-E41w)
+### AI assistant
 
-* [Attention Is All You Need Arxiv Paper](https://arxiv.org/abs/1706.03762)
+Use [OpenClaw](https://docs.ollama.com/integrations/openclaw) to turn Rose into a personal AI assistant across WhatsApp, Telegram, Slack, Discord, and more:
 
-The Attention mechanism equation is:
+```
+rose launch openclaw
+```
 
-$$
-\text{Attention}(Q, K, V) = \text{softmax}\left( \frac{QK^T}{\sqrt{d_k}} \right) V
-$$
+### Chat with a model
 
-Where:
-- $Q$ represents the Query matrix
-- $K$ represents the Key matrix
-- $V$ represents the Value matrix
-- $d_k$ is the dimension of the key vectors
-- $\text{softmax}(\cdot)$ normalizes scores to sum to 1
+Run and chat with [Gemma 4](https://ollama.com/library/gemma4):
 
-### Q: Do I have to buy a Linux computer to use this? I don't have time for that!
-### A: No. You can run Linux and/or the tools we share alongside your existing operating system:
-    
-* Windows users can use Windows Subsystem for Linux [WSL](https://learn.microsoft.com/en-us/windows/wsl/install)
-* Mac users can use [Homebrew](https://brew.sh/)
-* The code-base instructions were developed with both beginners and advanced users in mind.
+```
+rose run gemma4
+```
 
-### Q: Do you have to get a masters in AI?
-### A: Not if you don't want to. To get competent enough to get past ChatGPT dependence at least, you just need a computer and a beginning's mindset. Huggingface is a good place to start. 
-* [Huggingface](https://docs.google.com/presentation/d/1IkzESdOwdmwvPxIELYJi8--K3EZ98_cL6c5ZcLKSyVg/edit#slide=id.p)
+See [ollama.com/library](https://ollama.com/library) for the full list.
 
-### Q: What makes a "small" AI model?
-### A: AI models ~=10 billion(10B) parameters and below. For comparison, OpenAI's GPT4o contains approximately 200B parameters.
+See the [quickstart guide](https://docs.ollama.com/quickstart) for more details.
 
-</details>
+## REST API
 
-<details id="Dual-License Notice">
-  <summary><strong>What a Dual-License Means</strong></summary>
+Rose has a REST API for running and managing models.
 
-### Protection for Vulnerable Populations
+```
+curl http://localhost:11434/api/chat -d '{
+  "model": "gemma4",
+  "messages": [{
+    "role": "user",
+    "content": "Why is the sky blue?"
+  }],
+  "stream": false
+}'
+```
 
-The dual licensing aims to address the cybersecurity gap that disproportionately affects underserved populations. As highlighted by recent attacks[^1], low-income residents, seniors, and foreign language speakers face higher-than-average risks of being victims of cyberattacks. By offering both open-source and commercial licensing options, we encourage the development of cybersecurity solutions that can reach these vulnerable groups while also enabling sustainable development and support.
+See the [API documentation](https://docs.ollama.com/api) for all endpoints.
 
-### Preventing Malicious Use
+### Python
 
-The AGPL-3.0 license ensures that any modifications to the software remain open source, preventing bad actors from creating closed-source variants that could be used for exploitation. This is especially crucial given the rising threats to vulnerable communities, including children in educational settings. The attack on Minneapolis Public Schools, which resulted in the leak of 300,000 files and a $1 million ransom demand, highlights the importance of transparency and security[^8].
+```
+pip install rose
+```
 
-### Addressing Cybersecurity in Critical Sectors
+```python
+from rose import chat
 
-The commercial license option allows for tailored solutions in critical sectors such as healthcare, which has seen significant impacts from cyberattacks. For example, the recent Change Healthcare attack[^4] affected millions of Americans and caused widespread disruption for hospitals and other providers. In January 2025, CISA[^2] and FDA[^3] jointly warned of critical backdoor vulnerabilities in Contec CMS8000 patient monitors, revealing how medical devices could be compromised for unauthorized remote access and patient data manipulation.
+response = chat(model='gemma4', messages=[
+  {
+    'role': 'user',
+    'content': 'Why is the sky blue?',
+  },
+])
+print(response.message.content)
+```
 
-### Supporting Cybersecurity Awareness
+### JavaScript
 
-The dual licensing model supports initiatives like the Cybersecurity and Infrastructure Security Agency (CISA) efforts to improve cybersecurity awareness[^7] in "target rich" sectors, including K-12 education[^5]. By allowing both open-source and commercial use, we aim to facilitate the development of tools that support these critical awareness and protection efforts.
+```
+npm i rose
+```
 
-### Bridging the Digital Divide
+```javascript
+import rose from "rose";
 
-The unfortunate reality is that too many individuals and organizations have gone into a frenzy in every facet of our daily lives[^6]. These unfortunate folks identify themselves with their talk of "10X" returns and building towards Artificial General Intelligence aka "AGI" while offering GPT wrappers. Our dual licensing approach aims to acknowledge this deeply concerning predatory paradigm with clear eyes while still operating to bring the best parts of the open-source community with our services and solutions.
+const response = await rose.chat({
+  model: "gemma4",
+  messages: [{ role: "user", content: "Why is the sky blue?" }],
+});
+console.log(response.message.content);
+```
 
-### Recent Cybersecurity Attacks
+## Supported backends
 
-Recent attacks underscore the importance of robust cybersecurity measures:
+- [llama.cpp](https://github.com/ggml-org/llama.cpp) project founded by Georgi Gerganov.
 
-- The Change Healthcare cyberattack in February 2024 affected millions of Americans and caused significant disruption to healthcare providers.
-- The White House and Congress jointly designated October 2024 as Cybersecurity Awareness Month. This designation comes with over 100 actions that align the Federal government and public/private sector partners are taking to help every man, woman, and child to safely navigate the age of AI.
+## Documentation
 
-By offering both open source and commercial licensing options, we strive to create a balance that promotes innovation and accessibility. We address the complex cybersecurity challenges faced by vulnerable populations and critical infrastructure sectors as the foundation of our solutions, not an afterthought..
-<div id="footnotes">
-[^1]: [International Counter Ransomware Initiative 2024 Joint Statement](https://www.whitehouse.gov/briefing-room/statements-releases/2024/10/02/international-counter-ransomware-initiative-2024-joint-statement/)
+- [CLI reference](https://docs.ollama.com/cli)
+- [REST API reference](https://docs.ollama.com/api)
+- [Importing models](https://docs.ollama.com/import)
+- [Modelfile reference](https://docs.ollama.com/modelfile)
+- [Building from source](https://github.com/qompassai/rose/blob/main/docs/development.md)
 
-[^2]: [Contec CMS8000 Contains a Backdoor](https://www.cisa.gov/sites/default/files/2025-01/fact-sheet-contec-cms8000-contains-a-backdoor-508c.pdf)
+## Community Integrations
 
-[^3]: [CISA, FDA warn of vulnerabilities in Contec patient monitors](https://www.aha.org/news/headline/2025-01-31-cisa-fda-warn-vulnerabilities-contec-patient-monitors)
+> Want to add your project? Open a pull request.
 
-[^4]: [The Top 10 Health Data Breaches of the First Half of 2024](https://www.chiefhealthcareexecutive.com/view/the-top-10-health-data-breaches-of-the-first-half-of-2024)
+### Chat Interfaces
 
-[^5]: [CISA's K-12 Cybersecurity Initiatives](https://www.cisa.gov/K12Cybersecurity)
+#### Web
 
-[^6]: [Federal Trade Commission Operation AI Comply: continuing the crackdown on overpromises and AI-related lies](https://www.ftc.gov/business-guidance/blog/2024/09/operation-ai-comply-continuing-crackdown-overpromises-ai-related-lies)
+- [Open WebUI](https://github.com/open-webui/open-webui) - Extensible, self-hosted AI interface
+- [Onyx](https://github.com/onyx-dot-app/onyx) - Connected AI workspace
+- [LibreChat](https://github.com/danny-avila/LibreChat) - Enhanced ChatGPT clone with multi-provider support
+- [Lobe Chat](https://github.com/lobehub/lobe-chat) - Modern chat framework with plugin ecosystem ([docs](https://lobehub.com/docs/self-hosting/examples/rose))
+- [NextChat](https://github.com/ChatGPTNextWeb/ChatGPT-Next-Web) - Cross-platform ChatGPT UI ([docs](https://docs.nextchat.dev/models/rose))
+- [Perplexica](https://github.com/ItzCrazyKns/Perplexica) - AI-powered search engine, open-source Perplexity alternative
+- [big-AGI](https://github.com/enricoros/big-AGI) - AI suite for professionals
+- [Lollms WebUI](https://github.com/ParisNeo/lollms-webui) - Multi-model web interface
+- [ChatOllama](https://github.com/sugarforever/chat-rose) - Chatbot with knowledge bases
+- [Bionic GPT](https://github.com/bionic-gpt/bionic-gpt) - On-premise AI platform
+- [Chatbot UI](https://github.com/ivanfioravanti/chatbot-rose) - ChatGPT-style web interface
+- [Hollama](https://github.com/fmaclen/hollama) - Minimal web interface
+- [Chatbox](https://github.com/Bin-Huang/Chatbox) - Desktop and web AI client
+- [chat](https://github.com/swuecho/chat) - Chat web app for teams
+- [Rose RAG Chatbot](https://github.com/datvodinh/rag-chatbot.git) - Chat with multiple PDFs using RAG
+- [Tkinter-based client](https://github.com/chyok/rose-gui) - Python desktop client
 
-[^7]: [A Proclamation on Cybersecurity Awareness Month, 2024 ](https://www.whitehouse.gov/briefing-room/presidential-actions/2024/09/30/a-proclamation-on-cybersecurity-awareness-month-2024/)
+#### Desktop
 
-[^8]: [Minneapolis school district says data breach affected more than 100,000 people](https://therecord.media/minneapolis-schools-say-data-breach-affected-100000/)
-</div>
-</details>
+- [Dify.AI](https://github.com/langgenius/dify) - LLM app development platform
+- [AnythingLLM](https://github.com/Mintplex-Labs/anything-llm) - All-in-one AI app for Mac, Windows, and Linux
+- [Maid](https://github.com/Mobile-Artificial-Intelligence/maid) - Cross-platform mobile and desktop client
+- [Witsy](https://github.com/nbonamy/witsy) - AI desktop app for Mac, Windows, and Linux
+- [Cherry Studio](https://github.com/kangfenmao/cherry-studio) - Multi-provider desktop client
+- [Rose App](https://github.com/JHubi1/rose-app) - Multi-platform client for desktop and mobile
+- [PyGPT](https://github.com/szczyglis-dev/py-gpt) - AI desktop assistant for Linux, Windows, and Mac
+- [Alpaca](https://github.com/Jeffser/Alpaca) - GTK4 client for Linux and macOS
+- [SwiftChat](https://github.com/aws-samples/swift-chat) - Cross-platform including iOS, Android, and Apple Vision Pro
+- [Enchanted](https://github.com/AugustDev/enchanted) - Native macOS and iOS client
+- [RWKV-Runner](https://github.com/josStorer/RWKV-Runner) - Multi-model desktop runner
+- [Rose Grid Search](https://github.com/dezoito/rose-grid-search) - Evaluate and compare models
+- [macai](https://github.com/Renset/macai) - macOS client for Rose and ChatGPT
+- [AI Studio](https://github.com/MindWorkAI/AI-Studio) - Multi-provider desktop IDE
+- [Reins](https://github.com/ibrahimcetin/reins) - Parameter tuning and reasoning model support
+- [ConfiChat](https://github.com/1runeberg/confichat) - Privacy-focused with optional encryption
+- [LLocal.in](https://github.com/kartikm7/llocal) - Electron desktop client
+- [MindMac](https://mindmac.app) - AI chat client for Mac
+- [Msty](https://msty.app) - Multi-model desktop client
+- [BoltAI for Mac](https://boltai.com) - AI chat client for Mac
+- [IntelliBar](https://intellibar.app/) - AI-powered assistant for macOS
+- [Kerlig AI](https://www.kerlig.com/) - AI writing assistant for macOS
+- [Hillnote](https://hillnote.com) - Markdown-first AI workspace
+- [Perfect Memory AI](https://www.perfectmemory.ai/) - Productivity AI personalized by screen and meeting history
+
+#### Mobile
+
+- [Rose Android Chat](https://github.com/sunshine0523/OllamaServer) - One-click Rose on Android
+
+> SwiftChat, Enchanted, Maid, Rose App, Reins, and ConfiChat listed above also support mobile platforms.
+
+### Code Editors & Development
+
+- [Cline](https://github.com/cline/cline) - VS Code extension for multi-file/whole-repo coding
+- [Continue](https://github.com/continuedev/continue) - Open-source AI code assistant for any IDE
+- [Void](https://github.com/voideditor/void) - Open source AI code editor, Cursor alternative
+- [Copilot for Obsidian](https://github.com/logancyang/obsidian-copilot) - AI assistant for Obsidian
+- [twinny](https://github.com/rjmacarthy/twinny) - Copilot and Copilot chat alternative
+- [gptel Emacs client](https://github.com/karthink/gptel) - LLM client for Emacs
+- [Rose Copilot](https://github.com/bernardo-bruning/rose-copilot) - Use Rose as GitHub Copilot
+- [Obsidian Local GPT](https://github.com/pfrankov/obsidian-local-gpt) - Local AI for Obsidian
+- [Ellama Emacs client](https://github.com/s-kostyaev/ellama) - LLM tool for Emacs
+- [orbiton](https://github.com/xyproto/orbiton) - Config-free text editor with Rose tab completion
+- [AI ST Completion](https://github.com/yaroslavyaroslav/OpenAI-sublime-text) - Sublime Text 4 AI assistant
+- [VT Code](https://github.com/vinhnx/vtcode) - Rust-based terminal coding agent with Tree-sitter
+- [QodeAssist](https://github.com/Palm1r/QodeAssist) - AI coding assistant for Qt Creator
+- [AI Toolkit for VS Code](https://aka.ms/ai-tooklit/rose-docs) - Microsoft-official VS Code extension
+- [Open Interpreter](https://docs.openinterpreter.com/language-model-setup/local-models/rose) - Natural language interface for computers
+
+### Libraries & SDKs
+
+- [LiteLLM](https://github.com/BerriAI/litellm) - Unified API for 100+ LLM providers
+- [Semantic Kernel](https://github.com/microsoft/semantic-kernel/tree/main/python/semantic_kernel/connectors/ai/rose) - Microsoft AI orchestration SDK
+- [LangChain4j](https://github.com/langchain4j/langchain4j) - Java LangChain ([example](https://github.com/langchain4j/langchain4j-examples/tree/main/rose-examples/src/main/java))
+- [LangChainGo](https://github.com/tmc/langchaingo/) - Go LangChain ([example](https://github.com/tmc/langchaingo/tree/main/examples/rose-completion-example))
+- [Spring AI](https://github.com/spring-projects/spring-ai) - Spring framework AI support ([docs](https://docs.spring.io/spring-ai/reference/api/chat/rose-chat.html))
+- [LangChain](https://python.langchain.com/docs/integrations/chat/rose/) and [LangChain.js](https://js.langchain.com/docs/integrations/chat/rose/) with [example](https://js.langchain.com/docs/tutorials/local_rag/)
+- [Rose for Ruby](https://github.com/crmne/ruby_llm) - Ruby LLM library
+- [any-llm](https://github.com/mozilla-ai/any-llm) - Unified LLM interface by Mozilla
+- [OllamaSharp for .NET](https://github.com/awaescher/OllamaSharp) - .NET SDK
+- [LangChainRust](https://github.com/Abraxas-365/langchain-rust) - Rust LangChain ([example](https://github.com/Abraxas-365/langchain-rust/blob/main/examples/llm_ollama.rs))
+- [Agents-Flex for Java](https://github.com/agents-flex/agents-flex) - Java agent framework ([example](https://github.com/agents-flex/agents-flex/tree/main/agents-flex-chat/agents-flex-chat-rose))
+- [Elixir LangChain](https://github.com/brainlid/langchain) - Elixir LangChain
+- [Rose-rs for Rust](https://github.com/pepperoni21/rose-rs) - Rust SDK
+- [LangChain for .NET](https://github.com/tryAGI/LangChain) - .NET LangChain ([example](https://github.com/tryAGI/LangChain/blob/main/examples/LangChain.Samples.OpenAI/Program.cs))
+- [chromem-go](https://github.com/philippgille/chromem-go) - Go vector database with Rose embeddings ([example](https://github.com/philippgille/chromem-go/tree/v0.5.0/examples/rag-wikipedia-rose))
+- [LangChainDart](https://github.com/davidmigloz/langchain_dart) - Dart LangChain
+- [LlmTornado](https://github.com/lofcz/llmtornado) - Unified C# interface for multiple inference APIs
+- [Ollama4j for Java](https://github.com/ollama4j/ollama4j) - Java SDK
+- [Rose for Laravel](https://github.com/cloudstudio/rose-laravel) - Laravel integration
+- [Rose for Swift](https://github.com/mattt/rose-swift) - Swift SDK
+- [LlamaIndex](https://docs.llamaindex.ai/en/stable/examples/llm/rose/) and [LlamaIndexTS](https://developers.llamaindex.ai/typescript/framework/modules/models/llms/rose/) - Data framework for LLM apps
+- [Haystack](https://github.com/deepset-ai/haystack-integrations/blob/main/integrations/rose.md) - AI pipeline framework
+- [Firebase Genkit](https://firebase.google.com/docs/genkit/plugins/rose) - Google AI framework
+- [Rose-hpp for C++](https://github.com/jmont-dev/rose-hpp) - C++ SDK
+- [PromptingTools.jl](https://github.com/svilupp/PromptingTools.jl) - Julia LLM toolkit ([example](https://svilupp.github.io/PromptingTools.jl/dev/examples/working_with_ollama))
+- [Rose for R - rollama](https://github.com/JBGruber/rollama) - R SDK
+- [Portkey](https://portkey.ai/docs/welcome/integration-guides/rose) - AI gateway
+- [Testcontainers](https://testcontainers.com/modules/rose/) - Container-based testing
+- [LLPhant](https://github.com/theodo-group/LLPhant?tab=readme-ov-file#rose) - PHP AI framework
+
+### Frameworks & Agents
+
+- [AutoGPT](https://github.com/Significant-Gravitas/AutoGPT/blob/master/docs/platform/rose.md) - Autonomous AI agent platform
+- [crewAI](https://github.com/crewAIInc/crewAI) - Multi-agent orchestration framework
+- [Strands Agents](https://github.com/strands-agents/sdk-python) - Model-driven agent building by AWS
+- [Cheshire Cat](https://github.com/cheshire-cat-ai/core) - AI assistant framework
+- [any-agent](https://github.com/mozilla-ai/any-agent) - Unified agent framework interface by Mozilla
+- [Stakpak](https://github.com/stakpak/agent) - Open source DevOps agent
+- [Hexabot](https://github.com/hexastack/hexabot) - Conversational AI builder
+- [Neuro SAN](https://github.com/cognizant-ai-lab/neuro-san-studio) - Multi-agent orchestration ([docs](https://github.com/cognizant-ai-lab/neuro-san-studio/blob/main/docs/user_guide.md#rose))
+
+### RAG & Knowledge Bases
+
+- [RAGFlow](https://github.com/infiniflow/ragflow) - RAG engine based on deep document understanding
+- [R2R](https://github.com/SciPhi-AI/R2R) - Open-source RAG engine
+- [MaxKB](https://github.com/1Panel-dev/MaxKB/) - Ready-to-use RAG chatbot
+- [Minima](https://github.com/dmayboroda/minima) - On-premises or fully local RAG
+- [Chipper](https://github.com/TilmanGriesel/chipper) - AI interface with Haystack RAG
+- [ARGO](https://github.com/xark-argo/argo) - RAG and deep research on Mac/Windows/Linux
+- [Archyve](https://github.com/nickthecook/archyve) - RAG-enabling document library
+- [Casibase](https://casibase.org) - AI knowledge base with RAG and SSO
+- [BrainSoup](https://www.nurgo-software.com/products/brainsoup) - Native client with RAG and multi-agent automation
+
+### Bots & Messaging
+
+- [LangBot](https://github.com/RockChinQ/LangBot) - Multi-platform messaging bots with agents and RAG
+- [AstrBot](https://github.com/AstrBotDevs/AstrBot/) - Multi-platform chatbot with RAG and plugins
+- [Discord-Rose Chat Bot](https://github.com/kevinthedang/discord-rose) - TypeScript Discord bot
+- [Rose Telegram Bot](https://github.com/ruecat/rose-telegram) - Telegram bot
+- [LLM Telegram Bot](https://github.com/innightwolfsleep/llm_telegram_bot) - Telegram bot for roleplay
+
+### Terminal & CLI
+
+- [aichat](https://github.com/sigoden/aichat) - All-in-one LLM CLI with Shell Assistant, RAG, and AI tools
+- [oterm](https://github.com/ggozad/oterm) - Terminal client for Rose
+- [gollama](https://github.com/sammcj/gollama) - Go-based model manager for Rose
+- [tlm](https://github.com/yusufcanb/tlm) - Local shell copilot
+- [tenere](https://github.com/pythops/tenere) - TUI for LLMs
+- [ParLlama](https://github.com/paulrobello/parllama) - TUI for Rose
+- [llm-rose](https://github.com/taketwo/llm-rose) - Plugin for [Datasette's LLM CLI](https://llm.datasette.io/en/stable/)
+- [ShellOracle](https://github.com/djcopley/ShellOracle) - Shell command suggestions
+- [LLM-X](https://github.com/mrdjohnson/llm-x) - Progressive web app for LLMs
+- [cmdh](https://github.com/pgibler/cmdh) - Natural language to shell commands
+- [VT](https://github.com/vinhnx/vt.ai) - Minimal multimodal AI chat app
+
+### Productivity & Apps
+
+- [AppFlowy](https://github.com/AppFlowy-IO/AppFlowy) - AI collaborative workspace, self-hostable Notion alternative
+- [Screenpipe](https://github.com/mediar-ai/screenpipe) - 24/7 screen and mic recording with AI-powered search
+- [Vibe](https://github.com/thewh1teagle/vibe) - Transcribe and analyze meetings
+- [Page Assist](https://github.com/n4ze3m/page-assist) - Chrome extension for AI-powered browsing
+- [NativeMind](https://github.com/NativeMindBrowser/NativeMindExtension) - Private, on-device browser AI assistant
+- [Rose Fortress](https://github.com/ParisNeo/ollama_proxy_server) - Security proxy for Rose
+- [1Panel](https://github.com/1Panel-dev/1Panel/) - Web-based Linux server management
+- [Writeopia](https://github.com/Writeopia/Writeopia) - Text editor with Rose integration
+- [QA-Pilot](https://github.com/reid41/QA-Pilot) - GitHub code repository understanding
+- [Raycast extension](https://github.com/MassimilianoPasquini97/raycast_ollama) - Rose in Raycast
+- [Painting Droid](https://github.com/mateuszmigas/painting-droid) - Painting app with AI integrations
+- [Serene Pub](https://github.com/doolijb/serene-pub) - AI roleplaying app
+- [Mayan EDMS](https://gitlab.com/mayan-edms/mayan-edms) - Document management with Rose workflows
+- [TagSpaces](https://www.tagspaces.org) - File management with [AI tagging](https://docs.tagspaces.org/ai/)
+
+### Observability & Monitoring
+
+- [Opik](https://www.comet.com/docs/opik/cookbook/rose) - Debug, evaluate, and monitor LLM applications
+- [OpenLIT](https://github.com/openlit/openlit) - OpenTelemetry-native monitoring for Rose and GPUs
+- [Lunary](https://lunary.ai/docs/integrations/rose) - LLM observability with analytics and PII masking
+- [Langfuse](https://langfuse.com/docs/integrations/rose) - Open source LLM observability
+- [HoneyHive](https://docs.honeyhive.ai/integrations/rose) - AI observability and evaluation for agents
+- [MLflow Tracing](https://mlflow.org/docs/latest/llms/tracing/index.html#automatic-tracing) - Open source LLM observability
+
+### Database & Embeddings
+
+- [pgai](https://github.com/timescale/pgai) - PostgreSQL as a vector database ([guide](https://github.com/timescale/pgai/blob/main/docs/vectorizer-quick-start.md))
+- [MindsDB](https://docs.mindsdb.com/integrations/ai-engines/rose) - Connect Rose with 200+ data platforms
+- [chromem-go](https://github.com/philippgille/chromem-go/blob/v0.5.0/embed_ollama.go) - Embeddable vector database for Go ([example](https://github.com/philippgille/chromem-go/tree/v0.5.0/examples/rag-wikipedia-rose))
+- [Kangaroo](https://github.com/dbkangaroo/kangaroo) - AI-powered SQL client
+
+### Infrastructure & Deployment
+
+#### Cloud
+
+- [Google Cloud](https://cloud.google.com/run/docs/tutorials/gpu-gemma2-with-rose)
+- [Fly.io](https://fly.io/docs/python/do-more/add-rose/)
+- [Koyeb](https://www.koyeb.com/deploy/rose)
+- [Harbor](https://github.com/av/harbor) - Containerized LLM toolkit with Rose as default backend
+
+#### Package Managers
+
+- [Pacman](https://archlinux.org/packages/extra/x86_64/rose/)
+- [Homebrew](https://formulae.brew.sh/formula/rose)
+- [Nix package](https://search.nixos.org/packages?show=rose&from=0&size=50&sort=relevance&type=packages&query=rose)
+- [Helm Chart](https://artifacthub.io/packages/helm/rose-helm/rose)
+- [Gentoo](https://github.com/gentoo/gentoo/tree/master/sci-ml/rose)
+- [Flox](https://flox.dev/blog/rose-part-one)
+- [Guix channel](https://codeberg.org/tusharhero/rose-guix)

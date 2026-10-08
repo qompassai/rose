@@ -1,9 +1,10 @@
 package api
 
 import (
-	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -56,6 +57,7 @@ func TestClientFromEnvironment(t *testing.T) {
 type testError struct {
 	message    string
 	statusCode int
+	raw        bool // if true, write message as-is instead of JSON encoding
 }
 
 func (e testError) Error() string {
@@ -91,6 +93,16 @@ func TestClientStream(t *testing.T) {
 			wantErr: "mid-stream error",
 		},
 		{
+			name: "http status error takes precedence over general error",
+			responses: []any{
+				testError{
+					message:    "custom error message",
+					statusCode: http.StatusInternalServerError,
+				},
+			},
+			wantErr: "500",
+		},
+		{
 			name: "successful stream completion",
 			responses: []any{
 				ChatResponse{Message: Message{Content: "chunk 1"}},
@@ -101,6 +113,20 @@ func TestClientStream(t *testing.T) {
 					DoneReason: "stop",
 				},
 			},
+		},
+		{
+			name: "plain text error response",
+			responses: []any{
+				"internal server error",
+			},
+			wantErr: "internal server error",
+		},
+		{
+			name: "HTML error page",
+			responses: []any{
+				"<html><body>404 Not Found</body></html>",
+			},
+			wantErr: "404 Not Found",
 		},
 	}
 
@@ -126,6 +152,12 @@ func TestClientStream(t *testing.T) {
 						return
 					}
 
+					if str, ok := resp.(string); ok {
+						fmt.Fprintln(w, str)
+						flusher.Flush()
+						continue
+					}
+
 					if err := json.NewEncoder(w).Encode(resp); err != nil {
 						t.Fatalf("failed to encode response: %v", err)
 					}
@@ -137,7 +169,7 @@ func TestClientStream(t *testing.T) {
 			client := NewClient(&url.URL{Scheme: "http", Host: ts.Listener.Addr().String()}, http.DefaultClient)
 
 			var receivedChunks []ChatResponse
-			err := client.stream(context.Background(), http.MethodPost, "/v1/chat", nil, func(chunk []byte) error {
+			err := client.stream(t.Context(), http.MethodPost, "/v1/chat", nil, func(chunk []byte) error {
 				var resp ChatResponse
 				if err := json.Unmarshal(chunk, &resp); err != nil {
 					return fmt.Errorf("failed to unmarshal chunk: %w", err)
@@ -162,11 +194,41 @@ func TestClientStream(t *testing.T) {
 	}
 }
 
+func TestClientStreamReportsReadErrors(t *testing.T) {
+	client := NewClient(
+		&url.URL{Scheme: "http", Host: "example.com"},
+		&http.Client{Transport: roundTripFunc(func(*http.Request) (*http.Response, error) {
+			body := failingReader{
+				data: []byte(`{"message":{"content":"partial"}}` + "\n"),
+				err:  io.ErrUnexpectedEOF,
+			}
+
+			return &http.Response{
+				StatusCode: http.StatusOK,
+				Status:     "200 OK",
+				Body:       io.NopCloser(&body),
+				Header:     make(http.Header),
+			}, nil
+		})},
+	)
+
+	err := client.stream(t.Context(), http.MethodPost, "/api/chat", nil, func([]byte) error {
+		return nil
+	})
+	if err == nil {
+		t.Fatal("expected stream read error")
+	}
+	if !strings.Contains(err.Error(), io.ErrUnexpectedEOF.Error()) {
+		t.Fatalf("expected unexpected EOF, got %v", err)
+	}
+}
+
 func TestClientDo(t *testing.T) {
 	testCases := []struct {
-		name     string
-		response any
-		wantErr  string
+		name           string
+		response       any
+		wantErr        string
+		wantStatusCode int
 	}{
 		{
 			name: "immediate error response",
@@ -174,7 +236,8 @@ func TestClientDo(t *testing.T) {
 				message:    "test error message",
 				statusCode: http.StatusBadRequest,
 			},
-			wantErr: "test error message",
+			wantErr:        "test error message",
+			wantStatusCode: http.StatusBadRequest,
 		},
 		{
 			name: "server error response",
@@ -182,7 +245,8 @@ func TestClientDo(t *testing.T) {
 				message:    "internal error",
 				statusCode: http.StatusInternalServerError,
 			},
-			wantErr: "internal error",
+			wantErr:        "internal error",
+			wantStatusCode: http.StatusInternalServerError,
 		},
 		{
 			name: "successful response",
@@ -194,6 +258,26 @@ func TestClientDo(t *testing.T) {
 				Success: true,
 			},
 		},
+		{
+			name: "plain text error response",
+			response: testError{
+				message:    "internal server error",
+				statusCode: http.StatusInternalServerError,
+				raw:        true,
+			},
+			wantErr:        "internal server error",
+			wantStatusCode: http.StatusInternalServerError,
+		},
+		{
+			name: "HTML error page",
+			response: testError{
+				message:    "<html><body>404 Not Found</body></html>",
+				statusCode: http.StatusNotFound,
+				raw:        true,
+			},
+			wantErr:        "<html><body>404 Not Found</body></html>",
+			wantStatusCode: http.StatusNotFound,
+		},
 	}
 
 	for _, tc := range testCases {
@@ -201,11 +285,16 @@ func TestClientDo(t *testing.T) {
 			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				if errResp, ok := tc.response.(testError); ok {
 					w.WriteHeader(errResp.statusCode)
-					err := json.NewEncoder(w).Encode(map[string]string{
-						"error": errResp.message,
-					})
-					if err != nil {
-						t.Fatal("failed to encode error response:", err)
+					if !errResp.raw {
+						err := json.NewEncoder(w).Encode(map[string]string{
+							"error": errResp.message,
+						})
+						if err != nil {
+							t.Fatal("failed to encode error response:", err)
+						}
+					} else {
+						// Write raw message (simulates non-JSON error responses)
+						fmt.Fprint(w, errResp.message)
 					}
 					return
 				}
@@ -223,7 +312,7 @@ func TestClientDo(t *testing.T) {
 				ID      string `json:"id"`
 				Success bool   `json:"success"`
 			}
-			err := client.do(context.Background(), http.MethodPost, "/v1/messages", nil, &resp)
+			err := client.do(t.Context(), http.MethodPost, "/v1/messages", nil, &resp)
 
 			if tc.wantErr != "" {
 				if err == nil {
@@ -231,6 +320,15 @@ func TestClientDo(t *testing.T) {
 				}
 				if err.Error() != tc.wantErr {
 					t.Errorf("error message mismatch: got %q, want %q", err.Error(), tc.wantErr)
+				}
+				if tc.wantStatusCode != 0 {
+					if statusErr, ok := err.(StatusError); ok {
+						if statusErr.StatusCode != tc.wantStatusCode {
+							t.Errorf("status code mismatch: got %d, want %d", statusErr.StatusCode, tc.wantStatusCode)
+						}
+					} else {
+						t.Errorf("expected StatusError, got %T", err)
+					}
 				}
 				return
 			}
@@ -252,4 +350,227 @@ func TestClientDo(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestHeadBlob(t *testing.T) {
+	testCases := []struct {
+		name       string
+		statusCode int
+		body       string
+		wantExists bool
+		wantErr    string
+	}{
+		{
+			name:       "exists",
+			statusCode: http.StatusOK,
+			wantExists: true,
+		},
+		{
+			name:       "missing",
+			statusCode: http.StatusNotFound,
+			body:       `{"error":"missing"}`,
+		},
+		{
+			name:       "server error",
+			statusCode: http.StatusInternalServerError,
+			body:       `{"error":"stat failed"}`,
+			wantErr:    "stat failed",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			client := NewClient(
+				&url.URL{Scheme: "http", Host: "example.com"},
+				&http.Client{Transport: roundTripFunc(func(req *http.Request) (*http.Response, error) {
+					if req.Method != http.MethodHead {
+						t.Fatalf("method = %q, want HEAD", req.Method)
+					}
+					if req.URL.Path != "/api/blobs/sha256:abc" {
+						t.Fatalf("path = %q, want /api/blobs/sha256:abc", req.URL.Path)
+					}
+
+					status := http.StatusText(tc.statusCode)
+					return &http.Response{
+						StatusCode: tc.statusCode,
+						Status:     fmt.Sprintf("%d %s", tc.statusCode, status),
+						Body:       io.NopCloser(strings.NewReader(tc.body)),
+						Header:     make(http.Header),
+						Request:    req,
+					}, nil
+				})},
+			)
+
+			exists, err := client.HeadBlob(t.Context(), "sha256:abc")
+			if tc.wantErr != "" {
+				if err == nil {
+					t.Fatalf("got nil, want error %q", tc.wantErr)
+				}
+				if err.Error() != tc.wantErr {
+					t.Fatalf("error = %q, want %q", err.Error(), tc.wantErr)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("HeadBlob() error = %v", err)
+			}
+			if exists != tc.wantExists {
+				t.Fatalf("HeadBlob() exists = %v, want %v", exists, tc.wantExists)
+			}
+		})
+	}
+}
+
+func TestClientWebSearchExperimentalUsesLocalRoute(t *testing.T) {
+	var gotPath string
+	var gotMethod string
+	var gotRequest WebSearchRequest
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotPath = r.URL.Path
+		gotMethod = r.Method
+		if err := json.NewDecoder(r.Body).Decode(&gotRequest); err != nil {
+			t.Fatal(err)
+		}
+		if err := json.NewEncoder(w).Encode(WebSearchResponse{
+			Results: []WebSearchResult{{Title: "Rose", URL: "https://ollama.com", Content: "models"}},
+		}); err != nil {
+			t.Fatal(err)
+		}
+	}))
+	defer ts.Close()
+
+	client := NewClient(&url.URL{Scheme: "http", Host: ts.Listener.Addr().String()}, http.DefaultClient)
+	resp, err := client.WebSearchExperimental(t.Context(), &WebSearchRequest{Query: "rose", MaxResults: 3})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if gotMethod != http.MethodPost {
+		t.Fatalf("method = %q, want POST", gotMethod)
+	}
+	if gotPath != "/api/experimental/web_search" {
+		t.Fatalf("path = %q, want /api/experimental/web_search", gotPath)
+	}
+	if gotRequest.Query != "rose" || gotRequest.MaxResults != 3 {
+		t.Fatalf("request = %#v", gotRequest)
+	}
+	if len(resp.Results) != 1 || resp.Results[0].Title != "Rose" {
+		t.Fatalf("response = %#v", resp)
+	}
+}
+
+func TestClientWebSearchExperimentalErrors(t *testing.T) {
+	tests := []struct {
+		name        string
+		status      int
+		body        string
+		assertError func(*testing.T, error)
+	}{
+		{
+			name:   "unauthorized retains sign in URL",
+			status: http.StatusUnauthorized,
+			body:   `{"error":"unauthorized","signin_url":"https://ollama.com/signin/example"}`,
+			assertError: func(t *testing.T, err error) {
+				t.Helper()
+				var authErr AuthorizationError
+				if !errors.As(err, &authErr) {
+					t.Fatalf("error = %T, want AuthorizationError", err)
+				}
+				if authErr.StatusCode != http.StatusUnauthorized || authErr.SigninURL != "https://ollama.com/signin/example" {
+					t.Fatalf("authorization error = %#v", authErr)
+				}
+			},
+		},
+		{
+			name:   "rate limit retains status",
+			status: http.StatusTooManyRequests,
+			body:   `{"error":"rate limit exceeded"}`,
+			assertError: func(t *testing.T, err error) {
+				t.Helper()
+				var statusErr StatusError
+				if !errors.As(err, &statusErr) {
+					t.Fatalf("error = %T, want StatusError", err)
+				}
+				if statusErr.StatusCode != http.StatusTooManyRequests || statusErr.ErrorMessage != "rate limit exceeded" {
+					t.Fatalf("status error = %#v", statusErr)
+				}
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(tt.status)
+				_, _ = w.Write([]byte(tt.body))
+			}))
+			defer ts.Close()
+
+			client := NewClient(&url.URL{Scheme: "http", Host: ts.Listener.Addr().String()}, http.DefaultClient)
+			_, err := client.WebSearchExperimental(t.Context(), &WebSearchRequest{Query: "rose"})
+			if err == nil {
+				t.Fatal("expected error")
+			}
+			tt.assertError(t, err)
+		})
+	}
+}
+
+func TestClientWebFetchExperimentalUsesLocalRoute(t *testing.T) {
+	var gotPath string
+	var gotMethod string
+	var gotRequest WebFetchRequest
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotPath = r.URL.Path
+		gotMethod = r.Method
+		if err := json.NewDecoder(r.Body).Decode(&gotRequest); err != nil {
+			t.Fatal(err)
+		}
+		if err := json.NewEncoder(w).Encode(WebFetchResponse{
+			Title:   "Rose",
+			Content: "models",
+			Links:   []string{"https://ollama.com/library"},
+		}); err != nil {
+			t.Fatal(err)
+		}
+	}))
+	defer ts.Close()
+
+	client := NewClient(&url.URL{Scheme: "http", Host: ts.Listener.Addr().String()}, http.DefaultClient)
+	resp, err := client.WebFetchExperimental(t.Context(), &WebFetchRequest{URL: "https://ollama.com"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if gotMethod != http.MethodPost {
+		t.Fatalf("method = %q, want POST", gotMethod)
+	}
+	if gotPath != "/api/experimental/web_fetch" {
+		t.Fatalf("path = %q, want /api/experimental/web_fetch", gotPath)
+	}
+	if gotRequest.URL != "https://ollama.com" {
+		t.Fatalf("request = %#v", gotRequest)
+	}
+	if resp.Title != "Rose" || resp.Content != "models" {
+		t.Fatalf("response = %#v", resp)
+	}
+}
+
+type roundTripFunc func(*http.Request) (*http.Response, error)
+
+func (f roundTripFunc) RoundTrip(req *http.Request) (*http.Response, error) {
+	return f(req)
+}
+
+type failingReader struct {
+	data []byte
+	err  error
+}
+
+func (r *failingReader) Read(p []byte) (int, error) {
+	if len(r.data) > 0 {
+		n := copy(p, r.data)
+		r.data = r.data[n:]
+		return n, nil
+	}
+	return 0, r.err
 }
