@@ -8,12 +8,12 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/pelletier/go-toml/v2"
 	"github.com/qompassai/rose/cmd/internal/fileutil"
 	"github.com/qompassai/rose/envconfig"
 	"github.com/qompassai/rose/model/renderers"
 	"github.com/qompassai/rose/openai"
 	"github.com/qompassai/rose/types/model"
-	"github.com/pelletier/go-toml/v2"
 	"golang.org/x/mod/semver"
 )
 

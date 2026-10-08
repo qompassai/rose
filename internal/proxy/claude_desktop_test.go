@@ -225,7 +225,7 @@ func TestGatewayRoutesEveryMappedModelIDToExactOllamaRoute(t *testing.T) {
 	})
 
 	routes := []struct {
-		id     string
+		id   string
 		rose string
 	}{
 		{"claude-fable-5", "glm-5.2:cloud"},
