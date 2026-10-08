@@ -374,9 +374,20 @@ func Values() map[string]string {
 	return vals
 }
 
-// Var returns an environment variable stripped of leading and trailing quotes or spaces
+// Var returns an environment variable stripped of leading and trailing quotes or spaces.
+//
+// Rose renamed its environment variables from the OLLAMA_ prefix to ROSE_.
+// For a ROSE_ key that is unset (or set empty), Var falls back to the legacy
+// OLLAMA_ twin so existing scripts, service units, and deployments that set
+// OLLAMA_* keep working unchanged. When both are set, ROSE_ wins.
 func Var(key string) string {
-	return strings.Trim(strings.TrimSpace(os.Getenv(key)), "\"'")
+	if v := os.Getenv(key); v != "" {
+		return strings.Trim(strings.TrimSpace(v), "\"'")
+	}
+	if twin, ok := strings.CutPrefix(key, "ROSE_"); ok {
+		return strings.Trim(strings.TrimSpace(os.Getenv("OLLAMA_"+twin)), "\"'")
+	}
+	return ""
 }
 
 // serverConfigData holds the parsed fields from ~/.rose/server.json.
