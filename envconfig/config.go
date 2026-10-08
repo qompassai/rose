@@ -109,7 +109,8 @@ func AllowedOrigins() (origins []string) {
 }
 
 // Models returns the path to the models directory. Models directory can be configured via the ROSE_MODELS environment variable.
-// Default is $HOME/.rose/models
+// Default is $HOME/.rose/models, or $HOME/.ollama/models when that legacy
+// stock-Ollama store already exists (see the implementation for rationale).
 func Models() string {
 	if s := Var("ROSE_MODELS"); s != "" {
 		return s
@@ -120,7 +121,22 @@ func Models() string {
 		panic(err)
 	}
 
+	// Rose's own store is ~/.rose/models, but a machine that already runs
+	// stock Ollama keeps its library in ~/.ollama/models. Prefer the legacy
+	// store when it exists so an installed library (including locally
+	// created models such as phlow's hf-* specialists) is served in place
+	// instead of presenting an empty store on first run.
+	if legacy := filepath.Join(home, ".ollama", "models"); dirExists(legacy) {
+		return legacy
+	}
+
 	return filepath.Join(home, ".rose", "models")
+}
+
+// dirExists reports whether path is an existing directory.
+func dirExists(path string) bool {
+	info, err := os.Stat(path)
+	return err == nil && info.IsDir()
 }
 
 // KeepAlive returns the duration that models stay loaded in memory. KeepAlive can be configured via the ROSE_KEEP_ALIVE environment variable.
