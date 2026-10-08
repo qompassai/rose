@@ -48,7 +48,7 @@ func TestGetExistingName(t *testing.T) {
 		{"myorg/newmodel:q8", "MyOrg/newmodel:q8"},
 		{"neworg/newmodel:q8", "neworg/newmodel:q8"},
 		{"defaultmodel", "DefaultModel:latest"},
-		{"registry.ollama.ai/myorg/mymodel:q4", "MyOrg/MyModel:Q4"},
+		{"harbor.qompass.ai/myorg/mymodel:q4", "MyOrg/MyModel:Q4"},
 		{"ollama.com/myorg/mymodel:q4", "ollama.com/myorg/mymodel:q4"},
 		{"registry.ollama.com/myorg/mymodel:q4", "registry.ollama.com/myorg/mymodel:q4"},
 		{"LOCALHOST:12345/myorg/mymodel:q4", "localhost:12345/MyOrg/MyModel:Q4"},
