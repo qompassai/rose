@@ -55,6 +55,11 @@ for my $f (@files) {
     # Protect real service domains before token replacement.
     $src =~ s/ollama\.com/\x01HOST\x01/g;
     $src =~ s/ollama\.ai/\x01REG\x01/g;
+    # Protect the manifest media-type namespace: application/vnd.ollama.*
+    # is a storage/wire format shared with stock Ollama, not branding.
+    # Rebranding it made the fork unable to read any stock manifest
+    # (parity failure, 2026-10-07); it must survive every future import.
+    $src =~ s/vnd\.ollama/\x01VND\x01/g;
 
     # 1. module path
     $src =~ s{github\.com/ollama/ollama}{github.com/qompassai/rose}g;
@@ -68,6 +73,7 @@ for my $f (@files) {
     # Restore protected domains.
     $src =~ s/\x01HOST\x01/ollama.com/g;
     $src =~ s/\x01REG\x01/ollama.ai/g;
+    $src =~ s/\x01VND\x01/vnd.ollama/g;
 
     next if $src eq $orig;
     $changed++;
