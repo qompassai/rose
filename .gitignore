@@ -16,3 +16,8 @@ llama/build
 llama/vendor
 /rose
 integration/testdata/models/
+
+# Rose: local build caches are never committed (purged after the
+# v0.6.3-era snapshot imported 180 cache files into history).
+.cache/
+.zig-cache/
