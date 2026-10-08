@@ -22,7 +22,7 @@ var (
 const (
 	legacyDirName     = "manifests"
 	v2DirName         = "manifests-v2"
-	defaultPublicHost = "registry.ollama.ai"
+	defaultPublicHost = "harbor.qompass.ai"
 	v2CanonicalHost   = "ollama.com"
 	defaultNamespace  = "library"
 	defaultTag        = "latest"

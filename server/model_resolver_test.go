@@ -21,7 +21,7 @@ func TestParseModelSelector(t *testing.T) {
 			t.Fatalf("expected base gpt-oss:20b, got %q", got.Base)
 		}
 
-		if got.Name.String() != "registry.ollama.ai/library/gpt-oss:20b" {
+		if got.Name.String() != "harbor.qompass.ai/library/gpt-oss:20b" {
 			t.Fatalf("unexpected resolved name: %q", got.Name.String())
 		}
 	})
@@ -150,7 +150,7 @@ func TestParsePullModelRef(t *testing.T) {
 		if got.Base != "gpt-oss:20b-cloud" {
 			t.Fatalf("expected base gpt-oss:20b-cloud, got %q", got.Base)
 		}
-		if got.Name.String() != "registry.ollama.ai/library/gpt-oss:20b-cloud" {
+		if got.Name.String() != "harbor.qompass.ai/library/gpt-oss:20b-cloud" {
 			t.Fatalf("unexpected resolved name: %q", got.Name.String())
 		}
 	})
@@ -163,7 +163,7 @@ func TestParsePullModelRef(t *testing.T) {
 		if got.Base != "qwen3:cloud" {
 			t.Fatalf("expected base qwen3:cloud, got %q", got.Base)
 		}
-		if got.Name.String() != "registry.ollama.ai/library/qwen3:cloud" {
+		if got.Name.String() != "harbor.qompass.ai/library/qwen3:cloud" {
 			t.Fatalf("unexpected resolved name: %q", got.Name.String())
 		}
 	})
