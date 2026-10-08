@@ -1,9 +1,9 @@
-ollama.syso
+rose.syso
 *.crt
 *.exe
 /app/app
 /app/squirrel
-ollama
+rose
 *cover*
 .vscode
 .env

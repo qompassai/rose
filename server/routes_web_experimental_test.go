@@ -11,8 +11,8 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
-	internalcloud "github.com/ollama/ollama/internal/cloud"
-	"github.com/ollama/ollama/version"
+	internalcloud "github.com/qompassai/rose/internal/cloud"
+	"github.com/qompassai/rose/version"
 )
 
 type webExperimentalUpstreamCapture struct {
@@ -55,16 +55,16 @@ func TestExperimentalWebEndpointsPassthrough(t *testing.T) {
 			name:         "web_search",
 			localPath:    "/api/experimental/web_search",
 			upstreamPath: "/api/web_search",
-			requestBody:  `{"query":"what is ollama?","max_results":3}`,
-			responseBody: `{"results":[{"title":"Ollama","url":"https://ollama.com","content":"Cloud models are now available"}]}`,
-			assertBody:   `"query":"what is ollama?"`,
+			requestBody:  `{"query":"what is rose?","max_results":3}`,
+			responseBody: `{"results":[{"title":"Rose","url":"https://ollama.com","content":"Cloud models are now available"}]}`,
+			assertBody:   `"query":"what is rose?"`,
 		},
 		{
 			name:         "web_fetch",
 			localPath:    "/api/experimental/web_fetch",
 			upstreamPath: "/api/web_fetch",
 			requestBody:  `{"url":"https://ollama.com"}`,
-			responseBody: `{"title":"Ollama","content":"Cloud models are now available","links":["https://ollama.com/"]}`,
+			responseBody: `{"title":"Rose","content":"Cloud models are now available","links":["https://ollama.com/"]}`,
 			assertBody:   `"url":"https://ollama.com"`,
 		},
 	}
@@ -216,7 +216,7 @@ func TestExperimentalWebEndpointsMissingBody(t *testing.T) {
 func TestExperimentalWebEndpointsCloudDisabled(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	setTestHome(t, t.TempDir())
-	t.Setenv("OLLAMA_NO_CLOUD", "1")
+	t.Setenv("ROSE_NO_CLOUD", "1")
 
 	s := &Server{}
 	router, err := s.GenerateRoutes()
@@ -236,7 +236,7 @@ func TestExperimentalWebEndpointsCloudDisabled(t *testing.T) {
 		{
 			name:      "web_search",
 			path:      "/api/experimental/web_search",
-			request:   `{"query":"latest ollama release"}`,
+			request:   `{"query":"latest rose release"}`,
 			operation: cloudErrWebSearchUnavailable,
 		},
 		{

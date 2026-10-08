@@ -323,7 +323,7 @@ func gatedDeltaRecurrence(q, k, v, g, beta, state *Array) (y, nextState *Array) 
 }
 
 // supportsFastGatedDeltaUpdate reports whether MLX's Metal kernel is available
-// for this geometry. Short scans stay on Ollama's whole-step kernel, which also
+// for this geometry. Short scans stay on Rose's whole-step kernel, which also
 // serves MTP.
 func supportsFastGatedDeltaUpdate(dims gatedDeltaRecurrenceDims) bool {
 	if !MetalIsAvailable() || dims.T < 16 || dims.Dk != 128 || dims.Dv != 128 {

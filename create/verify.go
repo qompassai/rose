@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/ollama/ollama/mlxrunner"
+	"github.com/qompassai/rose/mlxrunner"
 )
 
 var ErrUnsupportedMLXArchitecture = errors.New("unsupported MLX architecture")

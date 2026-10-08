@@ -15,7 +15,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ollama/ollama/api"
+	"github.com/qompassai/rose/api"
 )
 
 // decodeTestAudio returns the test audio clip ("Why is the sky blue?", 16kHz mono WAV).

@@ -14,7 +14,7 @@ import (
 	"sync/atomic"
 	"testing"
 
-	"github.com/ollama/ollama/api"
+	"github.com/qompassai/rose/api"
 )
 
 func TestPrepareRemoteSourceFilesSelectsJSONAndSafetensors(t *testing.T) {

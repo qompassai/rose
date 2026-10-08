@@ -10,10 +10,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/fs/gguf"
-	"github.com/ollama/ollama/manifest"
-	"github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/fs/gguf"
+	"github.com/qompassai/rose/manifest"
+	"github.com/qompassai/rose/types/model"
 )
 
 // listModels builds /api/tags from the manifests and the per-blob metadata

@@ -17,11 +17,11 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/ollama/ollama/anthropic"
+	"github.com/qompassai/rose/anthropic"
 )
 
 const (
-	// DefaultClaudeDesktopListenAddr is the loopback address used by the Ollama
+	// DefaultClaudeDesktopListenAddr is the loopback address used by the Rose
 	// app and the Claude Desktop profile it manages.
 	DefaultClaudeDesktopListenAddr = "127.0.0.1:11435"
 	maxRequestBodyBytes            = 64 << 20
@@ -30,8 +30,8 @@ const (
 	upstreamReadyPoll              = 100 * time.Millisecond
 	upstreamReadyTTL               = 5 * time.Second
 	healthPath                     = "/_ollama/health"
-	healthHeader                   = "X-Ollama-Claude-Gateway"
-	unsupportedImageNotice         = "[Image omitted by Ollama because the selected model does not support image recognition.]"
+	healthHeader                   = "X-Rose-Claude-Gateway"
+	unsupportedImageNotice         = "[Image omitted by Rose because the selected model does not support image recognition.]"
 )
 
 type gatewayModel struct {
@@ -113,10 +113,10 @@ func NewClaudeDesktop(config ClaudeDesktopConfig) (*ClaudeDesktop, error) {
 
 	ollamaURL, err := url.Parse(config.OllamaURL)
 	if err != nil {
-		return nil, fmt.Errorf("parse Ollama URL: %w", err)
+		return nil, fmt.Errorf("parse Rose URL: %w", err)
 	}
 	if ollamaURL.Scheme == "" || ollamaURL.Host == "" {
-		return nil, fmt.Errorf("invalid Ollama URL %q", config.OllamaURL)
+		return nil, fmt.Errorf("invalid Rose URL %q", config.OllamaURL)
 	}
 
 	logger := config.Logger
@@ -151,7 +151,7 @@ func NewClaudeDesktop(config ClaudeDesktopConfig) (*ClaudeDesktop, error) {
 	proxy.ErrorHandler = func(w http.ResponseWriter, r *http.Request, err error) {
 		p.markUpstreamNotReady()
 		logger.Warn("Claude gateway upstream request failed", "path", r.URL.Path, "error", err)
-		http.Error(w, "Ollama gateway unavailable", http.StatusBadGateway)
+		http.Error(w, "Rose gateway unavailable", http.StatusBadGateway)
 	}
 	proxy.ModifyResponse = func(response *http.Response) error {
 		retried, err := p.retryWithoutUnsupportedImages(response, transport)
@@ -169,7 +169,7 @@ func NewClaudeDesktop(config ClaudeDesktopConfig) (*ClaudeDesktop, error) {
 	return p, nil
 }
 
-// ProbeClaudeDesktop verifies that baseURL is served by Ollama's Claude gateway rather than
+// ProbeClaudeDesktop verifies that baseURL is served by Rose's Claude gateway rather than
 // another process using the configured port.
 func ProbeClaudeDesktop(ctx context.Context, baseURL string) error {
 	u, err := url.Parse(strings.TrimRight(baseURL, "/") + healthPath)
@@ -303,7 +303,7 @@ func (p *ClaudeDesktop) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Claude Desktop uses a native HTTP client, not a browser. Reject every
-	// request carrying an Origin so the upstream OLLAMA_ORIGINS policy cannot
+	// request carrying an Origin so the upstream ROSE_ORIGINS policy cannot
 	// enable CORS on this loopback-only gateway.
 	if r.Header.Get("Origin") != "" {
 		http.Error(w, "forbidden", http.StatusForbidden)
@@ -361,16 +361,16 @@ func (p *ClaudeDesktop) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Claude authenticates to this loopback gateway with a placeholder key.
-	// Never forward that credential (or browser cookies) to the Ollama daemon.
+	// Never forward that credential (or browser cookies) to the Rose daemon.
 	r.Header.Del("Authorization")
 	r.Header.Del("Cookie")
 	r.Header.Del("Proxy-Authorization")
-	r.Header.Set("X-Api-Key", "ollama")
+	r.Header.Set("X-Api-Key", "rose")
 	r.Host = p.ollamaURL.Host
 
 	if err := p.waitForUpstream(r.Context()); err != nil {
 		p.logger.Warn("Claude gateway upstream is not ready", "path", r.URL.Path, "error", err)
-		http.Error(w, "Ollama gateway unavailable", http.StatusBadGateway)
+		http.Error(w, "Rose gateway unavailable", http.StatusBadGateway)
 		return
 	}
 	counts := ClaudeDesktopCounts{Routed: p.routed.Add(1)}
@@ -820,15 +820,15 @@ func newClaudeDesktopAccessError(model ClaudeDesktopModel, access ClaudeDesktopM
 func (e *claudeDesktopAccessError) Error() string {
 	switch e.access.Reason {
 	case ClaudeDesktopAccessCloudOff:
-		return "Turn on Cloud in Ollama Settings to use this model."
+		return "Turn on Cloud in Rose Settings to use this model."
 	case ClaudeDesktopAccessSignInRequired:
-		return "Sign in to Ollama to use this model."
+		return "Sign in to Rose to use this model."
 	case ClaudeDesktopAccessUpgradeRequired:
-		return fmt.Sprintf("%s requires an Ollama %s plan.", e.model, e.access.RequiredPlan)
+		return fmt.Sprintf("%s requires an Rose %s plan.", e.model, e.access.RequiredPlan)
 	case ClaudeDesktopAccessModelNotInstalled:
-		return fmt.Sprintf("%s is not installed in Ollama.", e.model)
+		return fmt.Sprintf("%s is not installed in Rose.", e.model)
 	default:
-		return "Ollama could not verify access to this model. Try again."
+		return "Rose could not verify access to this model. Try again."
 	}
 }
 

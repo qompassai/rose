@@ -21,7 +21,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ollama/ollama/api"
+	"github.com/qompassai/rose/api"
 )
 
 type flagOptions struct {
@@ -341,7 +341,7 @@ func measurePromptTokens(ctx context.Context, client *api.Client, model string, 
 // sizing remains outside warmups and timed requests.
 //
 // measurePlan is the only transport-specific step, so the OpenAI path
-// calibrates without an Ollama client.
+// calibrates without an Rose client.
 func calibratePrompt(measurePlan func(promptPlan) (int, error), model string, fOpt flagOptions) (promptPlan, error) {
 	targetTokens := *fOpt.promptTokens
 	maxWords := fullCodePromptWords()
@@ -459,7 +459,7 @@ func fetchModelInfo(ctx context.Context, client *api.Client, model string) Model
 func fetchMemoryUsage(ctx context.Context, client *api.Client, model string) (size, vram int64) {
 	resp, err := client.ListRunning(ctx)
 	if err != nil {
-		if debug := os.Getenv("OLLAMA_DEBUG"); debug != "" {
+		if debug := os.Getenv("ROSE_DEBUG"); debug != "" {
 			fmt.Fprintf(os.Stderr, "WARNING: Could not fetch memory usage: %v\n", err)
 		}
 		return 0, 0
@@ -619,7 +619,7 @@ func BenchmarkModel(fOpt flagOptions) error {
 
 	client, err := api.ClientFromEnvironment()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "ERROR: Couldn't create ollama client: %v\n", err)
+		fmt.Fprintf(os.Stderr, "ERROR: Couldn't create rose client: %v\n", err)
 		return err
 	}
 
@@ -883,12 +883,12 @@ func openaiGenerate(ctx context.Context, baseURL, apiKey, model string, fOpt fla
 		},
 	}
 	// Always sent. Omitting it lets each server pick its own default (Splash
-	// 1.0, Ollama 0.8), so a requested temperature of 0 would not be greedy.
+	// 1.0, Rose 0.8), so a requested temperature of 0 would not be greedy.
 	body["temperature"] = *fOpt.temperature
 	if fOpt.seed != nil && *fOpt.seed > 0 {
 		body["seed"] = *fOpt.seed
 	}
-	// Ollama extension so runs unload between models; others ignore it.
+	// Rose extension so runs unload between models; others ignore it.
 	if keepAlive != nil {
 		body["keep_alive"] = *keepAlive
 	}
@@ -970,7 +970,7 @@ func openaiGenerate(ctx context.Context, baseURL, apiKey, model string, fOpt fla
 					MatchedTokens int `json:"matched_tokens"`
 				} `json:"cache"`
 			} `json:"metrics"`
-			// llama.cpp and Ollama. prompt_n excludes what cache_n served.
+			// llama.cpp and Rose. prompt_n excludes what cache_n served.
 			Timings *struct {
 				CacheN      int     `json:"cache_n"`
 				PromptN     int     `json:"prompt_n"`
@@ -1070,7 +1070,7 @@ func benchmarkOpenAI(fOpt flagOptions, models []string, out io.Writer) error {
 
 	for _, model := range models {
 		// Size the generated prompt against this server, over the same API the
-		// timed requests use, so no Ollama endpoint is required.
+		// timed requests use, so no Rose endpoint is required.
 		var plan promptPlan
 		if *fOpt.promptTokens > 0 {
 			calCtx, calCancel := context.WithTimeout(context.Background(), time.Duration(*fOpt.timeout)*time.Second)

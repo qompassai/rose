@@ -1,6 +1,6 @@
 //go:build windows || darwin
 
-// package ui implements a chat interface for Ollama
+// package ui implements a chat interface for Rose
 package ui
 
 import (
@@ -22,30 +22,30 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/app/server"
-	"github.com/ollama/ollama/app/store"
-	"github.com/ollama/ollama/app/tools"
-	"github.com/ollama/ollama/app/types/not"
-	"github.com/ollama/ollama/app/ui/responses"
-	"github.com/ollama/ollama/app/updater"
-	"github.com/ollama/ollama/app/version"
-	ollamaAuth "github.com/ollama/ollama/auth"
-	"github.com/ollama/ollama/cmd/launch"
-	"github.com/ollama/ollama/envconfig"
-	"github.com/ollama/ollama/manifest"
-	"github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/app/server"
+	"github.com/qompassai/rose/app/store"
+	"github.com/qompassai/rose/app/tools"
+	"github.com/qompassai/rose/app/types/not"
+	"github.com/qompassai/rose/app/ui/responses"
+	"github.com/qompassai/rose/app/updater"
+	"github.com/qompassai/rose/app/version"
+	ollamaAuth "github.com/qompassai/rose/auth"
+	"github.com/qompassai/rose/cmd/launch"
+	"github.com/qompassai/rose/envconfig"
+	"github.com/qompassai/rose/manifest"
+	"github.com/qompassai/rose/types/model"
 	_ "github.com/tkrajina/typescriptify-golang-structs/typescriptify"
 )
 
-//go:generate tscriptify -package=github.com/ollama/ollama/app/ui/responses -target=./app/codegen/gotypes.gen.ts responses/types.go
+//go:generate tscriptify -package=github.com/qompassai/rose/app/ui/responses -target=./app/codegen/gotypes.gen.ts responses/types.go
 //go:generate npm --prefix ./app run build
 
-var CORS = envconfig.Bool("OLLAMA_CORS")
+var CORS = envconfig.Bool("ROSE_CORS")
 
 // OllamaDotCom returns the URL for ollama.com, allowing override via environment variable
 var OllamaDotCom = func() string {
-	if url := os.Getenv("OLLAMA_DOT_COM_URL"); url != "" {
+	if url := os.Getenv("ROSE_DOT_COM_URL"); url != "" {
 		return url
 	}
 	return "https://ollama.com"
@@ -125,7 +125,7 @@ func (s *Server) log() *slog.Logger {
 	return s.Logger
 }
 
-// ollamaProxy creates a reverse proxy handler to the Ollama server
+// ollamaProxy creates a reverse proxy handler to the Rose server
 func (s *Server) ollamaProxy() http.Handler {
 	var (
 		proxy   http.Handler
@@ -143,7 +143,7 @@ func (s *Server) ollamaProxy() http.Handler {
 				var err error
 				for i := range 2 {
 					if i > 0 {
-						s.log().Warn("ollama server not ready, retrying", "attempt", i+1)
+						s.log().Warn("rose server not ready, retrying", "attempt", i+1)
 						time.Sleep(1 * time.Second)
 					}
 
@@ -155,13 +155,13 @@ func (s *Server) ollamaProxy() http.Handler {
 
 				if err != nil {
 					proxyMu.Unlock()
-					s.log().Error("ollama server not ready after retries", "error", err)
-					http.Error(w, "Ollama server is not ready", http.StatusServiceUnavailable)
+					s.log().Error("rose server not ready after retries", "error", err)
+					http.Error(w, "Rose server is not ready", http.StatusServiceUnavailable)
 					return
 				}
 
 				target := envconfig.ConnectableHost()
-				s.log().Info("configuring ollama proxy", "target", target.String())
+				s.log().Info("configuring rose proxy", "target", target.String())
 
 				newProxy := httputil.NewSingleHostReverseProxy(target)
 
@@ -305,7 +305,7 @@ func (s *Server) Handler() http.Handler {
 		}))
 	}
 
-	// Ollama proxy endpoints
+	// Rose proxy endpoints
 	ollamaProxy := s.ollamaProxy()
 	mux.Handle("GET /api/tags", ollamaProxy)
 	mux.Handle("POST /api/show", ollamaProxy)
@@ -347,7 +347,7 @@ func (s *Server) getIntegrationStatuses(w http.ResponseWriter, _ *http.Request) 
 	statuses = append(statuses, integrationStatus{
 		ID:          "claude-desktop",
 		Name:        "Claude Code (Desktop)",
-		Description: "Use Ollama models in Claude Desktop",
+		Description: "Use Rose models in Claude Desktop",
 		Installed:   &claudeDesktopInstalled,
 		Action:      "connect",
 	})
@@ -379,7 +379,7 @@ func (s *Server) getIntegrationStatuses(w http.ResponseWriter, _ *http.Request) 
 			Description: info.Description,
 			Installed:   &installed,
 			Action:      "copy",
-			Command:     "ollama launch " + info.Name,
+			Command:     "rose launch " + info.Name,
 		})
 	}
 
@@ -388,7 +388,7 @@ func (s *Server) getIntegrationStatuses(w http.ResponseWriter, _ *http.Request) 
 		Name:        "Terminal",
 		Description: "Run local models from your terminal",
 		Action:      "copy",
-		Command:     "ollama",
+		Command:     "rose",
 	})
 
 	return json.NewEncoder(w).Encode(statuses)
@@ -461,7 +461,7 @@ func (s *Server) doSelfSigned(ctx context.Context, method, path string) (*http.R
 	return s.httpClient().Do(req)
 }
 
-// UserData fetches user data from ollama.com API for the current ollama key
+// UserData fetches user data from ollama.com API for the current rose key
 func (s *Server) UserData(ctx context.Context) (*api.UserResponse, error) {
 	resp, err := s.doSelfSigned(ctx, http.MethodPost, "/api/me")
 	if err != nil {
@@ -492,7 +492,7 @@ func (s *Server) UserData(ctx context.Context) (*api.UserResponse, error) {
 	return &user, nil
 }
 
-// WaitForServer waits for the Ollama server to be ready
+// WaitForServer waits for the Rose server to be ready
 func WaitForServer(ctx context.Context, timeout time.Duration) error {
 	deadline := time.Now().Add(timeout)
 	for time.Now().Before(deadline) {
@@ -501,12 +501,12 @@ func WaitForServer(ctx context.Context, timeout time.Duration) error {
 			return err
 		}
 		if _, err := c.Version(ctx); err == nil {
-			slog.Debug("ollama server is ready")
+			slog.Debug("rose server is ready")
 			return nil
 		}
 		time.Sleep(10 * time.Millisecond)
 	}
-	return errors.New("timeout waiting for Ollama server to be ready")
+	return errors.New("timeout waiting for Rose server to be ready")
 }
 
 func (s *Server) createChat(w http.ResponseWriter, r *http.Request) error {
@@ -536,7 +536,7 @@ func (s *Server) listChats(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-// checkModelUpstream makes a HEAD request to the Ollama registry to get the upstream digest and push time
+// checkModelUpstream makes a HEAD request to the Rose registry to get the upstream digest and push time
 func (s *Server) checkModelUpstream(ctx context.Context, modelName string, timeout time.Duration) (string, int64, error) {
 	// Create a context with timeout for the registry check
 	checkCtx, cancel := context.WithTimeout(ctx, timeout)
@@ -555,7 +555,7 @@ func (s *Server) checkModelUpstream(ctx context.Context, modelName string, timeo
 		name = "library/" + name
 	}
 
-	// Check the model in the Ollama registry using HEAD request
+	// Check the model in the Rose registry using HEAD request
 	url := OllamaDotCom + "/v2/" + name + "/manifests/" + tag
 	req, err := http.NewRequestWithContext(checkCtx, "HEAD", url, nil)
 	if err != nil {
@@ -578,13 +578,13 @@ func (s *Server) checkModelUpstream(ctx context.Context, modelName string, timeo
 		return "", 0, fmt.Errorf("registry returned status %d", resp.StatusCode)
 	}
 
-	digest := resp.Header.Get("ollama-content-digest")
+	digest := resp.Header.Get("rose-content-digest")
 	if digest == "" {
 		return "", 0, fmt.Errorf("no digest header found")
 	}
 
 	var pushTime int64
-	if pushTimeStr := resp.Header.Get("ollama-push-time"); pushTimeStr != "" {
+	if pushTimeStr := resp.Header.Get("rose-push-time"); pushTimeStr != "" {
 		if pt, err := strconv.ParseInt(pushTimeStr, 10, 64); err == nil {
 			pushTime = pt
 		}
@@ -1781,7 +1781,7 @@ func userAgent() string {
 		version = "v0.0.0"
 	}
 
-	return fmt.Sprintf("ollama/%s (%s %s) app/%s Go/%s",
+	return fmt.Sprintf("rose/%s (%s %s) app/%s Go/%s",
 		version,
 		runtime.GOARCH,
 		runtime.GOOS,
@@ -1790,7 +1790,7 @@ func userAgent() string {
 	)
 }
 
-// convertToOllamaTool converts a tool schema from our tools package format to Ollama API format
+// convertToOllamaTool converts a tool schema from our tools package format to Rose API format
 func convertToOllamaTool(toolSchema map[string]any) api.Tool {
 	tool := api.Tool{
 		Type: "function",

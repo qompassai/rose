@@ -16,12 +16,12 @@ import (
 	"math"
 	"strings"
 
-	"github.com/ollama/ollama/mlx"
-	"github.com/ollama/ollama/mlxrunner/cache"
-	"github.com/ollama/ollama/mlxrunner/model"
-	"github.com/ollama/ollama/mlxrunner/model/gemma4"
-	"github.com/ollama/ollama/mlxrunner/nn"
-	"github.com/ollama/ollama/mlxrunner/tokenizer"
+	"github.com/qompassai/rose/mlx"
+	"github.com/qompassai/rose/mlxrunner/cache"
+	"github.com/qompassai/rose/mlxrunner/model"
+	"github.com/qompassai/rose/mlxrunner/model/gemma4"
+	"github.com/qompassai/rose/mlxrunner/nn"
+	"github.com/qompassai/rose/mlxrunner/tokenizer"
 )
 
 func init() {

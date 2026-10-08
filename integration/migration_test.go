@@ -10,16 +10,16 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/manifest"
-	"github.com/ollama/ollama/parser"
-	"github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/manifest"
+	"github.com/qompassai/rose/parser"
+	"github.com/qompassai/rose/types/model"
 )
 
 const (
 	migrationChatNumPredict    = 2048
 	migrationDefaultGoTemplate = "{{ .Prompt }}"
-	migrationCompatEnv         = "OLLAMA_LLAMA_CPP_COMPAT"
+	migrationCompatEnv         = "ROSE_LLAMA_CPP_COMPAT"
 	migrationGibiByte          = 1 << 30
 
 	// Timeouts for vision/chat/audio/completion capability validations.
@@ -45,7 +45,7 @@ const (
 )
 
 func TestLocalCompatibilityMigration(t *testing.T) {
-	if os.Getenv("OLLAMA_TEST_EXISTING") != "" {
+	if os.Getenv("ROSE_TEST_EXISTING") != "" {
 		t.Skip("local compatibility migration requires a harness-managed server")
 	}
 	skipIfRemote(t)
@@ -64,12 +64,12 @@ func TestLocalCompatibilityMigration(t *testing.T) {
 func runLocalCompatibilityMigrationCase(t *testing.T, name string) {
 	t.Helper()
 
-	modelsDir := os.Getenv("OLLAMA_MODELS")
+	modelsDir := os.Getenv("ROSE_MODELS")
 	if testModel == "" || modelsDir == "" {
 		modelsDir = t.TempDir()
-		t.Setenv("OLLAMA_MODELS", modelsDir)
+		t.Setenv("ROSE_MODELS", modelsDir)
 	}
-	t.Setenv("OLLAMA_DEBUG", "2")
+	t.Setenv("ROSE_DEBUG", "2")
 	t.Logf("%s: using migration model store %s", name, modelsDir)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Minute)
@@ -201,9 +201,9 @@ func migrationConversionTimeoutForSize(size int64) time.Duration {
 
 // hasCompatPatchEvidence reports whether the server log shows a load that went
 // through the llama.cpp compatibility layer. Every handler in
-// llama/compat/llama-ollama-compat.cpp logs its detection with this prefix.
+// llama/compat/llama-rose-compat.cpp logs its detection with this prefix.
 func hasCompatPatchEvidence(logs string) bool {
-	return strings.Contains(logs, "detected Ollama-format")
+	return strings.Contains(logs, "detected Rose-format")
 }
 
 func normalizedCapabilities(capabilities []model.Capability) []string {

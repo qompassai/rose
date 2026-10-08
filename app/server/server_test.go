@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ollama/ollama/app/store"
+	"github.com/qompassai/rose/app/store"
 )
 
 func TestNew(t *testing.T) {
@@ -30,13 +30,13 @@ func TestNew(t *testing.T) {
 }
 
 func TestServerCmd(t *testing.T) {
-	os.Unsetenv("OLLAMA_HOST")
-	os.Unsetenv("OLLAMA_ORIGINS")
-	os.Unsetenv("OLLAMA_MODELS")
+	os.Unsetenv("ROSE_HOST")
+	os.Unsetenv("ROSE_ORIGINS")
+	os.Unsetenv("ROSE_MODELS")
 	var defaultModels string
 	home, err := os.UserHomeDir()
 	if err == nil {
-		defaultModels = filepath.Join(home, ".ollama", "models")
+		defaultModels = filepath.Join(home, ".rose", "models")
 		os.MkdirAll(defaultModels, 0o755)
 	}
 
@@ -50,32 +50,32 @@ func TestServerCmd(t *testing.T) {
 		{
 			name:     "default",
 			settings: store.Settings{},
-			want:     []string{"OLLAMA_MODELS=" + defaultModels},
-			dont:     []string{"OLLAMA_HOST=", "OLLAMA_ORIGINS="},
+			want:     []string{"ROSE_MODELS=" + defaultModels},
+			dont:     []string{"ROSE_HOST=", "ROSE_ORIGINS="},
 		},
 		{
 			name:     "expose",
 			settings: store.Settings{Expose: true},
-			want:     []string{"OLLAMA_HOST=0.0.0.0", "OLLAMA_MODELS=" + defaultModels},
-			dont:     []string{"OLLAMA_ORIGINS="},
+			want:     []string{"ROSE_HOST=0.0.0.0", "ROSE_MODELS=" + defaultModels},
+			dont:     []string{"ROSE_ORIGINS="},
 		},
 		{
 			name:     "browser",
 			settings: store.Settings{Browser: true},
-			want:     []string{"OLLAMA_ORIGINS=*", "OLLAMA_MODELS=" + defaultModels},
-			dont:     []string{"OLLAMA_HOST="},
+			want:     []string{"ROSE_ORIGINS=*", "ROSE_MODELS=" + defaultModels},
+			dont:     []string{"ROSE_HOST="},
 		},
 		{
 			name:     "models",
 			settings: store.Settings{Models: tmpModels},
-			want:     []string{"OLLAMA_MODELS=" + tmpModels},
-			dont:     []string{"OLLAMA_HOST=", "OLLAMA_ORIGINS="},
+			want:     []string{"ROSE_MODELS=" + tmpModels},
+			dont:     []string{"ROSE_HOST=", "ROSE_ORIGINS="},
 		},
 		{
 			name:     "inaccessible_models",
 			settings: store.Settings{Models: "/nonexistent/external/drive/models"},
 			want:     []string{},
-			dont:     []string{"OLLAMA_MODELS="},
+			dont:     []string{"ROSE_MODELS="},
 		},
 		{
 			name: "all",
@@ -85,9 +85,9 @@ func TestServerCmd(t *testing.T) {
 				Models:  tmpModels,
 			},
 			want: []string{
-				"OLLAMA_HOST=0.0.0.0",
-				"OLLAMA_ORIGINS=*",
-				"OLLAMA_MODELS=" + tmpModels,
+				"ROSE_HOST=0.0.0.0",
+				"ROSE_ORIGINS=*",
+				"ROSE_MODELS=" + tmpModels,
 			},
 			dont: []string{},
 		},
@@ -145,22 +145,22 @@ func TestServerCmdCloudSettingEnv(t *testing.T) {
 	}{
 		{
 			name: "default cloud enabled",
-			want: "OLLAMA_NO_CLOUD=0",
+			want: "ROSE_NO_CLOUD=0",
 		},
 		{
 			name:     "env disables cloud",
 			envValue: "1",
-			want:     "OLLAMA_NO_CLOUD=1",
+			want:     "ROSE_NO_CLOUD=1",
 		},
 		{
 			name:          "config disables cloud",
 			configContent: `{"disable_ollama_cloud": true}`,
-			want:          "OLLAMA_NO_CLOUD=1",
+			want:          "ROSE_NO_CLOUD=1",
 		},
 		{
 			name:     "invalid env disables cloud",
 			envValue: "invalid",
-			want:     "OLLAMA_NO_CLOUD=1",
+			want:     "ROSE_NO_CLOUD=1",
 		},
 	}
 
@@ -169,10 +169,10 @@ func TestServerCmdCloudSettingEnv(t *testing.T) {
 			tmpHome := t.TempDir()
 			t.Setenv("HOME", tmpHome)
 			t.Setenv("USERPROFILE", tmpHome)
-			t.Setenv("OLLAMA_NO_CLOUD", tt.envValue)
+			t.Setenv("ROSE_NO_CLOUD", tt.envValue)
 
 			if tt.configContent != "" {
-				configDir := filepath.Join(tmpHome, ".ollama")
+				configDir := filepath.Join(tmpHome, ".rose")
 				if err := os.MkdirAll(configDir, 0o755); err != nil {
 					t.Fatalf("mkdir config dir: %v", err)
 				}
@@ -212,38 +212,38 @@ func TestOllamaServeArgs(t *testing.T) {
 		want bool
 	}{
 		{
-			name: "system ollama serve",
-			args: []string{"ollama", "serve"},
+			name: "system rose serve",
+			args: []string{"rose", "serve"},
 			want: true,
 		},
 		{
-			name: "relative path ollama serve",
-			args: []string{"./ollama", "serve"},
+			name: "relative path rose serve",
+			args: []string{"./rose", "serve"},
 			want: true,
 		},
 		{
 			name: "serve after other flags",
-			args: []string{"./ollama", "--verbose", "serve"},
+			args: []string{"./rose", "--verbose", "serve"},
 			want: true,
 		},
 		{
 			name: "start alias",
-			args: []string{"ollama", "start"},
+			args: []string{"rose", "start"},
 			want: true,
 		},
 		{
 			name: "launch command",
-			args: []string{"ollama", "launch", "opencode"},
+			args: []string{"rose", "launch", "opencode"},
 			want: false,
 		},
 		{
 			name: "run command with model named serve",
-			args: []string{"ollama", "run", "serve"},
+			args: []string{"rose", "run", "serve"},
 			want: false,
 		},
 		{
 			name: "launch command with serve in passthrough args",
-			args: []string{"ollama", "launch", "codex", "--", "-p", "serve"},
+			args: []string{"rose", "launch", "codex", "--", "-p", "serve"},
 			want: false,
 		},
 		{

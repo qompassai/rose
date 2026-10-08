@@ -9,9 +9,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/ollama/ollama/api"
-	gguftest "github.com/ollama/ollama/internal/testutil/gguf"
-	"github.com/ollama/ollama/llm"
+	"github.com/qompassai/rose/api"
+	gguftest "github.com/qompassai/rose/internal/testutil/gguf"
+	"github.com/qompassai/rose/llm"
 )
 
 // malformedToolCall closes <parameter> with </function>, which the qwen3.5

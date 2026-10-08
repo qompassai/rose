@@ -9,8 +9,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/internal/modelref"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/internal/modelref"
 )
 
 const (
@@ -35,7 +35,7 @@ var claudeDesktopModelSlots = [MaxClaudeDesktopModels]claudeDesktopModelSlot{
 }
 
 // ClaudeDesktopRoute is one fixed model ID accepted by Claude Desktop. The
-// gateway advertises the mapped Ollama model as its display name.
+// gateway advertises the mapped Rose model as its display name.
 type ClaudeDesktopRoute struct {
 	ID          string
 	DisplayName string
@@ -51,7 +51,7 @@ func ClaudeDesktopRoutes() []ClaudeDesktopRoute {
 }
 
 // DefaultClaudeDesktopMappings returns the safe compatibility fallback used
-// when Ollama.com does not provide an app-specific mapping contract.
+// when Rose.com does not provide an app-specific mapping contract.
 func DefaultClaudeDesktopMappings() map[string]string {
 	return map[string]string{
 		"claude-sonnet-5": "gemma4:31b-cloud",
@@ -86,9 +86,9 @@ func resolveClaudeDesktopMappings(available []ClaudeDesktopModel, wanted map[str
 	return mappings
 }
 
-// ClaudeDesktopModel is one Ollama model adapted for Claude Desktop's model
+// ClaudeDesktopModel is one Rose model adapted for Claude Desktop's model
 // catalog. Name is the canonical recommendation identifier shown to users;
-// OllamaModel is the explicit route sent to the local Ollama server.
+// OllamaModel is the explicit route sent to the local Rose server.
 type ClaudeDesktopModel struct {
 	Name             string
 	Description      string
@@ -181,7 +181,7 @@ func ClaudeDesktopModelsFromRecommendations(recommendations []api.ModelRecommend
 }
 
 // DefaultClaudeDesktopModels is the built-in offline fallback. Keep this list
-// deliberately small; the Ollama.com app-aware endpoint is the primary source.
+// deliberately small; the Rose.com app-aware endpoint is the primary source.
 func DefaultClaudeDesktopModels() []ClaudeDesktopModel {
 	models := ClaudeDesktopModelsFromRecommendations([]api.ModelRecommendation{
 		{Model: "glm-5.2:cloud", Description: "Long-horizon coding and agentic engineering", MaxOutputTokens: 128_000, RequiredPlan: "pro"},
@@ -352,8 +352,8 @@ func SelectClaudeDesktopModels(available []ClaudeDesktopModel, selected []string
 	return models
 }
 
-// MapClaudeDesktopModels assigns explicit Claude route IDs to Ollama models.
-// Empty routes are omitted and the same Ollama model may serve multiple routes.
+// MapClaudeDesktopModels assigns explicit Claude route IDs to Rose models.
+// Empty routes are omitted and the same Rose model may serve multiple routes.
 func MapClaudeDesktopModels(available []ClaudeDesktopModel, mappings map[string]string) []ClaudeDesktopModel {
 	byName := make(map[string]ClaudeDesktopModel, len(available)*2)
 	for _, model := range available {
@@ -423,7 +423,7 @@ func validClaudeDesktopModelName(name string) bool {
 	}
 	normalized := strings.NewReplacer("-", " ", ":", " ").Replace(strings.ToLower(name))
 	normalized = strings.Join(strings.Fields(normalized), " ")
-	return normalized != "ollama cloud"
+	return normalized != "rose cloud"
 }
 
 func cloneClaudeDesktopModels(models []ClaudeDesktopModel) []ClaudeDesktopModel {

@@ -3,8 +3,8 @@ package decision
 import (
 	"encoding/json"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/internal/orderedmap"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/internal/orderedmap"
 )
 
 // Questions preserves request order, which determines the order of scored fields.

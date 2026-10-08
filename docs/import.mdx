@@ -6,7 +6,7 @@ title: Importing a Model
 
 - [Importing a Safetensors model](#importing-a-model-from-safetensors-weights)
 - [Importing a GGUF model](#importing-a-gguf-model)
-- [Sharing models on ollama.com](#sharing-your-model-on-ollama-com)
+- [Sharing models on ollama.com](#sharing-your-model-on-rose-com)
 
 ## Importing a model from Safetensors weights
 
@@ -18,21 +18,21 @@ FROM /path/to/safetensors/directory
 
 If you create the Modelfile in the same directory as the weights, you can use the command `FROM .`.
 
-Now run the `ollama create` command from the directory where you created the `Modelfile`:
+Now run the `rose create` command from the directory where you created the `Modelfile`:
 
 ```shell
-ollama create my-model
+rose create my-model
 ```
 
 Lastly, test the model:
 
 ```shell
-ollama run my-model
+rose run my-model
 ```
 
 ## Importing a GGUF model
 
-Ollama does not quantize GGUF models during import. Prepare and quantize them first with a GGUF tool such as llama.cpp's [`llama-quantize`](https://github.com/ggml-org/llama.cpp/tree/master/tools/quantize).
+Rose does not quantize GGUF models during import. Prepare and quantize them first with a GGUF tool such as llama.cpp's [`llama-quantize`](https://github.com/ggml-org/llama.cpp/tree/master/tools/quantize).
 
 To import a single-file GGUF model, create a `Modelfile` containing:
 
@@ -46,40 +46,40 @@ For a split GGUF model, keep the original split filenames and use a wildcard tha
 FROM /path/to/model-*.gguf
 ```
 
-Once you have created your `Modelfile`, use the `ollama create` command to build the model.
+Once you have created your `Modelfile`, use the `rose create` command to build the model.
 
 ```shell
-ollama create my-model
+rose create my-model
 ```
 
 ## Sharing your model on ollama.com
 
 You can share any model you have created by pushing it to [ollama.com](https://ollama.com) so that other users can try it out.
 
-First, use your browser to go to the [Ollama Sign-Up](https://ollama.com/signup) page. If you already have an account, you can skip this step.
+First, use your browser to go to the [Rose Sign-Up](https://ollama.com/signup) page. If you already have an account, you can skip this step.
 
 <img src="images/signup.png" alt="Sign-Up" width="40%" />
 
 The `Username` field will be used as part of your model's name (e.g. `jmorganca/mymodel`), so make sure you are comfortable with the username that you have selected.
 
-Now that you have created an account and are signed-in, go to the [Ollama Keys Settings](https://ollama.com/settings/keys) page.
+Now that you have created an account and are signed-in, go to the [Rose Keys Settings](https://ollama.com/settings/keys) page.
 
-Follow the directions on the page to determine where your Ollama Public Key is located.
+Follow the directions on the page to determine where your Rose Public Key is located.
 
-<img src="images/ollama-keys.png" alt="Ollama Keys" width="80%" />
+<img src="images/rose-keys.png" alt="Rose Keys" width="80%" />
 
-Click on the `Add Ollama Public Key` button, and copy and paste the contents of your Ollama Public Key into the text field.
+Click on the `Add Rose Public Key` button, and copy and paste the contents of your Rose Public Key into the text field.
 
-To push a model to [ollama.com](https://ollama.com), first make sure that it is named correctly with your username. You may have to use the `ollama cp` command to copy
-your model to give it the correct name. Once you're happy with your model's name, use the `ollama push` command to push it to [ollama.com](https://ollama.com).
+To push a model to [ollama.com](https://ollama.com), first make sure that it is named correctly with your username. You may have to use the `rose cp` command to copy
+your model to give it the correct name. Once you're happy with your model's name, use the `rose push` command to push it to [ollama.com](https://ollama.com).
 
 ```shell
-ollama cp mymodel myuser/mymodel
-ollama push myuser/mymodel
+rose cp mymodel myuser/mymodel
+rose push myuser/mymodel
 ```
 
 Once your model has been pushed, other users can pull and run it by using the command:
 
 ```shell
-ollama run myuser/mymodel
+rose run myuser/mymodel
 ```

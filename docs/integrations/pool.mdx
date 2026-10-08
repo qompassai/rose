@@ -8,18 +8,18 @@ Pool is Poolside's software agent for the terminal, built for enterprise develop
 
 Install [Pool](https://github.com/poolsideai/pool):
 
-## Usage with Ollama
+## Usage with Rose
 
 ### Quick setup
 
 ```shell
-ollama launch pool
+rose launch pool
 ```
 
 ### Run directly with a model
 
 ```shell
-ollama launch pool --model kimi-k2.6:cloud
+rose launch pool --model kimi-k2.6:cloud
 ```
 
 ### Pass arguments through to Pool
@@ -27,21 +27,21 @@ ollama launch pool --model kimi-k2.6:cloud
 Arguments after `--` are passed directly to Pool:
 
 ```shell
-ollama launch pool -- --help
+rose launch pool -- --help
 ```
 
 ## Manual setup
 
-Pool connects to Ollama using the OpenAI-compatible API via environment variables.
+Pool connects to Rose using the OpenAI-compatible API via environment variables.
 
 1. Set the environment variables:
 
 ```shell
 export POOLSIDE_STANDALONE_BASE_URL=http://localhost:11434/v1
-export POOLSIDE_API_KEY=ollama
+export POOLSIDE_API_KEY=rose
 ```
 
-2. Run Pool with an Ollama model:
+2. Run Pool with an Rose model:
 
 ```shell
 pool -m kimi-k2.6:cloud
@@ -50,5 +50,5 @@ pool -m kimi-k2.6:cloud
 Or run with environment variables inline:
 
 ```shell
-POOLSIDE_STANDALONE_BASE_URL=http://localhost:11434/v1 POOLSIDE_API_KEY=ollama pool -m kimi-k2.6:cloud
+POOLSIDE_STANDALONE_BASE_URL=http://localhost:11434/v1 POOLSIDE_API_KEY=rose pool -m kimi-k2.6:cloud
 ```

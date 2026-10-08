@@ -13,7 +13,7 @@ import (
 
 func TestReportingPassthrough(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	t.Setenv("OLLAMA_NO_CLOUD", "false")
+	t.Setenv("ROSE_NO_CLOUD", "false")
 	testHome := t.TempDir()
 	setTestHome(t, testHome)
 	writeTestOllamaPrivateKey(t, testHome)
@@ -166,7 +166,7 @@ func TestReportingLocalErrors(t *testing.T) {
 				},
 			} {
 				t.Run(tt.name, func(t *testing.T) {
-					t.Setenv("OLLAMA_NO_CLOUD", tt.noCloud)
+					t.Setenv("ROSE_NO_CLOUD", tt.noCloud)
 					signCalls := 0
 					cloudProxySignRequest = func(_ context.Context, req *http.Request) error {
 						signCalls++

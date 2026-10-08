@@ -8,7 +8,7 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
         "CMAKE_MSVC_RUNTIME_LIBRARY": "MultiThreaded",
-        "OLLAMA_SOURCE_DIR": "${sourceDir}/../.."
+        "ROSE_SOURCE_DIR": "${sourceDir}/../.."
       }
     },
     {
@@ -19,7 +19,7 @@
         "CMAKE_CUDA_FLAGS": "-t 2",
         "MLX_BUILD_CUDA": "ON",
         "MLX_BUILD_METAL": "OFF",
-        "OLLAMA_RUNNER_DIR": "mlx_cuda_v13"
+        "ROSE_RUNNER_DIR": "mlx_cuda_v13"
       }
     },
     {
@@ -49,7 +49,7 @@
       "binaryDir": "${sourceDir}/../../build/metal-v3",
       "cacheVariables": {
         "CMAKE_OSX_DEPLOYMENT_TARGET": "14.0",
-        "OLLAMA_RUNNER_DIR": "mlx_metal_v3"
+        "ROSE_RUNNER_DIR": "mlx_metal_v3"
       }
     },
     {
@@ -58,7 +58,7 @@
       "binaryDir": "${sourceDir}/../../build/metal-v4",
       "cacheVariables": {
         "CMAKE_OSX_DEPLOYMENT_TARGET": "26.2",
-        "OLLAMA_RUNNER_DIR": "mlx_metal_v4"
+        "ROSE_RUNNER_DIR": "mlx_metal_v4"
       }
     }
   ],

@@ -5,16 +5,16 @@ title: CLI Reference
 ### Run a model
 
 ```
-ollama run gemma4
+rose run gemma4
 ```
 
 ### Launch integrations
 
 ```
-ollama launch
+rose launch
 ```
 
-Configure and launch external applications to use Ollama models. This provides an interactive way to set up and start integrations with supported apps.
+Configure and launch external applications to use Rose models. This provides an interactive way to set up and start integrations with supported apps.
 
 #### Supported integrations
 
@@ -29,25 +29,25 @@ Configure and launch external applications to use Ollama models. This provides a
 Launch an integration interactively:
 
 ```
-ollama launch
+rose launch
 ```
 
 Launch a specific integration:
 
 ```
-ollama launch claude
+rose launch claude
 ```
 
 Launch with a specific model:
 
 ```
-ollama launch claude --model qwen3.5
+rose launch claude --model qwen3.5
 ```
 
 Configure without launching:
 
 ```
-ollama launch droid --config
+rose launch droid --config
 ```
 
 #### Multiline input
@@ -64,49 +64,49 @@ I'm a basic program that prints the famous "Hello, world!" message to the consol
 #### Multimodal models
 
 ```
-ollama run gemma4 "What's in this image? /Users/jmorgan/Desktop/smile.png"
+rose run gemma4 "What's in this image? /Users/jmorgan/Desktop/smile.png"
 ```
 
 ### Generate embeddings
 
 ```
-ollama run embeddinggemma "Hello world"
+rose run embeddinggemma "Hello world"
 ```
 
 Output is a JSON array:
 
 ```
-echo "Hello world" | ollama run nomic-embed-text
+echo "Hello world" | rose run nomic-embed-text
 ```
 
 ### Download a model
 
 ```
-ollama pull gemma4
+rose pull gemma4
 ```
 
 ### Remove a model
 
 ```
-ollama rm gemma4
+rose rm gemma4
 ```
 
 ### List models
 
 ```
-ollama ls
+rose ls
 ```
 
-### Sign in to Ollama
+### Sign in to Rose
 
 ```
-ollama signin
+rose signin
 ```
 
-### Sign out of Ollama
+### Sign out of Rose
 
 ```
-ollama signout
+rose signout
 ```
 
 ### Create a customized model
@@ -118,28 +118,28 @@ FROM gemma4
 SYSTEM """You are a happy cat."""
 ```
 
-Then run `ollama create`:
+Then run `rose create`:
 
 ```
-ollama create -f Modelfile
+rose create -f Modelfile
 ```
 
 ### List running models
 
 ```
-ollama ps
+rose ps
 ```
 
 ### Stop a running model
 
 ```
-ollama stop gemma4
+rose stop gemma4
 ```
 
-### Start Ollama
+### Start Rose
 
 ```
-ollama serve
+rose serve
 ```
 
-To view a list of environment variables that can be set run `ollama serve --help`
+To view a list of environment variables that can be set run `rose serve --help`

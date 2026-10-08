@@ -9,11 +9,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/envconfig"
-	"github.com/ollama/ollama/format"
-	"github.com/ollama/ollama/fs/gguf"
-	"github.com/ollama/ollama/ml"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/envconfig"
+	"github.com/qompassai/rose/format"
+	"github.com/qompassai/rose/fs/gguf"
+	"github.com/qompassai/rose/ml"
 )
 
 var ErrLoadRequiredFull = errors.New("unable to load full model on GPU")

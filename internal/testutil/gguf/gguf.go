@@ -10,7 +10,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/ollama/ollama/fs/gguf"
+	"github.com/qompassai/rose/fs/gguf"
 )
 
 const (

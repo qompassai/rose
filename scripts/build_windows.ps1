@@ -316,7 +316,7 @@ function checkEnv {
     } else {
         $script:PKG_VERSION="0.0.0"
     }
-    Write-Output "Building Ollama $script:VERSION with package version $script:PKG_VERSION"
+    Write-Output "Building Rose $script:VERSION with package version $script:PKG_VERSION"
 
     # Note: Windows Kits 10 signtool crashes with GCP's plugin
     if ($null -eq $env:SIGN_TOOL) {
@@ -326,7 +326,7 @@ function checkEnv {
     }
     if ("${env:KEY_CONTAINER}") {
         if (Test-Path "${script:SRC_DIR}\ollama_inc.crt") {
-            ${script:OLLAMA_CERT}=$(resolve-path "${script:SRC_DIR}\ollama_inc.crt")
+            ${script:ROSE_CERT}=$(resolve-path "${script:SRC_DIR}\ollama_inc.crt")
             Write-host "Code signing enabled"
         } else {
             Write-Output "WARNING: KEY_CONTAINER is set but ollama_inc.crt not found at ${script:SRC_DIR}\ollama_inc.crt - code signing disabled"
@@ -346,8 +346,8 @@ function checkEnv {
         Write-Output "Using CMake generator: $env:CMAKE_GENERATOR"
     }
     ensureMsvcForNinja
-    if ($env:OLLAMA_BUILD_PARALLEL) {
-        $script:JOBS=[int]$env:OLLAMA_BUILD_PARALLEL
+    if ($env:ROSE_BUILD_PARALLEL) {
+        $script:JOBS=[int]$env:ROSE_BUILD_PARALLEL
     } else {
         # Use physical core count rather than logical processors (hyperthreads)
         # to avoid saturating the system during builds
@@ -362,7 +362,7 @@ function checkEnv {
             $script:JOBS = [Environment]::ProcessorCount
         }
     }
-    Write-Output "Build parallelism: $script:JOBS (set OLLAMA_BUILD_PARALLEL to override)"
+    Write-Output "Build parallelism: $script:JOBS (set ROSE_BUILD_PARALLEL to override)"
 }
 
 
@@ -370,7 +370,7 @@ function cpu {
     mkdir -Force -path "${script:DIST_DIR}\" | Out-Null
     if ($script:ARCH -ne "arm64") {
         Remove-Item -ea 0 -recurse -force -path "${script:SRC_DIR}\dist\windows-${script:ARCH}"
-        New-Item "${script:SRC_DIR}\dist\windows-${script:ARCH}\lib\ollama\" -ItemType Directory -ea 0
+        New-Item "${script:SRC_DIR}\dist\windows-${script:ARCH}\lib\rose\" -ItemType Directory -ea 0
 
         $oldCC = $env:CC
         $oldCXX = $env:CXX
@@ -441,9 +441,9 @@ function cpuArm64 {
     }
 
     $arm64DistDir = "${script:SRC_DIR}\dist\windows-arm64"
-    mkdir -Force -path "${arm64DistDir}\lib\ollama\" | Out-Null
-    Remove-Item -ea 0 -recurse -force -path "${arm64DistDir}\lib\ollama"
-    New-Item "${arm64DistDir}\lib\ollama\" -ItemType Directory -ea 0 | Out-Null
+    mkdir -Force -path "${arm64DistDir}\lib\rose\" | Out-Null
+    Remove-Item -ea 0 -recurse -force -path "${arm64DistDir}\lib\rose"
+    New-Item "${arm64DistDir}\lib\rose\" -ItemType Directory -ea 0 | Out-Null
 
     # Cross-compile the Windows ARM64 CPU llama-server payload from an x64 host
     # with llvm-mingw. Upstream ggml only supports ARM CPU variant matrices on
@@ -586,9 +586,9 @@ function cudaArm64UnavailableReason {
 }
 
 function cudaArm64ArchitectureArgs {
-    if ($env:OLLAMA_WOA_CUDA_ARCHITECTURES) {
-        Write-Output "Overriding Windows ARM64 CUDA architectures: $env:OLLAMA_WOA_CUDA_ARCHITECTURES"
-        return @("-DCMAKE_CUDA_ARCHITECTURES=$env:OLLAMA_WOA_CUDA_ARCHITECTURES")
+    if ($env:ROSE_WOA_CUDA_ARCHITECTURES) {
+        Write-Output "Overriding Windows ARM64 CUDA architectures: $env:ROSE_WOA_CUDA_ARCHITECTURES"
+        return @("-DCMAKE_CUDA_ARCHITECTURES=$env:ROSE_WOA_CUDA_ARCHITECTURES")
     }
 
     return @()
@@ -638,7 +638,7 @@ function cudaArm64Common {
     $cuda = findCudaRoot $cudaMajorVer $cudaExactVer
     if ($cuda) {
         $arm64DistDir = "${script:SRC_DIR}\dist\windows-arm64"
-        mkdir -Force -path "${arm64DistDir}\lib\ollama\" | Out-Null
+        mkdir -Force -path "${arm64DistDir}\lib\rose\" | Out-Null
 
         $unavailableReason = cudaArm64UnavailableReason $cuda
         if ($Optional -and $unavailableReason) {
@@ -794,7 +794,7 @@ function mlxCuda13 {
     mkdir -Force -path "${script:DIST_DIR}\" | Out-Null
     $cudaMajorVer="13"
     if ($script:ARCH -ne "arm64") {
-        $cudaExactVer = if ($env:OLLAMA_MLX_CUDA_VERSION) { $env:OLLAMA_MLX_CUDA_VERSION } else { "$cudaMajorVer.0" }
+        $cudaExactVer = if ($env:ROSE_MLX_CUDA_VERSION) { $env:ROSE_MLX_CUDA_VERSION } else { "$cudaMajorVer.0" }
         $cuda = findCudaRoot $cudaMajorVer $cudaExactVer
         if ($cuda) {
 
@@ -836,14 +836,14 @@ function mlxCuda13 {
             $env:CUDAToolkit_ROOT=$cuda
             try {
                 $cudaFlags = @()
-                if ($env:OLLAMA_CMAKE_CUDA_FLAGS) {
-                    $cudaFlags += "-DCMAKE_CUDA_FLAGS=$env:OLLAMA_CMAKE_CUDA_FLAGS"
+                if ($env:ROSE_CMAKE_CUDA_FLAGS) {
+                    $cudaFlags += "-DCMAKE_CUDA_FLAGS=$env:ROSE_CMAKE_CUDA_FLAGS"
                 }
                 $cudaToolsetArgs = cudaCMakeArgs $cuda
-                $configureArgs = @("-S", ".", "-B", "build\mlx_cuda_v$cudaMajorVer", "-DOLLAMA_MLX_BACKENDS=cuda_v$cudaMajorVer") + $cudaToolsetArgs + $cudaFlags + @("-DOLLAMA_PAYLOAD_INSTALL_PREFIX=$script:DIST_DIR", "--install-prefix", "$script:DIST_DIR")
+                $configureArgs = @("-S", ".", "-B", "build\mlx_cuda_v$cudaMajorVer", "-DROSE_MLX_BACKENDS=cuda_v$cudaMajorVer") + $cudaToolsetArgs + $cudaFlags + @("-DROSE_PAYLOAD_INSTALL_PREFIX=$script:DIST_DIR", "--install-prefix", "$script:DIST_DIR")
                 & cmake @configureArgs
                 if ($LASTEXITCODE -ne 0) { exit($LASTEXITCODE)}
-                $buildArgs = @("--build", "build\mlx_cuda_v$cudaMajorVer", "--target", "ollama-mlx-cuda_v$cudaMajorVer", "--config", "Release", "--parallel", "$script:JOBS")
+                $buildArgs = @("--build", "build\mlx_cuda_v$cudaMajorVer", "--target", "rose-mlx-cuda_v$cudaMajorVer", "--config", "Release", "--parallel", "$script:JOBS")
                 if ($env:CMAKE_GENERATOR -notlike "Ninja*") {
                     $buildArgs += @("--", "/nodeReuse:false")
                 }
@@ -855,7 +855,7 @@ function mlxCuda13 {
                 $env:CUDACXX=$oldCudaCxx
             }
         } else {
-            Write-Output "CUDA v$cudaExactVer not detected - set OLLAMA_MLX_CUDA_VERSION to use a different CUDA v$cudaMajorVer toolkit"
+            Write-Output "CUDA v$cudaExactVer not detected - set ROSE_MLX_CUDA_VERSION to use a different CUDA v$cudaMajorVer toolkit"
             Write-Output "Skipping MLX build"
         }
     }
@@ -897,12 +897,12 @@ function buildOllamaCLI {
         [string]$distDir
     )
     mkdir -Force -path "${distDir}\" | Out-Null
-    & go build -trimpath -ldflags "-s -w -X=github.com/ollama/ollama/version.Version=$script:VERSION -X=github.com/ollama/ollama/server.mode=release" -o "${distDir}\ollama.exe" .
+    & go build -trimpath -ldflags "-s -w -X=github.com/qompassai/rose/version.Version=$script:VERSION -X=github.com/qompassai/rose/server.mode=release" -o "${distDir}\rose.exe" .
     if ($LASTEXITCODE -ne 0) { exit($LASTEXITCODE)}
 }
 
-function ollama {
-    Write-Output "Building ollama CLI"
+function rose {
+    Write-Output "Building rose CLI"
     buildOllamaCLI $script:DIST_DIR
 }
 
@@ -912,7 +912,7 @@ function ollamaArm64 {
         return
     }
 
-    Write-Output "Building ollama CLI for arm64"
+    Write-Output "Building rose CLI for arm64"
     withWindowsArm64GoEnv {
         buildOllamaCLI "${script:SRC_DIR}\dist\windows-arm64"
     }
@@ -923,7 +923,7 @@ function prepareApp {
         return
     }
 
-    Write-Output "Building Ollama App $script:VERSION with package version $script:PKG_VERSION"
+    Write-Output "Building Rose App $script:VERSION with package version $script:PKG_VERSION"
 
     if (!(Get-Command npm -ErrorAction SilentlyContinue)) {
         Write-Output "npm is not installed. Please install Node.js and npm first:"
@@ -981,7 +981,7 @@ function buildApp {
     param (
         [string]$arch
     )
-	& go build -trimpath -ldflags "-s -w -H windowsgui -X=github.com/ollama/ollama/app/version.Version=$script:VERSION" -o .\dist\windows-ollama-app-${arch}.exe ./app/cmd/app/
+	& go build -trimpath -ldflags "-s -w -H windowsgui -X=github.com/qompassai/rose/app/version.Version=$script:VERSION" -o .\dist\windows-rose-app-${arch}.exe ./app/cmd/app/
     if ($LASTEXITCODE -ne 0) { exit($LASTEXITCODE)}
 }
 
@@ -997,7 +997,7 @@ function appArm64 {
     }
 
     prepareApp
-    Write-Output "Building Ollama App for arm64"
+    Write-Output "Building Rose App for arm64"
     withWindowsArm64GoEnv {
         buildApp "arm64"
     }
@@ -1016,14 +1016,14 @@ function sign {
     Copy-Item -Path "${script:SRC_DIR}\scripts\install.ps1" -Destination "${script:SRC_DIR}\dist\install.ps1" -ErrorAction Stop
 
     if ("${env:KEY_CONTAINER}") {
-        Write-Output "Signing Ollama executables, scripts and libraries"
-        & "${script:SignTool}" sign /v /fd sha256 /t http://timestamp.digicert.com /f "${script:OLLAMA_CERT}" `
+        Write-Output "Signing Rose executables, scripts and libraries"
+        & "${script:SignTool}" sign /v /fd sha256 /t http://timestamp.digicert.com /f "${script:ROSE_CERT}" `
             /csp "Google Cloud KMS Provider" /kc ${env:KEY_CONTAINER} `
             $(get-childitem -path "${script:SRC_DIR}\dist\windows-*" -r -include @('*.exe', '*.dll'))
         if ($LASTEXITCODE -ne 0) { exit($LASTEXITCODE)}
 
         Write-Output "Signing install.ps1"
-        & "${script:SignTool}" sign /v /fd sha256 /t http://timestamp.digicert.com /f "${script:OLLAMA_CERT}" `
+        & "${script:SignTool}" sign /v /fd sha256 /t http://timestamp.digicert.com /f "${script:ROSE_CERT}" `
             /csp "Google Cloud KMS Provider" /kc ${env:KEY_CONTAINER} `
             "${script:SRC_DIR}\dist\install.ps1"
         if ($LASTEXITCODE -ne 0) { exit($LASTEXITCODE)}
@@ -1037,13 +1037,13 @@ function installer {
         Write-Output "ERROR: missing Inno Setup installation directory - install from https://jrsoftware.org/isdl.php"
         exit 1
     }
-    Write-Output "Building Ollama Installer"
+    Write-Output "Building Rose Installer"
     cd "${script:SRC_DIR}\app"
     $env:PKG_VERSION=$script:PKG_VERSION
     if ("${env:KEY_CONTAINER}") {
-        & "${script:INNO_SETUP_DIR}\ISCC.exe" /DARCH=$script:TARGET_ARCH /SMySignTool="${script:SignTool} sign /fd sha256 /t http://timestamp.digicert.com /f ${script:OLLAMA_CERT} /csp `$qGoogle Cloud KMS Provider`$q /kc ${env:KEY_CONTAINER} `$f" .\ollama.iss
+        & "${script:INNO_SETUP_DIR}\ISCC.exe" /DARCH=$script:TARGET_ARCH /SMySignTool="${script:SignTool} sign /fd sha256 /t http://timestamp.digicert.com /f ${script:ROSE_CERT} /csp `$qGoogle Cloud KMS Provider`$q /kc ${env:KEY_CONTAINER} `$f" .\rose.iss
     } else {
-        & "${script:INNO_SETUP_DIR}\ISCC.exe" /DARCH=$script:TARGET_ARCH .\ollama.iss
+        & "${script:INNO_SETUP_DIR}\ISCC.exe" /DARCH=$script:TARGET_ARCH .\rose.iss
     }
     if ($LASTEXITCODE -ne 0) { exit($LASTEXITCODE)}
 }
@@ -1205,14 +1205,14 @@ function verifyWindowsArm64Binaries {
 }
 
 function stageComponents($mainDir, $stagingDir, $pattern, $readmePrefix) {
-    $components = Get-ChildItem -Path "${mainDir}\lib\ollama" -Directory -Filter $pattern -ErrorAction SilentlyContinue
+    $components = Get-ChildItem -Path "${mainDir}\lib\rose" -Directory -Filter $pattern -ErrorAction SilentlyContinue
     if ($components) {
         Remove-Item -ea 0 -r $stagingDir
-        mkdir -Force -path "${stagingDir}\lib\ollama" | Out-Null
-        Write-Output "Extract this ${readmePrefix} zip file to the same location where you extracted ollama-windows-amd64.zip" > "${stagingDir}\README_${readmePrefix}.txt"
+        mkdir -Force -path "${stagingDir}\lib\rose" | Out-Null
+        Write-Output "Extract this ${readmePrefix} zip file to the same location where you extracted rose-windows-amd64.zip" > "${stagingDir}\README_${readmePrefix}.txt"
         foreach ($dir in $components) {
             Write-Output "  Staging $($dir.Name)"
-            Move-Item -path $dir.FullName -destination "${stagingDir}\lib\ollama\$($dir.Name)"
+            Move-Item -path $dir.FullName -destination "${stagingDir}\lib\rose\$($dir.Name)"
         }
         return $true
     }
@@ -1220,9 +1220,9 @@ function stageComponents($mainDir, $stagingDir, $pattern, $readmePrefix) {
 }
 
 function restoreComponents($mainDir, $stagingDir) {
-    if (Test-Path -Path "${stagingDir}\lib\ollama") {
-        foreach ($dir in (Get-ChildItem -Path "${stagingDir}\lib\ollama" -Directory)) {
-            Move-Item -path $dir.FullName -destination "${mainDir}\lib\ollama\$($dir.Name)"
+    if (Test-Path -Path "${stagingDir}\lib\rose") {
+        foreach ($dir in (Get-ChildItem -Path "${stagingDir}\lib\rose" -Directory)) {
+            Move-Item -path $dir.FullName -destination "${mainDir}\lib\rose\$($dir.Name)"
         }
     }
     Remove-Item -ea 0 -r $stagingDir
@@ -1234,39 +1234,39 @@ function zip {
     $amd64Dir = "${distDir}\windows-amd64"
 
     # Remove any stale zip files before starting
-    Remove-Item -ea 0 "${distDir}\ollama-windows-*.zip"
+    Remove-Item -ea 0 "${distDir}\rose-windows-*.zip"
 
     try {
         if (Test-Path -Path $amd64Dir) {
             # Stage ROCm into its own directory for independent compression.
             if (stageComponents $amd64Dir "${distDir}\windows-amd64-rocm" "rocm_v*" "ROCm") {
-                Write-Output "Generating ${distDir}\ollama-windows-amd64-rocm.zip"
-                $jobs += newZipJob "${distDir}\windows-amd64-rocm" "${distDir}\ollama-windows-amd64-rocm.zip"
+                Write-Output "Generating ${distDir}\rose-windows-amd64-rocm.zip"
+                $jobs += newZipJob "${distDir}\windows-amd64-rocm" "${distDir}\rose-windows-amd64-rocm.zip"
                 $jobs += newDependencyAuditJob "${distDir}\windows-amd64-rocm" "windows-amd64-rocm" "${distDir}\dependency-audit-windows-amd64-rocm.txt" $amd64Dir
             }
 
             # Stage MLX into its own directory for independent compression
             if (stageComponents $amd64Dir "${distDir}\windows-amd64-mlx" "mlx_*" "MLX") {
-                Write-Output "Generating ${distDir}\ollama-windows-amd64-mlx.zip"
-                $jobs += newZipJob "${distDir}\windows-amd64-mlx" "${distDir}\ollama-windows-amd64-mlx.zip"
+                Write-Output "Generating ${distDir}\rose-windows-amd64-mlx.zip"
+                $jobs += newZipJob "${distDir}\windows-amd64-mlx" "${distDir}\rose-windows-amd64-mlx.zip"
                 $jobs += newDependencyAuditJob "${distDir}\windows-amd64-mlx" "windows-amd64-mlx" "${distDir}\dependency-audit-windows-amd64-mlx.txt" $amd64Dir
             }
 
             # Compress the main amd64 zip (without rocm/mlx)
-            Write-Output "Generating ${distDir}\ollama-windows-amd64.zip"
-            $jobs += newZipJob $amd64Dir "${distDir}\ollama-windows-amd64.zip"
+            Write-Output "Generating ${distDir}\rose-windows-amd64.zip"
+            $jobs += newZipJob $amd64Dir "${distDir}\rose-windows-amd64.zip"
             $jobs += newDependencyAuditJob $amd64Dir "windows-amd64" "${distDir}\dependency-audit-windows-amd64.txt"
         }
 
         $arm64Dir = "${distDir}\windows-arm64"
         if (Test-Path -Path $arm64Dir) {
-            if ((Test-Path -Path "${arm64Dir}\ollama.exe") -and (Test-Path -Path "${arm64Dir}\lib\ollama\llama-server.exe")) {
+            if ((Test-Path -Path "${arm64Dir}\rose.exe") -and (Test-Path -Path "${arm64Dir}\lib\rose\llama-server.exe")) {
                 verifyWindowsArm64Binaries $arm64Dir
-                Write-Output "Generating ${distDir}\ollama-windows-arm64.zip"
-                $jobs += newZipJob $arm64Dir "${distDir}\ollama-windows-arm64.zip"
+                Write-Output "Generating ${distDir}\rose-windows-arm64.zip"
+                $jobs += newZipJob $arm64Dir "${distDir}\rose-windows-arm64.zip"
                 $jobs += newDependencyAuditJob $arm64Dir "windows-arm64" "${distDir}\dependency-audit-windows-arm64.txt"
             } else {
-                Write-Output "Skipping ${distDir}\ollama-windows-arm64.zip; missing ARM64 ollama.exe or llama-server.exe"
+                Write-Output "Skipping ${distDir}\rose-windows-arm64.zip; missing ARM64 rose.exe or llama-server.exe"
             }
         }
 
@@ -1309,7 +1309,7 @@ try {
         rocm7
         vulkan
         mlxCuda13
-        ollama
+        rose
         ollamaArm64
         app
         appArm64

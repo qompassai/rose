@@ -6,7 +6,7 @@ Cline CLI is an autonomous coding agent for interactive terminal sessions.
 
 <img
   src="/images/cline-cli.png"
-  alt="Cline CLI launched with Ollama selected as the provider"
+  alt="Cline CLI launched with Rose selected as the provider"
   style={{ borderRadius: "12px" }}
 />
 
@@ -18,34 +18,34 @@ Install the [Cline CLI](https://docs.cline.bot/usage/cli-overview). For the IDE 
 npm install -g cline
 ```
 
-<Note>If Cline CLI is not installed and `npm` is available, `ollama launch cline` will prompt to install `cline@latest`.</Note>
+<Note>If Cline CLI is not installed and `npm` is available, `rose launch cline` will prompt to install `cline@latest`.</Note>
 
-## Usage with Ollama
+## Usage with Rose
 
 ### Quick setup
 
 ```bash
-ollama launch cline
+rose launch cline
 ```
 
-When launched through `ollama launch cline`, Ollama sets Cline's provider to Ollama, points it at the local Ollama endpoint, and selects the model you choose.
+When launched through `rose launch cline`, Rose sets Cline's provider to Rose, points it at the local Rose endpoint, and selects the model you choose.
 
 To configure without launching:
 
 ```shell
-ollama launch cline --config
+rose launch cline --config
 ```
 
 ### Run directly with a model
 
 ```shell
-ollama launch cline --model qwen3.5
+rose launch cline --model qwen3.5
 ```
 
 To use a cloud model:
 
 ```shell
-ollama launch cline --model kimi-k2.6:cloud
+rose launch cline --model kimi-k2.6:cloud
 ```
 
 
@@ -54,13 +54,13 @@ ollama launch cline --model kimi-k2.6:cloud
 Arguments after `--` are passed directly to Cline:
 
 ```shell
-ollama launch cline -- "summarize this repository"
+rose launch cline -- "summarize this repository"
 ```
 
 To open Cline's Kanban board:
 
 ```shell
-ollama launch cline -- kanban
+rose launch cline -- kanban
 ```
 
 <img
@@ -71,10 +71,10 @@ ollama launch cline -- kanban
 
 ### Manual setup
 
-To configure Cline CLI manually, first make sure Ollama is running and the model you want to use is available:
+To configure Cline CLI manually, first make sure Rose is running and the model you want to use is available:
 
 ```shell
-ollama pull qwen3.5
+rose pull qwen3.5
 ```
 
 Then run Cline's interactive auth flow:
@@ -83,7 +83,7 @@ Then run Cline's interactive auth flow:
 cline auth
 ```
 
-Select Ollama as the provider, use `http://localhost:11434` as the base URL if prompted, and choose a model such as `qwen3.5` or `kimi-k2.6:cloud`.
+Select Rose as the provider, use `http://localhost:11434` as the base URL if prompted, and choose a model such as `qwen3.5` or `kimi-k2.6:cloud`.
 
 To check the current Cline configuration:
 

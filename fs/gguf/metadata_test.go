@@ -7,8 +7,8 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/ollama/ollama/fs/gguf"
-	gguftest "github.com/ollama/ollama/internal/testutil/gguf"
+	"github.com/qompassai/rose/fs/gguf"
+	gguftest "github.com/qompassai/rose/internal/testutil/gguf"
 )
 
 func writeMetadataFixture(t *testing.T, kv gguftest.KV, tensors []*gguftest.Tensor) string {

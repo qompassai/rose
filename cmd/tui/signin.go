@@ -8,8 +8,8 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/cmd/launch"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/cmd/launch"
 )
 
 type signInTickMsg struct{}
@@ -228,7 +228,7 @@ func renderUpgrade(modelName string, spinner, width int, polling, openNow bool) 
 
 	var s strings.Builder
 
-	fmt.Fprintf(&s, "To use %s, upgrade your Ollama plan.\n\n", selectorSelectedItemStyle.Render(modelName))
+	fmt.Fprintf(&s, "To use %s, upgrade your Rose plan.\n\n", selectorSelectedItemStyle.Render(modelName))
 
 	s.WriteString("Navigate to:\n")
 	s.WriteString(urlWrap.Render(urlColor.Render(launch.DefaultUpgradeURL)))

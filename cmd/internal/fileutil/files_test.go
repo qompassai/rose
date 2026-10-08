@@ -47,12 +47,12 @@ func isolatedTempDir(t *testing.T) string {
 func TestWriteWithBackup(t *testing.T) {
 	tmpDir := isolatedTempDir(t)
 
-	t.Run("uses ollama directory under home", func(t *testing.T) {
+	t.Run("uses rose directory under home", func(t *testing.T) {
 		home := t.TempDir()
 		t.Setenv("HOME", home)
 		t.Setenv("USERPROFILE", home)
 
-		want := filepath.Join(home, ".ollama", "backup")
+		want := filepath.Join(home, ".rose", "backup")
 		if got := BackupDir(); got != want {
 			t.Fatalf("BackupDir() = %q, want %q", got, want)
 		}

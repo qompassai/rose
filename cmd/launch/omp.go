@@ -9,18 +9,18 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/ollama/ollama/cmd/config"
-	"github.com/ollama/ollama/cmd/internal/fileutil"
-	"github.com/ollama/ollama/envconfig"
-	"github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/cmd/config"
+	"github.com/qompassai/rose/cmd/internal/fileutil"
+	"github.com/qompassai/rose/envconfig"
+	"github.com/qompassai/rose/types/model"
 	"gopkg.in/yaml.v3"
 )
 
 const (
 	ompIntegrationName = "omp"
-	ompProviderName    = "ollama"
+	ompProviderName    = "rose"
 	ompSetupVersion    = 1
-	ompWebSearchPlugin = "@ollama/pi-web-search"
+	ompWebSearchPlugin = "@rose/pi-web-search"
 )
 
 // OMP implements Runner for the OMP coding-agent integration.
@@ -100,10 +100,10 @@ func (o *OMP) args(model string, extra []string) []string {
 }
 
 func ompModelName(model string) string {
-	if strings.HasPrefix(model, "ollama/") {
+	if strings.HasPrefix(model, "rose/") {
 		return model
 	}
-	return "ollama/" + model
+	return "rose/" + model
 }
 
 func (o *OMP) findPath() (string, error) {
@@ -365,7 +365,7 @@ func ensureOMPProvider(cfg map[string]any) map[string]any {
 	provider["baseUrl"] = ompBaseURL()
 	provider["api"] = "openai-responses"
 	provider["auth"] = "none"
-	provider["discovery"] = map[string]any{"type": "ollama"}
+	provider["discovery"] = map[string]any{"type": "rose"}
 	return provider
 }
 
@@ -391,7 +391,7 @@ func ompProviderHealthy(provider map[string]any) bool {
 		return false
 	}
 	discoveryType, _ := discovery["type"].(string)
-	return discoveryType == "ollama"
+	return discoveryType == "rose"
 }
 
 func ompProvider(cfg map[string]any) (map[string]any, bool) {

@@ -23,8 +23,8 @@ import (
 	"golang.org/x/text/encoding/unicode"
 	"golang.org/x/text/transform"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/types/model"
 )
 
 var ErrModelNotFound = errors.New("no Modelfile or safetensors files found")

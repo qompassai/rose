@@ -12,15 +12,15 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ollama/ollama/fs/gguf"
+	"github.com/qompassai/rose/fs/gguf"
 )
 
 const (
 	// llama.cpp's split filename format reserves five decimal digits for the count.
 	maxSplitModelFiles = 99999
-	// Split aliases use <OLLAMA_MODELS>/blobs/.ollama-split-<manifest12>-<random>/model-00001-of-00002.gguf, with one directory per load.
+	// Split aliases use <ROSE_MODELS>/blobs/.rose-split-<manifest12>-<random>/model-00001-of-00002.gguf, with one directory per load.
 	// Hard links give llama-server canonical shard names for auto-discovery because it has no CLI option for passing shard paths explicitly.
-	splitModelDirPrefix = ".ollama-split-"
+	splitModelDirPrefix = ".rose-split-"
 )
 
 type splitModelLaunch struct {

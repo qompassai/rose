@@ -1,6 +1,6 @@
 export function isWindowsPlatform(): boolean {
-  if (typeof window !== "undefined" && window.OLLAMA_PLATFORM) {
-    return window.OLLAMA_PLATFORM === "windows";
+  if (typeof window !== "undefined" && window.ROSE_PLATFORM) {
+    return window.ROSE_PLATFORM === "windows";
   }
 
   return (

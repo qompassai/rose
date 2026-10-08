@@ -22,17 +22,17 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/envconfig"
-	"github.com/ollama/ollama/manifest"
-	"github.com/ollama/ollama/mlx"
-	"github.com/ollama/ollama/model/parsers"
-	"github.com/ollama/ollama/parser"
-	"github.com/ollama/ollama/template"
-	"github.com/ollama/ollama/thinking"
-	"github.com/ollama/ollama/transfer"
-	"github.com/ollama/ollama/types/model"
-	"github.com/ollama/ollama/version"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/envconfig"
+	"github.com/qompassai/rose/manifest"
+	"github.com/qompassai/rose/mlx"
+	"github.com/qompassai/rose/model/parsers"
+	"github.com/qompassai/rose/parser"
+	"github.com/qompassai/rose/template"
+	"github.com/qompassai/rose/thinking"
+	"github.com/qompassai/rose/transfer"
+	"github.com/qompassai/rose/types/model"
+	"github.com/qompassai/rose/version"
 
 	"golang.org/x/mod/semver"
 )
@@ -764,7 +764,7 @@ func GetModelForRunner(name, runner string) (*Model, error) {
 		}
 
 		switch layer.MediaType {
-		case "application/vnd.ollama.image.model":
+		case "application/vnd.rose.image.model":
 			if m.ModelPath != "" {
 				m.ModelShardPaths = append(m.ModelShardPaths, filename)
 				break
@@ -789,21 +789,21 @@ func GetModelForRunner(name, runner string) (*Model, error) {
 			} else {
 				m.DraftShardPaths = append(m.DraftShardPaths, filename)
 			}
-		case "application/vnd.ollama.image.embed":
+		case "application/vnd.rose.image.embed":
 			// Deprecated in versions  > 0.1.2
 			// TODO: remove this warning in a future version
 			slog.Info("WARNING: model contains embeddings, but embeddings in modelfiles have been deprecated and will be ignored.")
-		case "application/vnd.ollama.image.adapter":
+		case "application/vnd.rose.image.adapter":
 			m.AdapterPaths = append(m.AdapterPaths, filename)
-		case "application/vnd.ollama.image.projector":
+		case "application/vnd.rose.image.projector":
 			m.ProjectorPaths = append(m.ProjectorPaths, filename)
 			if md, err := readGGUFMetadata(layer.Digest); err != nil {
 				slog.Error("couldn't read projector metadata", "error", err)
 			} else {
 				m.projectorMetadata = append(m.projectorMetadata, md)
 			}
-		case "application/vnd.ollama.image.prompt",
-			"application/vnd.ollama.image.template":
+		case "application/vnd.rose.image.prompt",
+			"application/vnd.rose.image.template":
 			m.HasGoTemplate = true
 			m.templateDigest = layer.Digest
 			bts, err := os.ReadFile(filename)
@@ -815,14 +815,14 @@ func GetModelForRunner(name, runner string) (*Model, error) {
 			if err != nil {
 				return nil, err
 			}
-		case "application/vnd.ollama.image.system":
+		case "application/vnd.rose.image.system":
 			bts, err := os.ReadFile(filename)
 			if err != nil {
 				return nil, err
 			}
 
 			m.System = string(bts)
-		case "application/vnd.ollama.image.params":
+		case "application/vnd.rose.image.params":
 			params, err := os.Open(filename)
 			if err != nil {
 				return nil, err
@@ -833,7 +833,7 @@ func GetModelForRunner(name, runner string) (*Model, error) {
 			if err = json.NewDecoder(params).Decode(&m.Options); err != nil {
 				return nil, err
 			}
-		case "application/vnd.ollama.image.messages":
+		case "application/vnd.rose.image.messages":
 			msgs, err := os.Open(filename)
 			if err != nil {
 				return nil, err
@@ -843,7 +843,7 @@ func GetModelForRunner(name, runner string) (*Model, error) {
 			if err = json.NewDecoder(msgs).Decode(&m.Messages); err != nil {
 				return nil, err
 			}
-		case "application/vnd.ollama.image.license":
+		case "application/vnd.rose.image.license":
 			bts, err := os.ReadFile(filename)
 			if err != nil {
 				return nil, err
@@ -860,7 +860,7 @@ func GetModelForRunner(name, runner string) (*Model, error) {
 	}
 
 	if m.ModelPath != "" && m.isGGUF() && !modelHasPooling && !m.HasChatTemplate && (!m.HasGoTemplate || !envconfig.GoTemplate(true)) && m.Config.Renderer == "" && m.Config.Parser == "" && !usesHarmony {
-		slog.Warn("model is missing tokenizer.chat_template and Go TEMPLATE support is unavailable; chat responses may be poorly formatted", "model", m.Name, "env", "OLLAMA_GO_TEMPLATE=1")
+		slog.Warn("model is missing tokenizer.chat_template and Go TEMPLATE support is unavailable; chat responses may be poorly formatted", "model", m.Name, "env", "ROSE_GO_TEMPLATE=1")
 	}
 
 	return m, nil
@@ -1326,7 +1326,7 @@ func candidateBlobDigests(m map[string]struct{}) []string {
 }
 
 // checkModelRequires makes sure the model is compatible with the local
-// Ollama version before any model layers are downloaded.
+// Rose version before any model layers are downloaded.
 func checkModelRequires(ctx context.Context, n model.Name, mf *manifest.Manifest, regOpts *registryOptions) error {
 	if mf == nil || mf.Config.Digest == "" {
 		return nil
@@ -1380,7 +1380,7 @@ func checkPullRequires(requires, clientVersion string) error {
 	// Prerelease builds must be able to test models targeting their release.
 	currentVersion, _, _ := strings.Cut(semver.Canonical("v"+clientVersion), "-")
 	if semver.Compare(requires, currentVersion) > 0 {
-		return fmt.Errorf("model requires ollama version %s or newer (current version is v%s)", requires, clientVersion)
+		return fmt.Errorf("model requires rose version %s or newer (current version is v%s)", requires, clientVersion)
 	}
 	return nil
 }
@@ -1742,7 +1742,7 @@ func makeRequest(ctx context.Context, method string, requestURL *url.URL, header
 		}
 	}
 
-	req.Header.Set("User-Agent", fmt.Sprintf("ollama/%s (%s %s) Go/%s", version.Version, runtime.GOARCH, runtime.GOOS, runtime.Version()))
+	req.Header.Set("User-Agent", fmt.Sprintf("rose/%s (%s %s) Go/%s", version.Version, runtime.GOARCH, runtime.GOOS, runtime.Version()))
 
 	if s := req.Header.Get("Content-Length"); s != "" {
 		contentLength, err := strconv.ParseInt(s, 10, 64)

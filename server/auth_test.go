@@ -49,8 +49,8 @@ func TestParseRegistryChallenge(t *testing.T) {
 			"https://auth.example.com/token", "registry", "repo:foo:pull",
 		},
 		{
-			`Bearer realm="https://r.ollama.ai/v2/token",service="ollama",scope="-"`,
-			"https://r.ollama.ai/v2/token", "ollama", "-",
+			`Bearer realm="https://r.ollama.ai/v2/token",service="rose",scope="-"`,
+			"https://r.ollama.ai/v2/token", "rose", "-",
 		},
 		{"", "", "", ""},
 	}

@@ -29,29 +29,29 @@ elseif(UNIX)
     set(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
 endif()
 
-if(NOT DEFINED OLLAMA_SOURCE_DIR OR "${OLLAMA_SOURCE_DIR}" STREQUAL "")
-    get_filename_component(OLLAMA_SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/../.." ABSOLUTE)
+if(NOT DEFINED ROSE_SOURCE_DIR OR "${ROSE_SOURCE_DIR}" STREQUAL "")
+    get_filename_component(ROSE_SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/../.." ABSOLUTE)
 endif()
-get_filename_component(OLLAMA_SOURCE_DIR "${OLLAMA_SOURCE_DIR}" ABSOLUTE BASE_DIR "${CMAKE_CURRENT_LIST_DIR}")
-set(OLLAMA_SOURCE_DIR "${OLLAMA_SOURCE_DIR}" CACHE PATH "Ollama repository root")
+get_filename_component(ROSE_SOURCE_DIR "${ROSE_SOURCE_DIR}" ABSOLUTE BASE_DIR "${CMAKE_CURRENT_LIST_DIR}")
+set(ROSE_SOURCE_DIR "${ROSE_SOURCE_DIR}" CACHE PATH "Rose repository root")
 
-set(OLLAMA_LIB_DIR "lib/ollama" CACHE STRING "Install destination for Ollama runtime payloads")
-set(OLLAMA_RUNNER_DIR "" CACHE STRING "Ollama runtime payload subdirectory")
-set(OLLAMA_BUILD_DIR ${CMAKE_BINARY_DIR}/lib/ollama)
-set(OLLAMA_INSTALL_DIR ${OLLAMA_LIB_DIR}/${OLLAMA_RUNNER_DIR})
+set(ROSE_LIB_DIR "lib/rose" CACHE STRING "Install destination for Rose runtime payloads")
+set(ROSE_RUNNER_DIR "" CACHE STRING "Rose runtime payload subdirectory")
+set(ROSE_BUILD_DIR ${CMAKE_BINARY_DIR}/lib/rose)
+set(ROSE_INSTALL_DIR ${ROSE_LIB_DIR}/${ROSE_RUNNER_DIR})
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY         ${OLLAMA_BUILD_DIR})
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG   ${OLLAMA_BUILD_DIR})
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${OLLAMA_BUILD_DIR})
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY         ${OLLAMA_BUILD_DIR})
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG   ${OLLAMA_BUILD_DIR})
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE ${OLLAMA_BUILD_DIR})
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY         ${ROSE_BUILD_DIR})
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG   ${ROSE_BUILD_DIR})
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${ROSE_BUILD_DIR})
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY         ${ROSE_BUILD_DIR})
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG   ${ROSE_BUILD_DIR})
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE ${ROSE_BUILD_DIR})
 
 if(MLX_CUDA_ARCHITECTURES OR CMAKE_CUDA_ARCHITECTURES)
     check_language(CUDA)
 endif()
 
-option(OLLAMA_MLX_GENERATE_WRAPPERS "Regenerate MLX Go wrappers" OFF)
+option(ROSE_MLX_GENERATE_WRAPPERS "Regenerate MLX Go wrappers" OFF)
 
 message(STATUS "Setting up MLX (this takes a while...)")
 foreach(_cudnn_var CUDNN_INCLUDE_PATH CUDNN_LIBRARY_PATH)
@@ -59,7 +59,7 @@ foreach(_cudnn_var CUDNN_INCLUDE_PATH CUDNN_LIBRARY_PATH)
         set(${_cudnn_var} "$ENV{${_cudnn_var}}" CACHE PATH "")
     endif()
 endforeach()
-add_subdirectory(${OLLAMA_SOURCE_DIR}/mlx ${CMAKE_BINARY_DIR}/mlx)
+add_subdirectory(${ROSE_SOURCE_DIR}/mlx ${CMAKE_BINARY_DIR}/mlx)
 
 include(FetchContent)
 set(XGRAMMAR_VERSION v0.2.7)
@@ -69,7 +69,7 @@ FetchContent_Declare(xgrammar
     GIT_SHALLOW TRUE
     GIT_SUBMODULES 3rdparty/dlpack
     # Do not add XGrammar's Python-oriented CMake project.
-    SOURCE_SUBDIR cmake/ollama)
+    SOURCE_SUBDIR cmake/rose)
 FetchContent_MakeAvailable(xgrammar)
 
 file(GLOB_RECURSE XGRAMMAR_SOURCES CONFIGURE_DEPENDS "${xgrammar_SOURCE_DIR}/cpp/*.cc")
@@ -87,7 +87,7 @@ target_compile_definitions(xgrammar PUBLIC
     XGRAMMAR_ENABLE_CPPTRACE=0
     XGRAMMAR_ENABLE_INTERNAL_CHECK=0)
 
-add_subdirectory(${OLLAMA_SOURCE_DIR}/mlxrunner/xgrammar/native ${CMAKE_BINARY_DIR}/xgrammar)
+add_subdirectory(${ROSE_SOURCE_DIR}/mlxrunner/xgrammar/native ${CMAKE_BINARY_DIR}/xgrammar)
 
 # Find CUDA toolkit if MLX is built with CUDA support.
 find_package(CUDAToolkit)
@@ -108,7 +108,7 @@ if(_cudnn_root)
     list(APPEND MLX_RUNTIME_DIRS ${CUDNN_BIN_SUBDIRS})
 endif()
 # Add build output directory and MLX dependency build directories.
-list(APPEND MLX_RUNTIME_DIRS ${OLLAMA_BUILD_DIR})
+list(APPEND MLX_RUNTIME_DIRS ${ROSE_BUILD_DIR})
 # OpenBLAS DLL location (pre-built zip extracts into openblas-src/bin/).
 list(APPEND MLX_RUNTIME_DIRS ${CMAKE_BINARY_DIR}/_deps/openblas-src/bin)
 # NCCL: on Linux, if real NCCL is found, cmake bundles libnccl.so via the
@@ -128,23 +128,23 @@ endif()
 # applies to the binaries we build, not vendor DLLs/libs.
 install(TARGETS mlx mlxc ollama_xgrammar
     RUNTIME_DEPENDENCY_SET mlx_runtime_deps
-    RUNTIME DESTINATION ${OLLAMA_INSTALL_DIR} COMPONENT MLX
-    LIBRARY DESTINATION ${OLLAMA_INSTALL_DIR} COMPONENT MLX
-    FRAMEWORK DESTINATION ${OLLAMA_INSTALL_DIR} COMPONENT MLX
+    RUNTIME DESTINATION ${ROSE_INSTALL_DIR} COMPONENT MLX
+    LIBRARY DESTINATION ${ROSE_INSTALL_DIR} COMPONENT MLX
+    FRAMEWORK DESTINATION ${ROSE_INSTALL_DIR} COMPONENT MLX
 )
 install(FILES
     "${xgrammar_SOURCE_DIR}/LICENSE"
-    DESTINATION ${OLLAMA_LIB_DIR}
+    DESTINATION ${ROSE_LIB_DIR}
     RENAME XGRAMMAR_LICENSE
     COMPONENT MLX)
 install(FILES
     "${xgrammar_SOURCE_DIR}/NOTICE"
-    DESTINATION ${OLLAMA_LIB_DIR}
+    DESTINATION ${ROSE_LIB_DIR}
     RENAME XGRAMMAR_NOTICE
     COMPONENT MLX)
 install(FILES
     "${xgrammar_SOURCE_DIR}/3rdparty/dlpack/LICENSE"
-    DESTINATION ${OLLAMA_LIB_DIR}
+    DESTINATION ${ROSE_LIB_DIR}
     RENAME DLPACK_LICENSE
     COMPONENT MLX)
 file(READ "${xgrammar_SOURCE_DIR}/3rdparty/picojson/picojson.h" _picojson_header LIMIT 4096)
@@ -157,7 +157,7 @@ string(SUBSTRING "${_picojson_header}" 0 ${_picojson_license_end} _picojson_lice
 file(WRITE "${CMAKE_BINARY_DIR}/PICOJSON_LICENSE" "${_picojson_license}\n")
 install(FILES
     "${CMAKE_BINARY_DIR}/PICOJSON_LICENSE"
-    DESTINATION ${OLLAMA_LIB_DIR}
+    DESTINATION ${ROSE_LIB_DIR}
     COMPONENT MLX)
 get_target_property(_mlx_license_source mlx SOURCE_DIR)
 if(NOT _mlx_license_source OR _mlx_license_source MATCHES "-NOTFOUND$")
@@ -165,7 +165,7 @@ if(NOT _mlx_license_source OR _mlx_license_source MATCHES "-NOTFOUND$")
 endif()
 install(FILES
     "${_mlx_license_source}/LICENSE"
-    DESTINATION ${OLLAMA_LIB_DIR}
+    DESTINATION ${ROSE_LIB_DIR}
     RENAME MLX_LICENSE
     COMPONENT MLX)
 get_target_property(_mlxc_license_source mlxc SOURCE_DIR)
@@ -174,7 +174,7 @@ if(NOT _mlxc_license_source OR _mlxc_license_source MATCHES "-NOTFOUND$")
 endif()
 install(FILES
     "${_mlxc_license_source}/LICENSE"
-    DESTINATION ${OLLAMA_LIB_DIR}
+    DESTINATION ${ROSE_LIB_DIR}
     RENAME MLX_C_LICENSE
     COMPONENT MLX)
 # Ship LICENSE/NOTICE/COPYING from every fetched MLX dependency.
@@ -190,7 +190,7 @@ install(CODE "
         file(GLOB _lics \"\${_dep}/LICENSE*\" \"\${_dep}/COPYING*\" \"\${_dep}/NOTICE*\")
         foreach(_lic \${_lics})
             get_filename_component(_lic_name \${_lic} NAME)
-            file(INSTALL DESTINATION \"$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${OLLAMA_LIB_DIR}\"
+            file(INSTALL DESTINATION \"$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${ROSE_LIB_DIR}\"
                  TYPE FILE FILES \"\${_lic}\"
                  RENAME \"\${_dep_name}_\${_lic_name}\")
         endforeach()
@@ -201,16 +201,16 @@ install(RUNTIME_DEPENDENCY_SET mlx_runtime_deps
     DIRECTORIES ${MLX_RUNTIME_DIRS}
     PRE_INCLUDE_REGEXES ${MLX_INCLUDE_REGEXES}
     PRE_EXCLUDE_REGEXES ".*"
-    RUNTIME DESTINATION ${OLLAMA_INSTALL_DIR} COMPONENT MLX_VENDOR
-    LIBRARY DESTINATION ${OLLAMA_INSTALL_DIR} COMPONENT MLX_VENDOR
+    RUNTIME DESTINATION ${ROSE_INSTALL_DIR} COMPONENT MLX_VENDOR
+    LIBRARY DESTINATION ${ROSE_INSTALL_DIR} COMPONENT MLX_VENDOR
 )
 
 get_target_property(_MLX_LINK_LIBRARIES mlx LINK_LIBRARIES)
 if(TARGET jaccl AND "jaccl" IN_LIST _MLX_LINK_LIBRARIES)
     install(TARGETS jaccl
-        RUNTIME DESTINATION ${OLLAMA_INSTALL_DIR} COMPONENT MLX
-        LIBRARY DESTINATION ${OLLAMA_INSTALL_DIR} COMPONENT MLX
-        FRAMEWORK DESTINATION ${OLLAMA_INSTALL_DIR} COMPONENT MLX
+        RUNTIME DESTINATION ${ROSE_INSTALL_DIR} COMPONENT MLX
+        LIBRARY DESTINATION ${ROSE_INSTALL_DIR} COMPONENT MLX
+        FRAMEWORK DESTINATION ${ROSE_INSTALL_DIR} COMPONENT MLX
     )
 endif()
 
@@ -218,22 +218,22 @@ endif()
 # Metal backend is only built for arm64, not x86_64.
 if(APPLE AND CMAKE_SYSTEM_PROCESSOR STREQUAL "arm64")
     install(FILES ${CMAKE_BINARY_DIR}/_deps/mlx-build/mlx/backend/metal/kernels/mlx.metallib
-        DESTINATION ${OLLAMA_INSTALL_DIR}
+        DESTINATION ${ROSE_INSTALL_DIR}
         COMPONENT MLX)
 endif()
 
 # Install headers for NVRTC JIT compilation at runtime.
 # MLX's own install rules use the default component so they get skipped by
-# --component MLX. Headers are installed alongside libmlx in OLLAMA_INSTALL_DIR.
+# --component MLX. Headers are installed alongside libmlx in ROSE_INSTALL_DIR.
 #
 # Layout:
-#   ${OLLAMA_INSTALL_DIR}/include/cccl/            - CCCL headers
-#   ${OLLAMA_INSTALL_DIR}/include/{cute,cutlass}/  - CUTLASS/CUTE headers
-#   ${OLLAMA_INSTALL_DIR}/include/                 - CUDA runtime/core headers
+#   ${ROSE_INSTALL_DIR}/include/cccl/            - CCCL headers
+#   ${ROSE_INSTALL_DIR}/include/{cute,cutlass}/  - CUTLASS/CUTE headers
+#   ${ROSE_INSTALL_DIR}/include/                 - CUDA runtime/core headers
 #
 # MLX's jit_module.cpp resolves JIT support headers from the backend-local
 # include directory. On Linux it also probes current_binary_dir().parent_path()
-# / "include", so we create a symlink from lib/ollama/include to the backend
+# / "include", so we create a symlink from lib/rose/include to the backend
 # include directory for archive packaging.
 # This will need refinement if we add multiple CUDA versions for MLX in the future.
 # CUDA runtime headers are found via CUDA_PATH env var (set by mlxrunner).
@@ -253,17 +253,17 @@ if(_mlx_jit_cccl_include_dir)
     foreach(_cccl_dir cuda nv cub thrust)
         if(EXISTS "${_mlx_jit_cccl_include_dir}/${_cccl_dir}")
             install(DIRECTORY "${_mlx_jit_cccl_include_dir}/${_cccl_dir}"
-                DESTINATION ${OLLAMA_INSTALL_DIR}/include/cccl
+                DESTINATION ${ROSE_INSTALL_DIR}/include/cccl
                 COMPONENT MLX)
         endif()
     endforeach()
 endif()
 if(EXISTS ${CMAKE_BINARY_DIR}/_deps/cutlass-src/include/cute)
     install(DIRECTORY ${CMAKE_BINARY_DIR}/_deps/cutlass-src/include/cute
-        DESTINATION ${OLLAMA_INSTALL_DIR}/include
+        DESTINATION ${ROSE_INSTALL_DIR}/include
         COMPONENT MLX)
     install(DIRECTORY ${CMAKE_BINARY_DIR}/_deps/cutlass-src/include/cutlass
-        DESTINATION ${OLLAMA_INSTALL_DIR}/include
+        DESTINATION ${ROSE_INSTALL_DIR}/include
         COMPONENT MLX)
 endif()
 
@@ -272,7 +272,7 @@ endif()
 # toolkit include tree. Keep CCCL coherent above, include CUTLASS/CUTE above,
 # and avoid shipping unrelated SDK headers such as NPP, CUPTI, cuRAND, NVML,
 # cuBLAS, cuSPARSE, and cuSOLVER.
-# The Go mlxrunner sets CUDA_PATH to OLLAMA_INSTALL_DIR so MLX finds them at
+# The Go mlxrunner sets CUDA_PATH to ROSE_INSTALL_DIR so MLX finds them at
 # $CUDA_PATH/include via NVRTC --include-path.
 if(CUDAToolkit_FOUND)
     # CUDAToolkit_INCLUDE_DIRS may be a semicolon-separated list
@@ -288,7 +288,7 @@ if(CUDAToolkit_FOUND)
     if(NOT _cuda_inc)
         message(WARNING "Could not find cuda_runtime_api.h in CUDAToolkit_INCLUDE_DIRS: ${CUDAToolkit_INCLUDE_DIRS}")
     else()
-        set(_dst "${OLLAMA_INSTALL_DIR}/include")
+        set(_dst "${ROSE_INSTALL_DIR}/include")
 
         set(_mlx_jit_cuda_headers
             builtin_types.h
@@ -382,8 +382,8 @@ if(CUDAToolkit_FOUND)
 
         if(NOT WIN32 AND NOT APPLE)
             install(CODE "
-                set(_link \"${CMAKE_INSTALL_PREFIX}/${OLLAMA_LIB_DIR}/include\")
-                set(_target \"${OLLAMA_RUNNER_DIR}/include\")
+                set(_link \"${CMAKE_INSTALL_PREFIX}/${ROSE_LIB_DIR}/include\")
+                set(_target \"${ROSE_RUNNER_DIR}/include\")
                 if(NOT EXISTS \${_link})
                     execute_process(COMMAND \${CMAKE_COMMAND} -E create_symlink \${_target} \${_link})
                 endif()
@@ -398,8 +398,8 @@ endif()
 # to the wrong destination). We must install it explicitly here.
 if(WIN32 AND TARGET dl)
     install(TARGETS dl
-        RUNTIME DESTINATION ${OLLAMA_INSTALL_DIR}
-        LIBRARY DESTINATION ${OLLAMA_INSTALL_DIR}
+        RUNTIME DESTINATION ${ROSE_INSTALL_DIR}
+        LIBRARY DESTINATION ${ROSE_INSTALL_DIR}
         COMPONENT MLX)
 endif()
 
@@ -442,7 +442,7 @@ if(CUDAToolkit_FOUND)
     endif()
     if(MLX_CUDA_LIBS)
         install(FILES ${MLX_CUDA_LIBS}
-            DESTINATION ${OLLAMA_INSTALL_DIR}
+            DESTINATION ${ROSE_INSTALL_DIR}
             COMPONENT MLX_VENDOR)
     endif()
 endif()

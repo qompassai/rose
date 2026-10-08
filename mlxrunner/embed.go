@@ -9,10 +9,10 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/mlx"
-	"github.com/ollama/ollama/mlxrunner/batch"
-	"github.com/ollama/ollama/mlxrunner/model"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/mlx"
+	"github.com/qompassai/rose/mlxrunner/batch"
+	"github.com/qompassai/rose/mlxrunner/model"
 )
 
 // EmbeddingRequest is a short-lived embedding request carried on the
@@ -35,7 +35,7 @@ type EmbedResponse struct {
 
 // embedWireRequest / embedWireResponse are the HTTP wire shapes, matching the
 // old ollamarunner's llm.EmbeddingRequest/EmbeddingResponse keys, plus the
-// ollama-side extension for matryoshka dimension selection.
+// rose-side extension for matryoshka dimension selection.
 type embedWireRequest struct {
 	Content    string   `json:"content"`
 	Dimensions int      `json:"dimensions,omitempty"`

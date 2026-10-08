@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ollama/ollama/api"
+	"github.com/qompassai/rose/api"
 )
 
 func TestGLM46ParserStreaming(t *testing.T) {

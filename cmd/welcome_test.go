@@ -4,8 +4,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/ollama/ollama/cmd/config"
-	"github.com/ollama/ollama/cmd/launch"
+	"github.com/qompassai/rose/cmd/config"
+	"github.com/qompassai/rose/cmd/launch"
 )
 
 func TestWelcomeOnceAfterCompletion(t *testing.T) {

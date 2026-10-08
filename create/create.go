@@ -14,12 +14,12 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/ollama/ollama/fs/safetensors"
-	"github.com/ollama/ollama/manifest"
-	"github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/fs/safetensors"
+	"github.com/qompassai/rose/manifest"
+	"github.com/qompassai/rose/types/model"
 )
 
-// SafetensorsMinOllamaVersion is the minimum Ollama version required for
+// SafetensorsMinOllamaVersion is the minimum Rose version required for
 // safetensors-backed models.
 const SafetensorsMinOllamaVersion = "0.19.0"
 

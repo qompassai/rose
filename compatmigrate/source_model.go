@@ -7,9 +7,9 @@ import (
 	"log/slog"
 	"os"
 
-	"github.com/ollama/ollama/fs/gguf"
-	"github.com/ollama/ollama/manifest"
-	"github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/fs/gguf"
+	"github.com/qompassai/rose/manifest"
+	"github.com/qompassai/rose/types/model"
 )
 
 func loadSourceModelFromManifest(source model.Name, mf *manifest.Manifest) (*SourceModel, error) {

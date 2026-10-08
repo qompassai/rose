@@ -11,8 +11,8 @@ import (
 	"sort"
 	"testing"
 
-	st "github.com/ollama/ollama/fs/safetensors"
-	"github.com/ollama/ollama/mlx/mlxtest"
+	st "github.com/qompassai/rose/fs/safetensors"
+	"github.com/qompassai/rose/mlx/mlxtest"
 )
 
 type captureStore struct{ blobs map[string][]byte }

@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/ollama/ollama/logutil"
-	"github.com/ollama/ollama/ml"
+	"github.com/qompassai/rose/logutil"
+	"github.com/qompassai/rose/ml"
 )
 
 func TestLlamaServerDiscovery(t *testing.T) {
@@ -57,11 +57,11 @@ func TestLlamaServerDiscovery(t *testing.T) {
 		}{
 			{
 				name: "NVIDIA CUDA",
-				output: `load_backend: loaded CUDA backend from /lib/ollama/cuda_v12/libggml-cuda.so
+				output: `load_backend: loaded CUDA backend from /lib/rose/cuda_v12/libggml-cuda.so
 Available devices:
   NVIDIA GeForce RTX 4090: NVIDIA CUDA (24564 MiB, 23592 MiB free)
 `,
-				libDirs: []string{"/lib/ollama", "/lib/ollama/cuda_v12"},
+				libDirs: []string{"/lib/rose", "/lib/rose/cuda_v12"},
 				want: []wantDevice{{
 					name:     "NVIDIA GeForce RTX 4090",
 					library:  "CUDA",
@@ -86,7 +86,7 @@ Available devices:
 Available devices:
   ROCm0: AMD Radeon RX 6700 XT (12272 MiB, 12248 MiB free)
 `,
-				libDirs: []string{"/lib/ollama", "/lib/ollama/rocm_v7_2"},
+				libDirs: []string{"/lib/rose", "/lib/rose/rocm_v7_2"},
 				want: []wantDevice{{
 					name:      "ROCm0",
 					library:   "ROCm",
@@ -101,7 +101,7 @@ Available devices:
   CUDA0: NVIDIA GeForce RTX 4090 (24564 MiB, 23592 MiB free)
   CUDA1: NVIDIA GeForce RTX 3060 (12288 MiB, 11500 MiB free)
 `,
-				libDirs: []string{"/lib/ollama", "/lib/ollama/cuda_v12"},
+				libDirs: []string{"/lib/rose", "/lib/rose/cuda_v12"},
 				want: []wantDevice{
 					{name: "CUDA0", library: "CUDA", totalMiB: 24564},
 					{name: "CUDA1", library: "CUDA", totalMiB: 12288},
@@ -113,7 +113,7 @@ Available devices:
 Available devices:
   Vulkan0: Intel(R) Graphics (16384 MiB, 12288 MiB free)
 `,
-				libDirs: []string{"/lib/ollama", "/lib/ollama/vulkan"},
+				libDirs: []string{"/lib/rose", "/lib/rose/vulkan"},
 				want: []wantDevice{{
 					name:            "Vulkan0",
 					library:         "Vulkan",
@@ -127,7 +127,7 @@ Available devices:
 				output: `Available devices:
   Vulkan0: AMD Radeon(TM) Graphics (32768 MiB, 31000 MiB free)
 `,
-				libDirs: []string{"/lib/ollama", "/lib/ollama/vulkan"},
+				libDirs: []string{"/lib/rose", "/lib/rose/vulkan"},
 				want: []wantDevice{{
 					name:            "Vulkan0",
 					library:         "Vulkan",
@@ -139,12 +139,12 @@ Available devices:
 				name: "CUDA device filtered by compiled archs",
 				output: `ggml_cuda_init: found 1 CUDA devices (Total VRAM: 6063 MiB):
   Device 0: NVIDIA GeForce GTX 1060 6GB, compute capability 6.1, VMM: yes, VRAM: 6063 MiB
-load_backend: loaded CUDA backend from /lib/ollama/cuda_v13/libggml-cuda.so
+load_backend: loaded CUDA backend from /lib/rose/cuda_v13/libggml-cuda.so
 system_info: n_threads = 4 | CUDA : ARCHS = 750,800,860,890,900,1000,1030,1100,1200,1210 |
 Available devices:
   CUDA0: NVIDIA GeForce GTX 1060 6GB (6063 MiB, 5900 MiB free)
 `,
-				libDirs: []string{"/lib/ollama", "/lib/ollama/cuda_v13"},
+				libDirs: []string{"/lib/rose", "/lib/rose/cuda_v13"},
 			},
 			{
 				name: "CUDA device kept by compiled archs",
@@ -241,7 +241,7 @@ Available devices:
 		for _, tt := range tests {
 			t.Run(tt.name, func(t *testing.T) {
 				if tt.libDirs == nil {
-					tt.libDirs = []string{"/lib/ollama"}
+					tt.libDirs = []string{"/lib/rose"}
 				}
 				devices := parseLlamaServerDevicesWithNative(tt.output, "", tt.libDirs, nil)
 				if len(devices) != len(tt.want) {
@@ -338,7 +338,7 @@ Available devices:
 			},
 			{
 				name: "windows vulkan without uma stays unclassified",
-				output: `load_backend: loaded Vulkan backend from C:\ollama\lib\ollama\vulkan\ggml-vulkan.dll
+				output: `load_backend: loaded Vulkan backend from C:\rose\lib\rose\vulkan\ggml-vulkan.dll
 Available devices:
   Vulkan0: AMD Radeon(TM) Graphics (32768 MiB, 31000 MiB free)
   Vulkan1: AMD Radeon RX 7900 XTX (24564 MiB, 23000 MiB free)
@@ -354,7 +354,7 @@ Available devices:
 			t.Run(tt.name, func(t *testing.T) {
 				libDirs := tt.libDirs
 				if libDirs == nil {
-					libDirs = []string{"/lib/ollama"}
+					libDirs = []string{"/lib/rose"}
 				}
 
 				got := parseLlamaServerDevicesWithNative(tt.output, "", libDirs, nil)
@@ -399,7 +399,7 @@ Available devices:
 			TotalMemory:         16107 * 1024 * 1024,
 		}}
 
-		devices := parseLlamaServerDevicesWithNative(output, "", []string{"/lib/ollama", "/lib/ollama/vulkan"}, nativeDevices)
+		devices := parseLlamaServerDevicesWithNative(output, "", []string{"/lib/rose", "/lib/rose/vulkan"}, nativeDevices)
 		if len(devices) != 1 {
 			t.Fatalf("got %d devices, want 1", len(devices))
 		}
@@ -426,7 +426,7 @@ Available devices:
 ggml_vulkan: 1 = Intel(R) RaptorLake-S Mobile Graphics Controller (Intel Corporation) | uma: 1 | fp16: 1 | bf16: 0 | warp size: 32 | shared memory: 65536 | int dot: 1 | matrix cores: none
 `
 
-		devices := parseLlamaServerDevicesWithNative(output, nativeOutput, []string{"/lib/ollama", "/lib/ollama/vulkan"}, nil)
+		devices := parseLlamaServerDevicesWithNative(output, nativeOutput, []string{"/lib/rose", "/lib/rose/vulkan"}, nil)
 		if len(devices) != 2 {
 			t.Fatalf("got %d devices, want 2", len(devices))
 		}

@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/ollama/ollama/cmd/internal/fileutil"
+	"github.com/qompassai/rose/cmd/internal/fileutil"
 )
 
 func TestVSCodeIntegration(t *testing.T) {
@@ -74,8 +74,8 @@ func TestVSCodeEdit(t *testing.T) {
 			},
 		},
 		{
-			name:   "update existing ollama entry",
-			setup:  `[{"vendor": "ollama", "name": "Ollama", "url": "http://old:11434"}]`,
+			name:   "update existing rose entry",
+			setup:  `[{"vendor": "rose", "name": "Rose", "url": "http://old:11434"}]`,
 			models: []string{"llama3.2"},
 			validate: func(t *testing.T, data []byte) {
 				assertOllamaVendorConfigured(t, data)
@@ -132,7 +132,7 @@ func TestVSCodeEditCleansUpOldSettings(t *testing.T) {
 
 	// Create settings.json with old byok setting
 	os.MkdirAll(filepath.Dir(settingsPath), 0o755)
-	os.WriteFile(settingsPath, []byte(`{"github.copilot.chat.byok.ollamaEndpoint": "http://old:11434", "ollama.launch.configured": true, "editor.fontSize": 14}`), 0o644)
+	os.WriteFile(settingsPath, []byte(`{"github.copilot.chat.byok.ollamaEndpoint": "http://old:11434", "rose.launch.configured": true, "editor.fontSize": 14}`), 0o644)
 
 	if err := v.Edit(testLaunchModels("llama3.2")); err != nil {
 		t.Fatal(err)
@@ -149,8 +149,8 @@ func TestVSCodeEditCleansUpOldSettings(t *testing.T) {
 	if _, ok := settings["github.copilot.chat.byok.ollamaEndpoint"]; ok {
 		t.Error("github.copilot.chat.byok.ollamaEndpoint should have been removed")
 	}
-	if _, ok := settings["ollama.launch.configured"]; ok {
-		t.Error("ollama.launch.configured should have been removed")
+	if _, ok := settings["rose.launch.configured"]; ok {
+		t.Error("rose.launch.configured should have been removed")
 	}
 	if settings["editor.fontSize"] != float64(14) {
 		t.Error("editor.fontSize should have been preserved")
@@ -171,8 +171,8 @@ func TestVSCodeEdit_CreatesDistinctBackupsForManagedFiles(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	clmOriginal := `[{"vendor":"ollama","name":"Ollama","url":"http://old:11434"}]`
-	settingsOriginal := `{"github.copilot.chat.byok.ollamaEndpoint":"http://old:11434","ollama.launch.configured":true,"editor.fontSize":14}`
+	clmOriginal := `[{"vendor":"rose","name":"Rose","url":"http://old:11434"}]`
+	settingsOriginal := `{"github.copilot.chat.byok.ollamaEndpoint":"http://old:11434","rose.launch.configured":true,"editor.fontSize":14}`
 	if err := os.WriteFile(clmPath, []byte(clmOriginal), 0o644); err != nil {
 		t.Fatal(err)
 	}
@@ -249,9 +249,9 @@ func assertOllamaVendorConfigured(t *testing.T, data []byte) {
 	}
 
 	for _, entry := range entries {
-		if vendor, _ := entry["vendor"].(string); vendor == "ollama" {
-			if name, _ := entry["name"].(string); name != "Ollama" {
-				t.Errorf("expected name \"Ollama\", got %q", name)
+		if vendor, _ := entry["vendor"].(string); vendor == "rose" {
+			if name, _ := entry["name"].(string); name != "Rose" {
+				t.Errorf("expected name \"Rose\", got %q", name)
 			}
 			if url, _ := entry["url"].(string); url == "" {
 				t.Error("url not set")
@@ -259,7 +259,7 @@ func assertOllamaVendorConfigured(t *testing.T, data []byte) {
 			return
 		}
 	}
-	t.Error("no ollama vendor entry found")
+	t.Error("no rose vendor entry found")
 }
 
 func TestShowInModelPicker(t *testing.T) {
@@ -325,10 +325,10 @@ func TestShowInModelPicker(t *testing.T) {
 
 		dbPath := testVSCodePath(t, tmpDir, filepath.Join("globalStorage", "state.vscdb"))
 		prefs := readPrefs(t, dbPath)
-		if !prefs["ollama/Ollama/llama3.2"] {
+		if !prefs["rose/Rose/llama3.2"] {
 			t.Error("expected llama3.2 to be shown")
 		}
-		if !prefs["ollama/Ollama/llama3.2:latest"] {
+		if !prefs["rose/Rose/llama3.2:latest"] {
 			t.Error("expected llama3.2:latest to be shown")
 		}
 	})
@@ -345,10 +345,10 @@ func TestShowInModelPicker(t *testing.T) {
 		}
 
 		prefs := readPrefs(t, dbPath)
-		if !prefs["ollama/Ollama/llama3.2"] {
+		if !prefs["rose/Rose/llama3.2"] {
 			t.Error("expected llama3.2 to be shown")
 		}
-		if !prefs["ollama/Ollama/qwen3:8b"] {
+		if !prefs["rose/Rose/qwen3:8b"] {
 			t.Error("expected qwen3:8b to be shown")
 		}
 	})
@@ -358,10 +358,10 @@ func TestShowInModelPicker(t *testing.T) {
 		setTestHome(t, tmpDir)
 		t.Setenv("XDG_CONFIG_HOME", "")
 		dbPath := setupDB(t, testVSCodePath(t, tmpDir, ""), map[string]bool{
-			"ollama/Ollama/llama3.2":        true,
-			"ollama/Ollama/llama3.2:latest": true,
-			"ollama/Ollama/mistral":         true,
-			"ollama/Ollama/mistral:latest":  true,
+			"rose/Rose/llama3.2":        true,
+			"rose/Rose/llama3.2:latest": true,
+			"rose/Rose/mistral":         true,
+			"rose/Rose/mistral:latest":  true,
 		}, nil)
 
 		// Only configure llama3.2 — mistral should get hidden
@@ -371,18 +371,18 @@ func TestShowInModelPicker(t *testing.T) {
 		}
 
 		prefs := readPrefs(t, dbPath)
-		if !prefs["ollama/Ollama/llama3.2"] {
+		if !prefs["rose/Rose/llama3.2"] {
 			t.Error("expected llama3.2 to stay shown")
 		}
-		if prefs["ollama/Ollama/mistral"] {
+		if prefs["rose/Rose/mistral"] {
 			t.Error("expected mistral to be hidden")
 		}
-		if prefs["ollama/Ollama/mistral:latest"] {
+		if prefs["rose/Rose/mistral:latest"] {
 			t.Error("expected mistral:latest to be hidden")
 		}
 	})
 
-	t.Run("non-ollama prefs are preserved", func(t *testing.T) {
+	t.Run("non-rose prefs are preserved", func(t *testing.T) {
 		tmpDir := t.TempDir()
 		setTestHome(t, tmpDir)
 		t.Setenv("XDG_CONFIG_HOME", "")
@@ -407,8 +407,8 @@ func TestShowInModelPicker(t *testing.T) {
 		t.Setenv("XDG_CONFIG_HOME", "")
 		cache := []map[string]any{
 			{
-				"identifier": "ollama/Ollama/4",
-				"metadata":   map[string]any{"vendor": "ollama", "name": "llama3.2"},
+				"identifier": "rose/Rose/4",
+				"metadata":   map[string]any{"vendor": "rose", "name": "llama3.2"},
 			},
 		}
 		dbPath := setupDB(t, testVSCodePath(t, tmpDir, ""), nil, cache)
@@ -419,11 +419,11 @@ func TestShowInModelPicker(t *testing.T) {
 		}
 
 		prefs := readPrefs(t, dbPath)
-		if !prefs["ollama/Ollama/4"] {
-			t.Error("expected numeric ID ollama/Ollama/4 to be shown")
+		if !prefs["rose/Rose/4"] {
+			t.Error("expected numeric ID rose/Rose/4 to be shown")
 		}
 		// Name-based fallback should also be set
-		if !prefs["ollama/Ollama/llama3.2"] {
+		if !prefs["rose/Rose/llama3.2"] {
 			t.Error("expected name-based ID to also be shown")
 		}
 	})
@@ -440,18 +440,18 @@ func TestShowInModelPicker(t *testing.T) {
 		setTestHome(t, tmpDir)
 		t.Setenv("XDG_CONFIG_HOME", "")
 		dbPath := setupDB(t, testVSCodePath(t, tmpDir, ""), map[string]bool{
-			"ollama/Ollama/llama3.2":        false,
-			"ollama/Ollama/llama3.2:latest": false,
+			"rose/Rose/llama3.2":        false,
+			"rose/Rose/llama3.2:latest": false,
 		}, nil)
 
-		// Ollama config is authoritative — should override the hidden state
+		// Rose config is authoritative — should override the hidden state
 		err := v.ShowInModelPicker([]string{"llama3.2"})
 		if err != nil {
 			t.Fatal(err)
 		}
 
 		prefs := readPrefs(t, dbPath)
-		if !prefs["ollama/Ollama/llama3.2"] {
+		if !prefs["rose/Rose/llama3.2"] {
 			t.Error("expected llama3.2 to be re-shown")
 		}
 	})

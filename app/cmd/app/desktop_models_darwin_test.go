@@ -14,11 +14,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/app/store"
-	"github.com/ollama/ollama/cmd/config"
-	"github.com/ollama/ollama/cmd/launch"
-	"github.com/ollama/ollama/internal/proxy"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/app/store"
+	"github.com/qompassai/rose/cmd/config"
+	"github.com/qompassai/rose/cmd/launch"
+	"github.com/qompassai/rose/internal/proxy"
 )
 
 func TestDesktopModelsClaudeSummaryPreservesMappingsWithoutCatalog(t *testing.T) {

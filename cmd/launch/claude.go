@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/ollama/ollama/envconfig"
+	"github.com/qompassai/rose/envconfig"
 )
 
 // Claude implements Runner for Claude Code integration.
@@ -68,7 +68,7 @@ func (c *Claude) envVars(model string) []string {
 	env := []string{
 		"ANTHROPIC_BASE_URL=" + envconfig.Host().String(),
 		"ANTHROPIC_API_KEY=",
-		"ANTHROPIC_AUTH_TOKEN=ollama",
+		"ANTHROPIC_AUTH_TOKEN=rose",
 		"CLAUDE_CODE_ATTRIBUTION_HEADER=0",
 		"CLAUDE_CODE_TOTAL_TOKENS_REMINDER=off",
 		"DISABLE_ERROR_REPORTING=1",
@@ -76,7 +76,7 @@ func (c *Claude) envVars(model string) []string {
 		"CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY=1",
 	}
 
-	// Ollama does not provide Anthropic's server-side auto-mode checks.
+	// Rose does not provide Anthropic's server-side auto-mode checks.
 	// Use Claude Code's client classifier by default, preserving explicit settings.
 	if _, ok := os.LookupEnv("CLAUDE_CODE_AUTO_MODE_SERVER"); !ok {
 		env = append(env, "CLAUDE_CODE_AUTO_MODE_SERVER=0")
@@ -130,7 +130,7 @@ func checkClaudeInstallerDependencies() error {
 	switch runtime.GOOS {
 	case "windows":
 		if _, err := exec.LookPath("powershell"); err != nil {
-			return fmt.Errorf("claude is not installed and required dependencies are missing\n\nInstall the following first:\n  PowerShell: https://learn.microsoft.com/powershell/\n\nThen re-run:\n  ollama launch claude")
+			return fmt.Errorf("claude is not installed and required dependencies are missing\n\nInstall the following first:\n  PowerShell: https://learn.microsoft.com/powershell/\n\nThen re-run:\n  rose launch claude")
 		}
 	default:
 		var missing []string
@@ -141,7 +141,7 @@ func checkClaudeInstallerDependencies() error {
 			missing = append(missing, "bash: https://www.gnu.org/software/bash/")
 		}
 		if len(missing) > 0 {
-			return fmt.Errorf("claude is not installed and required dependencies are missing\n\nInstall the following first:\n  %s\n\nThen re-run:\n  ollama launch claude", strings.Join(missing, "\n  "))
+			return fmt.Errorf("claude is not installed and required dependencies are missing\n\nInstall the following first:\n  %s\n\nThen re-run:\n  rose launch claude", strings.Join(missing, "\n  "))
 		}
 	}
 	return nil
@@ -167,7 +167,7 @@ func claudeInstallerCommand(goos string) (string, []string, error) {
 	}
 }
 
-// modelEnvVars returns Claude Code env vars that route all model tiers through Ollama.
+// modelEnvVars returns Claude Code env vars that route all model tiers through Rose.
 func (c *Claude) modelEnvVars(model string) []string {
 	env := []string{
 		"ANTHROPIC_DEFAULT_OPUS_MODEL=" + model,

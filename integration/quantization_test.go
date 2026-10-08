@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ollama/ollama/api"
+	"github.com/qompassai/rose/api"
 )
 
 func runQuantization(t *testing.T) {
@@ -21,7 +21,7 @@ func runQuantization(t *testing.T) {
 	modelDir := filepath.Join(testdataModelsDir, tinyLlamaModelDir)
 	downloadHFModel(t, tinyLlamaRepo, tinyLlamaRevision, modelDir)
 	ensureMLXLibraryPath(t)
-	t.Setenv("OLLAMA_CREATE_REMOTE", "false")
+	t.Setenv("ROSE_CREATE_REMOTE", "false")
 
 	ctx, cancel := context.WithTimeout(t.Context(), 10*time.Minute)
 	defer cancel()

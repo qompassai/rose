@@ -2,6 +2,6 @@
 
 package main
 
-import "github.com/ollama/ollama/app/webview"
+import "github.com/qompassai/rose/app/webview"
 
 func bindCodexDesktop(_ webview.WebView) {}

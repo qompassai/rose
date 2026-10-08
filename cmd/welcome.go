@@ -3,8 +3,8 @@ package cmd
 import (
 	"os"
 
-	"github.com/ollama/ollama/cmd/config"
-	"github.com/ollama/ollama/cmd/tui"
+	"github.com/qompassai/rose/cmd/config"
+	"github.com/qompassai/rose/cmd/tui"
 	"golang.org/x/term"
 )
 

@@ -7,23 +7,23 @@ Install prerequisites:
 - C/C++ compiler: Clang on macOS, Visual Studio 2022 C++ tools on Windows, or GCC/Clang on Linux
 - [Ninja](https://github.com/ninja-build/ninja/releases) in `PATH` is recommended, especially on Windows
 
-For pure Go iteration against an existing native payload, run Ollama from the repository root:
+For pure Go iteration against an existing native payload, run Rose from the repository root:
 
 ```shell
 go run . serve
 ```
 
 > [!NOTE]
-> Ollama includes native code compiled with CGO.  From time to time these data structures can change and CGO can get out of sync resulting in unexpected crashes.  You can force a full build of the native code by running `go clean -cache` first. 
+> Rose includes native code compiled with CGO.  From time to time these data structures can change and CGO can get out of sync resulting in unexpected crashes.  You can force a full build of the native code by running `go clean -cache` first. 
 
 ## Native build model
 
-For a fresh checkout, or after changing native code, build from the repository root. On macOS arm64, this builds Metal inference. On all other platforms this builds CPU-only inference. It builds the Go binary at the repository root and installs the native runtime payload under `build/lib/ollama`.
+For a fresh checkout, or after changing native code, build from the repository root. On macOS arm64, this builds Metal inference. On all other platforms this builds CPU-only inference. It builds the Go binary at the repository root and installs the native runtime payload under `build/lib/rose`.
 
 ```shell
 cmake -B build .
 cmake --build build --parallel 8
-./ollama serve
+./rose serve
 ```
 
 To install into a standard prefix layout:
@@ -35,7 +35,7 @@ cmake --install build --prefix /path/to/install
 On all platforms except macOS arm64, to build GPU backends select the backends explicitly:
 
 ```shell
-cmake -B build . -DOLLAMA_LLAMA_BACKENDS="cuda_v13;vulkan"
+cmake -B build . -DROSE_LLAMA_BACKENDS="cuda_v13;vulkan"
 cmake --build build --parallel 8
 ```
 
@@ -45,16 +45,16 @@ Use standard CMake architecture overrides to narrow GPU builds for local hardwar
 
 ```shell
 # CUDA
-cmake -B build . -DOLLAMA_LLAMA_BACKENDS=cuda_v13 -DCMAKE_CUDA_ARCHITECTURES=native
+cmake -B build . -DROSE_LLAMA_BACKENDS=cuda_v13 -DCMAKE_CUDA_ARCHITECTURES=native
 
 # ROCm / HIP
-cmake -B build . -DOLLAMA_LLAMA_BACKENDS=rocm_v7_2 -DCMAKE_HIP_ARCHITECTURES=gfx1100
+cmake -B build . -DROSE_LLAMA_BACKENDS=rocm_v7_2 -DCMAKE_HIP_ARCHITECTURES=gfx1100
 ```
 
 You can tune GGML build options by setting `GGML_*` values during configure. For example, to disable CUDA flash attention kernels for local debugging:
 
 ```shell
-cmake -B build . -DOLLAMA_LLAMA_BACKENDS=cuda_v12 -DGGML_CUDA_FA=OFF
+cmake -B build . -DROSE_LLAMA_BACKENDS=cuda_v12 -DGGML_CUDA_FA=OFF
 ```
 
 ## macOS (Apple Silicon)
@@ -119,14 +119,14 @@ Additional prerequisites:
 
 ## MLX Engine (Optional)
 
-The MLX engine enables running safetensor based models. On macOS arm64, MLX is enabled by default. On other platforms, MLX backends are selected with `OLLAMA_MLX_BACKENDS`.
+The MLX engine enables running safetensor based models. On macOS arm64, MLX is enabled by default. On other platforms, MLX backends are selected with `ROSE_MLX_BACKENDS`.
 
 ### CUDA
 
 Requires CUDA 13+ and [cuDNN](https://developer.nvidia.com/cudnn) 9+.
 
 ```shell
-cmake -B build . -DOLLAMA_MLX_BACKENDS=cuda_v13
+cmake -B build . -DROSE_MLX_BACKENDS=cuda_v13
 cmake --build build --parallel 8
 ```
 
@@ -135,23 +135,23 @@ cmake --build build --parallel 8
 To build against a local checkout of MLX and/or MLX-C (useful for development), set environment variables before running CMake:
 
 ```shell
-export OLLAMA_MLX_SOURCE=/path/to/mlx
-export OLLAMA_MLX_C_SOURCE=/path/to/mlx-c
+export ROSE_MLX_SOURCE=/path/to/mlx
+export ROSE_MLX_C_SOURCE=/path/to/mlx-c
 ```
 
 On macOS arm64:
 
 ```shell
-OLLAMA_MLX_SOURCE=../mlx OLLAMA_MLX_C_SOURCE=../mlx-c cmake -B build .
+ROSE_MLX_SOURCE=../mlx ROSE_MLX_C_SOURCE=../mlx-c cmake -B build .
 cmake --build build --parallel 8
 ```
 
 For CUDA:
 
 ```powershell
-$env:OLLAMA_MLX_SOURCE="../mlx"
-$env:OLLAMA_MLX_C_SOURCE="../mlx-c"
-cmake -B build . -DOLLAMA_MLX_BACKENDS=cuda_v13
+$env:ROSE_MLX_SOURCE="../mlx"
+$env:ROSE_MLX_C_SOURCE="../mlx-c"
+cmake -B build . -DROSE_MLX_BACKENDS=cuda_v13
 cmake --build build --parallel 8
 ```
 
@@ -177,11 +177,11 @@ go test ./...
 
 ## Library detection
 
-Ollama looks for native helper binaries and acceleration libraries in installed and local development layouts:
+Rose looks for native helper binaries and acceleration libraries in installed and local development layouts:
 
-* `../lib/ollama` for standard installs where `ollama` is under `bin/`
-* `./lib/ollama` for Windows release-style payloads and local dist output
-* `.` for macOS release artifacts that colocate helpers with `ollama`
-* `build/lib/ollama` and `dist/<platform>/lib/ollama` for local development builds
+* `../lib/rose` for standard installs where `rose` is under `bin/`
+* `./lib/rose` for Windows release-style payloads and local dist output
+* `.` for macOS release artifacts that colocate helpers with `rose`
+* `build/lib/rose` and `dist/<platform>/lib/rose` for local development builds
 
-If the libraries are not found, Ollama will not run with any acceleration libraries.
+If the libraries are not found, Rose will not run with any acceleration libraries.

@@ -9,12 +9,12 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/ollama/ollama/cmd/config"
-	"github.com/ollama/ollama/cmd/internal/fileutil"
-	"github.com/ollama/ollama/envconfig"
+	"github.com/qompassai/rose/cmd/config"
+	"github.com/qompassai/rose/cmd/internal/fileutil"
+	"github.com/qompassai/rose/envconfig"
 )
 
-const qwenOllamaEnvKey = "OLLAMA_API_KEY"
+const qwenOllamaEnvKey = "ROSE_API_KEY"
 
 var qwenGOOS = runtime.GOOS
 
@@ -141,7 +141,7 @@ func ensureQwenInstalled() (string, error) {
 }
 
 func qwenInstallShimDir() (string, func(), error) {
-	dir, err := os.MkdirTemp("", "ollama-qwen-install-*")
+	dir, err := os.MkdirTemp("", "rose-qwen-install-*")
 	if err != nil {
 		return "", nil, err
 	}
@@ -185,7 +185,7 @@ func checkQwenInstallerDependencies() error {
 	switch qwenGOOS {
 	case "windows":
 		if _, err := exec.LookPath("powershell"); err != nil {
-			return fmt.Errorf("qwen is not installed and required dependencies are missing\n\nInstall the following first:\n  PowerShell: https://learn.microsoft.com/powershell/\n\nThen re-run:\n  ollama launch qwen")
+			return fmt.Errorf("qwen is not installed and required dependencies are missing\n\nInstall the following first:\n  PowerShell: https://learn.microsoft.com/powershell/\n\nThen re-run:\n  rose launch qwen")
 		}
 	default:
 		var missing []string
@@ -196,7 +196,7 @@ func checkQwenInstallerDependencies() error {
 			missing = append(missing, "bash: https://www.gnu.org/software/bash/")
 		}
 		if len(missing) > 0 {
-			return fmt.Errorf("qwen is not installed and required dependencies are missing\n\nInstall the following first:\n  %s\n\nThen re-run:\n  ollama launch qwen", strings.Join(missing, "\n  "))
+			return fmt.Errorf("qwen is not installed and required dependencies are missing\n\nInstall the following first:\n  %s\n\nThen re-run:\n  rose launch qwen", strings.Join(missing, "\n  "))
 		}
 	}
 	return nil
@@ -274,7 +274,7 @@ func (q *Qwen) Configure(model string) error {
 
 func applyQwenOllamaConfig(cfg map[string]any, model string) {
 	envCfg := qwenMap(cfg["env"])
-	envCfg[qwenOllamaEnvKey] = "ollama"
+	envCfg[qwenOllamaEnvKey] = "rose"
 	cfg["env"] = envCfg
 
 	modelProviders := qwenMap(cfg["modelProviders"])
@@ -410,7 +410,7 @@ func qwenBaseURL() string {
 func qwenProvider(model string) map[string]any {
 	return map[string]any{
 		"id":      model,
-		"name":    fmt.Sprintf("%s (Ollama)", model),
+		"name":    fmt.Sprintf("%s (Rose)", model),
 		"baseUrl": qwenBaseURL(),
 		"envKey":  qwenOllamaEnvKey,
 	}
@@ -429,7 +429,7 @@ func qwenLaunchArgs(model string, args []string) []string {
 
 func qwenLaunchEnv(model string) []string {
 	env := os.Environ()
-	env = qwenUpsertEnv(env, "OPENAI_API_KEY", "ollama")
+	env = qwenUpsertEnv(env, "OPENAI_API_KEY", "rose")
 	env = qwenUpsertEnv(env, "OPENAI_BASE_URL", qwenBaseURL())
 	if model != "" {
 		env = qwenUpsertEnv(env, "OPENAI_MODEL", model)

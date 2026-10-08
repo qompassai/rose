@@ -3,7 +3,7 @@ title: Structured Outputs
 ---
 
 <Note>
-  Ollama's Cloud currently does not support structured outputs.
+  Rose's Cloud currently does not support structured outputs.
 </Note>
 
 Structured outputs let you enforce a JSON schema on model responses so you can reliably extract structured data, describe images, or keep every reply consistent.
@@ -23,7 +23,7 @@ Structured outputs let you enforce a JSON schema on model responses so you can r
   </Tab>
   <Tab title="Python">
     ```python
-    from ollama import chat
+    from rose import chat
 
     response = chat(
       model='gpt-oss',
@@ -35,9 +35,9 @@ Structured outputs let you enforce a JSON schema on model responses so you can r
   </Tab>
   <Tab title="JavaScript">
     ```javascript
-    import ollama from 'ollama'
+    import rose from 'rose'
 
-    const response = await ollama.chat({
+    const response = await rose.chat({
       model: 'gpt-oss',
       messages: [{ role: 'user', content: 'Tell me about Canada.' }],
       format: 'json'
@@ -81,7 +81,7 @@ Provide a JSON schema to the `format` field.
     Use Pydantic models and pass `model_json_schema()` to `format`, then validate the response:
 
     ```python
-    from ollama import chat
+    from rose import chat
     from pydantic import BaseModel
 
     class Country(BaseModel):
@@ -103,7 +103,7 @@ Provide a JSON schema to the `format` field.
     Serialize a Zod schema with `z.toJSONSchema()` and parse the structured response:
 
     ```javascript
-    import ollama from 'ollama'
+    import rose from 'rose'
     import * as z from 'zod'
 
     const Country = z.object({
@@ -112,7 +112,7 @@ Provide a JSON schema to the `format` field.
       languages: z.array(z.string()),
     })
 
-    const response = await ollama.chat({
+    const response = await rose.chat({
       model: 'gpt-oss',
       messages: [{ role: 'user', content: 'Tell me about Canada.' }],
       format: z.toJSONSchema(Country),
@@ -129,7 +129,7 @@ Provide a JSON schema to the `format` field.
 Define the objects you want returned and let the model populate the fields:
 
 ```python
-from ollama import chat
+from rose import chat
 from pydantic import BaseModel
 
 class Pet(BaseModel):
@@ -157,7 +157,7 @@ print(pets)
 Vision models accept the same `format` parameter, enabling deterministic descriptions of images:
 
 ```python
-from ollama import chat
+from rose import chat
 from pydantic import BaseModel
 from typing import Literal, Optional
 

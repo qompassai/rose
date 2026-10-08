@@ -19,19 +19,19 @@ type Layer struct {
 }
 
 const (
-	MediaTypeImageTensor = "application/vnd.ollama.image.tensor"
-	MediaTypeImageJSON   = "application/vnd.ollama.image.json"
-	MediaTypeImageDraft  = "application/vnd.ollama.image.draft"
+	MediaTypeImageTensor = "application/vnd.rose.image.tensor"
+	MediaTypeImageJSON   = "application/vnd.rose.image.json"
+	MediaTypeImageDraft  = "application/vnd.rose.image.draft"
 
-	MediaTypeImageModel     = "application/vnd.ollama.image.model"
-	MediaTypeImageProjector = "application/vnd.ollama.image.projector"
-	MediaTypeImageAdapter   = "application/vnd.ollama.image.adapter"
-	MediaTypeImageEmbed     = "application/vnd.ollama.image.embed"
-	MediaTypeImageTemplate  = "application/vnd.ollama.image.template"
-	MediaTypeImageSystem    = "application/vnd.ollama.image.system"
-	MediaTypeImageLicense   = "application/vnd.ollama.image.license"
-	MediaTypeImageParams    = "application/vnd.ollama.image.params"
-	MediaTypeImageMessages  = "application/vnd.ollama.image.messages"
+	MediaTypeImageModel     = "application/vnd.rose.image.model"
+	MediaTypeImageProjector = "application/vnd.rose.image.projector"
+	MediaTypeImageAdapter   = "application/vnd.rose.image.adapter"
+	MediaTypeImageEmbed     = "application/vnd.rose.image.embed"
+	MediaTypeImageTemplate  = "application/vnd.rose.image.template"
+	MediaTypeImageSystem    = "application/vnd.rose.image.system"
+	MediaTypeImageLicense   = "application/vnd.rose.image.license"
+	MediaTypeImageParams    = "application/vnd.rose.image.params"
+	MediaTypeImageMessages  = "application/vnd.rose.image.messages"
 
 	MediaTypeImageConfig = "application/vnd.docker.container.image.v1+json"
 )

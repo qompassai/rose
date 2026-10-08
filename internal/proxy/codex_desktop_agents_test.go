@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ollama/ollama/openai"
+	"github.com/qompassai/rose/openai"
 )
 
 func TestNormalizeOllamaAgentMessagesPreservesConversation(t *testing.T) {
@@ -171,7 +171,7 @@ func TestCodexDesktopEncryptedAgentMessageReachesOllamaAsText(t *testing.T) {
 				return
 			}
 			if bytes.Contains(forwarded, []byte(`"type":"agent_message"`)) {
-				t.Errorf("agent message not converted for Ollama: %s", forwarded)
+				t.Errorf("agent message not converted for Rose: %s", forwarded)
 			}
 			if !bytes.Contains(forwarded, []byte(`\"type\":\"input_text\",\"text\":\"secret-cipher\"`)) &&
 				!bytes.Contains(forwarded, []byte(`"text":"secret-cipher"`)) {

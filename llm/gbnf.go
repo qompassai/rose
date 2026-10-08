@@ -15,9 +15,9 @@ import (
 func thinkingGrammar(closings []string, format string) string {
 	// The rules added here take a prefix no rule of the format grammar starts
 	// with.
-	prefix := "ollama-"
+	prefix := "rose-"
 	for grammarHasRulePrefix(format, prefix) {
-		prefix += "ollama-"
+		prefix += "rose-"
 	}
 	thinking, formatted := prefix+"thinking-", prefix+"format"
 

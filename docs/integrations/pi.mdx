@@ -7,21 +7,21 @@ Pi is a minimal and extensible coding agent.
 ## Quick setup
 
 ```bash
-ollama launch pi
+rose launch pi
 ```
 
-This installs Pi if needed, configures Ollama as a provider including web tools, and drops you into an interactive session.
+This installs Pi if needed, configures Rose as a provider including web tools, and drops you into an interactive session.
 
 To configure without launching:
 
 ```shell
-ollama launch pi --config
+rose launch pi --config
 ```
 
 ### Run directly with a model
 
 ```shell
-ollama launch pi --model qwen3.5:cloud
+rose launch pi --model qwen3.5:cloud
 ```
 
 Cloud models are also available at [ollama.com](https://ollama.com/search?c=cloud).
@@ -43,13 +43,13 @@ See all packages at [pi.dev](https://pi.dev/packages)
 
 ### Web search
 
-Pi can use web search and fetch tools via the `@ollama/pi-web-search` package.
+Pi can use web search and fetch tools via the `@rose/pi-web-search` package.
 
-When launching Pi through Ollama, package install/update is managed automatically.
+When launching Pi through Rose, package install/update is managed automatically.
 To install manually:
 
 ```bash
-pi install npm:@ollama/pi-web-search
+pi install npm:@rose/pi-web-search
 ```
 
 ### Autoresearch with `pi-autoresearch`
@@ -85,10 +85,10 @@ Add a configuration block to `~/.pi/agent/models.json`:
 ```json
 {
   "providers": {
-    "ollama": {
+    "rose": {
       "baseUrl": "http://localhost:11434/v1",
       "api": "openai-completions",
-      "apiKey": "ollama",
+      "apiKey": "rose",
       "models": [
         {
           "id": "qwen3-coder"
@@ -103,7 +103,7 @@ Update `~/.pi/agent/settings.json` to set the default provider:
 
 ```json
 {
-  "defaultProvider": "ollama",
+  "defaultProvider": "rose",
   "defaultModel": "qwen3-coder"
 }
 ```

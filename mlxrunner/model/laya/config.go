@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/ollama/ollama/mlxrunner/model"
-	"github.com/ollama/ollama/mlxrunner/tokenizer"
+	"github.com/qompassai/rose/mlxrunner/model"
+	"github.com/qompassai/rose/mlxrunner/tokenizer"
 )
 
 type encoderConfig struct {

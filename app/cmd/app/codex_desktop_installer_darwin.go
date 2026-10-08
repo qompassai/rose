@@ -45,7 +45,7 @@ func installCodexDesktopDiskImage(imagePath string, destinations []string, verif
 		return "", fmt.Errorf("ChatGPT disk image exceeds %d bytes", maxCodexDesktopDiskImageBytes)
 	}
 
-	workDir, err := os.MkdirTemp("", "ollama-chatgpt-install-")
+	workDir, err := os.MkdirTemp("", "rose-chatgpt-install-")
 	if err != nil {
 		return "", fmt.Errorf("create ChatGPT installation directory: %w", err)
 	}
@@ -135,7 +135,7 @@ func installCodexDesktopBundle(bundlePath string, destinations []string, verify 
 			}
 			return "", fmt.Errorf("create ChatGPT destination: %w", err)
 		}
-		stageDir, err := os.MkdirTemp(parent, ".ollama-chatgpt-install-")
+		stageDir, err := os.MkdirTemp(parent, ".rose-chatgpt-install-")
 		if err != nil {
 			if errors.Is(err, os.ErrPermission) {
 				permissionErr = err

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/ollama/ollama/mlx"
-	"github.com/ollama/ollama/mlxrunner/nn"
+	"github.com/qompassai/rose/mlx"
+	"github.com/qompassai/rose/mlxrunner/nn"
 )
 
 // The runtime keeps one layout for the linear-attention input projections:

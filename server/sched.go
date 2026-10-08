@@ -15,17 +15,17 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/discover"
-	"github.com/ollama/ollama/envconfig"
-	"github.com/ollama/ollama/format"
-	"github.com/ollama/ollama/fs/gguf"
-	"github.com/ollama/ollama/llm"
-	"github.com/ollama/ollama/logutil"
-	"github.com/ollama/ollama/manifest"
-	"github.com/ollama/ollama/ml"
-	"github.com/ollama/ollama/mlxrunner"
-	"github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/discover"
+	"github.com/qompassai/rose/envconfig"
+	"github.com/qompassai/rose/format"
+	"github.com/qompassai/rose/fs/gguf"
+	"github.com/qompassai/rose/llm"
+	"github.com/qompassai/rose/logutil"
+	"github.com/qompassai/rose/manifest"
+	"github.com/qompassai/rose/ml"
+	"github.com/qompassai/rose/mlxrunner"
+	"github.com/qompassai/rose/types/model"
 )
 
 type LlmRequest struct {
@@ -41,11 +41,11 @@ type LlmRequest struct {
 	// evict-all-and-retry. Prevents infinite retry on persistent load failures.
 	oomRetryAttempted bool
 
-	// numCtxAuto is true when NumCtx came from Ollama's automatic VRAM-tier
+	// numCtxAuto is true when NumCtx came from Rose's automatic VRAM-tier
 	// default rather than explicit request, model, or environment config.
 	numCtxAuto bool
 
-	// numBatchAuto is true when NumBatch came from Ollama's default options
+	// numBatchAuto is true when NumBatch came from Rose's default options
 	// rather than an explicit request or model option.
 	numBatchAuto bool
 
@@ -297,7 +297,7 @@ func (s *Scheduler) processPending(ctx context.Context) {
 						} else {
 							maxRunners = uint(defaultModelsPerGPU * max(len(gpus), 1))
 						}
-						slog.Debug("updating default concurrency", "OLLAMA_MAX_LOADED_MODELS", maxRunners, "gpu_count", len(gpus))
+						slog.Debug("updating default concurrency", "ROSE_MAX_LOADED_MODELS", maxRunners, "gpu_count", len(gpus))
 					}
 
 					// Update free memory from currently loaded models
@@ -513,7 +513,7 @@ func (s *Scheduler) load(req *LlmRequest, systemInfo ml.SystemInfo, gpus []ml.De
 	}
 
 	// Some architectures are not safe with num_parallel > 1.
-	// ref: https://github.com/ollama/ollama/issues/4165
+	// ref: https://github.com/qompassai/rose/issues/4165
 	if slices.Contains([]string{"mllama", "qwen3vl", "qwen3vlmoe", "qwen35", "qwen35moe", "qwen3next", "lfm2", "lfm2moe", "nemotron_h", "nemotron_h_moe", "nemotron_h_omni"}, req.model.Config.ModelFamily) && numParallel != 1 {
 		numParallel = 1
 		slog.Warn("model architecture does not currently support parallel requests", "architecture", req.model.Config.ModelFamily)
@@ -590,7 +590,7 @@ func (s *Scheduler) load(req *LlmRequest, systemInfo ml.SystemInfo, gpus []ml.De
 				// show a generalized compatibility error until there is a better way to
 				// check for model compatibility
 				if errors.Is(err, gguf.ErrUnsupported) || strings.Contains(err.Error(), "failed to load model") {
-					err = fmt.Errorf("%v: this model may be incompatible with your version of Ollama. If you previously pulled this model, try updating it by running `ollama pull %s`", err, req.model.ShortName)
+					err = fmt.Errorf("%v: this model may be incompatible with your version of Rose. If you previously pulled this model, try updating it by running `rose pull %s`", err, req.model.ShortName)
 				}
 			}
 		} else {
@@ -957,7 +957,7 @@ func availableMemoryForLoad(systemInfo ml.SystemInfo, gpus []ml.DeviceInfo) (ava
 	}
 
 	// On iGPUs, GPU free memory can be a static or slowly refreshed device
-	// baseline. updateFreeSpace has already subtracted known Ollama runner
+	// baseline. updateFreeSpace has already subtracted known Rose runner
 	// allocations from that baseline. Current system free memory is a separate
 	// live measurement that already includes those loaded runners, so use the
 	// smaller value for shared-memory GPUs without discounting discrete VRAM.

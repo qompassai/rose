@@ -1,7 +1,7 @@
-Ollama Benchmark Tool
+Rose Benchmark Tool
 ---------------------
 
-A Go-based command-line tool for benchmarking Ollama models with configurable parameters, warmup phases, TTFT tracking, VRAM monitoring, and benchstat/CSV output.
+A Go-based command-line tool for benchmarking Rose models with configurable parameters, warmup phases, TTFT tracking, VRAM monitoring, and benchstat/CSV output.
 
 ## Features
 
@@ -18,8 +18,8 @@ A Go-based command-line tool for benchmarking Ollama models with configurable pa
 ## Building from Source
 
 ```
-go build -o ollama-bench ./cmd/bench
-./ollama-bench -model gemma3 -epochs 6 -format csv
+go build -o rose-bench ./cmd/bench
+./rose-bench -model gemma3 -epochs 6 -format csv
 ```
 
 Using Go Run (without building)
@@ -33,26 +33,26 @@ go run ./cmd/bench -model gemma3 -epochs 3
 ### Basic Example
 
 ```
-./ollama-bench -model gemma3 -epochs 6
+./rose-bench -model gemma3 -epochs 6
 ```
 
 ### Benchmark Multiple Models
 
 ```
-./ollama-bench -model gemma3,gemma3n -epochs 6 -max-tokens 100 -p "Write me a short story" | tee gemma.bench
+./rose-bench -model gemma3,gemma3n -epochs 6 -max-tokens 100 -p "Write me a short story" | tee gemma.bench
 benchstat -col /name gemma.bench
 ```
 
 ### With Image Prompt
 
 ```
-./ollama-bench -model qwen3-vl -image photo.jpg -epochs 6 -max-tokens 100 -p "Describe this image"
+./rose-bench -model qwen3-vl -image photo.jpg -epochs 6 -max-tokens 100 -p "Describe this image"
 ```
 
 ### Controlled Prompt Length
 
 ```
-./ollama-bench -model gemma3 -epochs 6 -prompt-tokens 512
+./rose-bench -model gemma3 -epochs 6 -prompt-tokens 512
 ```
 
 `-prompt-tokens N` makes every warmup and timed request exactly N prompt tokens
@@ -78,7 +78,7 @@ Limits:
 ### Advanced Example
 
 ```
-./ollama-bench -model llama3 -epochs 10 -temperature 0.7 -max-tokens 500 -seed 42 -warmup 2 -format csv -output results.csv
+./rose-bench -model llama3 -epochs 10 -temperature 0.7 -max-tokens 500 -seed 42 -warmup 2 -format csv -output results.csv
 ```
 
 ## Command Line Options
@@ -121,15 +121,15 @@ BenchmarkModel/name=gemma3/step=total 1 2861047625 ns/op
 
 Use with benchstat:
 ```
-./ollama-bench -model gemma3 -epochs 6 > gemma3.bench
+./rose-bench -model gemma3 -epochs 6 > gemma3.bench
 benchstat -col /step gemma3.bench
 ```
 
 Compare two runs:
 ```
-./ollama-bench -model gemma3 -epochs 6 > before.bench
+./rose-bench -model gemma3 -epochs 6 > before.bench
 # ... make changes ...
-./ollama-bench -model gemma3 -epochs 6 > after.bench
+./rose-bench -model gemma3 -epochs 6 > after.bench
 benchstat before.bench after.bench
 ```
 

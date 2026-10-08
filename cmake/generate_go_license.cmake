@@ -71,7 +71,7 @@ list(SORT _license_files)
 
 file(MAKE_DIRECTORY "${OUTPUT_DIR}")
 set(_output "${OUTPUT_DIR}/GO_LICENSE")
-file(WRITE "${_output}" "Go licenses for Ollama and its dependencies.\n")
+file(WRITE "${_output}" "Go licenses for Rose and its dependencies.\n")
 foreach(_license_file IN LISTS _license_files)
     file(READ "${_staging_dir}/${_license_file}" _license_text)
     file(APPEND "${_output}"

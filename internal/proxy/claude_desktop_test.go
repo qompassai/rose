@@ -13,8 +13,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ollama/ollama/anthropic"
-	"github.com/ollama/ollama/api"
+	"github.com/qompassai/rose/anthropic"
+	"github.com/qompassai/rose/api"
 )
 
 func TestGatewayRoutesClaudeProtocolToOllama(t *testing.T) {
@@ -25,7 +25,7 @@ func TestGatewayRoutesClaudeProtocolToOllama(t *testing.T) {
 		if r.Header.Get("Authorization") != "" || r.Header.Get("Cookie") != "" {
 			t.Fatal("gateway credential leaked upstream")
 		}
-		if r.Header.Get("X-Api-Key") != "ollama" {
+		if r.Header.Get("X-Api-Key") != "rose" {
 			t.Fatalf("X-Api-Key = %q", r.Header.Get("X-Api-Key"))
 		}
 		if r.URL.Path == "/v1/messages" {
@@ -226,7 +226,7 @@ func TestGatewayRoutesEveryMappedModelIDToExactOllamaRoute(t *testing.T) {
 
 	routes := []struct {
 		id     string
-		ollama string
+		rose string
 	}{
 		{"claude-fable-5", "glm-5.2:cloud"},
 		{"claude-opus-5", "kimi-k3:cloud"},
@@ -248,8 +248,8 @@ func TestGatewayRoutesEveryMappedModelIDToExactOllamaRoute(t *testing.T) {
 			t.Fatalf("%s status = %d, want 200", route.id, resp.StatusCode)
 		}
 		_ = resp.Body.Close()
-		if got := routed[len(routed)-1]; got != route.ollama {
-			t.Fatalf("%s routed to %q, want exact Ollama route %q", route.id, got, route.ollama)
+		if got := routed[len(routed)-1]; got != route.rose {
+			t.Fatalf("%s routed to %q, want exact Rose route %q", route.id, got, route.rose)
 		}
 	}
 
@@ -327,7 +327,7 @@ func TestGatewayRoutesClaudeAutoClassifierAsOrdinaryMessages(t *testing.T) {
 					t.Fatalf("request URI = %q", r.URL.RequestURI())
 				}
 				if r.Header.Get("Authorization") != "" || r.Header.Get("Cookie") != "" || r.Header.Get("Proxy-Authorization") != "" {
-					t.Fatal("Claude credentials leaked to the Ollama server")
+					t.Fatal("Claude credentials leaked to the Rose server")
 				}
 				if err := json.NewDecoder(r.Body).Decode(&upstreamPayload); err != nil {
 					t.Fatal(err)
@@ -695,7 +695,7 @@ func TestGatewayReevaluatesModelAccessBeforeRouting(t *testing.T) {
 		}
 	}
 
-	assertMessage("claude-fable-5", http.StatusForbidden, "requires an Ollama pro plan")
+	assertMessage("claude-fable-5", http.StatusForbidden, "requires an Rose pro plan")
 	if routed.Load() != 0 {
 		t.Fatalf("ineligible Pro request reached upstream")
 	}
@@ -708,7 +708,7 @@ func TestGatewayReevaluatesModelAccessBeforeRouting(t *testing.T) {
 	// Account and Cloud settings can change while Claude is open. Each request
 	// resolves them again so an old conversation cannot retain stale access.
 	state.Cloud = ClaudeDesktopCloudOff
-	assertMessage("claude-opus-5", http.StatusForbidden, "Turn on Cloud in Ollama Settings")
+	assertMessage("claude-opus-5", http.StatusForbidden, "Turn on Cloud in Rose Settings")
 	if routed.Load() != 1 {
 		t.Fatalf("Cloud-disabled request reached upstream")
 	}
@@ -822,7 +822,7 @@ func TestGatewayRefreshesEntitlementsWithoutRestart(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	assertResponseContains(t, resp, http.StatusForbidden, "requires an Ollama pro plan")
+	assertResponseContains(t, resp, http.StatusForbidden, "requires an Rose pro plan")
 }
 
 func TestGatewayDiscardsRefreshThatRacesWithModelUpdate(t *testing.T) {

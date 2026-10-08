@@ -20,11 +20,11 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/spf13/cobra"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/manifest"
-	"github.com/ollama/ollama/parser"
-	"github.com/ollama/ollama/progress"
-	"github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/manifest"
+	"github.com/qompassai/rose/parser"
+	"github.com/qompassai/rose/progress"
+	"github.com/qompassai/rose/types/model"
 )
 
 func TestRunThinkingNamesReachServer(t *testing.T) {
@@ -47,7 +47,7 @@ func TestRunThinkingNamesReachServer(t *testing.T) {
 				}
 			}))
 			defer server.Close()
-			t.Setenv("OLLAMA_HOST", server.URL)
+			t.Setenv("ROSE_HOST", server.URL)
 			cmd := &cobra.Command{}
 			cmd.SetContext(t.Context())
 			for _, name := range []string{"format", "think", "keepalive"} {
@@ -330,7 +330,7 @@ Weigh anchor!
 
 	t.Run("license", func(t *testing.T) {
 		var b bytes.Buffer
-		license := "MIT License\nCopyright (c) Ollama\n"
+		license := "MIT License\nCopyright (c) Rose\n"
 		if err := showInfo(&api.ShowResponse{
 			Details: api.ModelDetails{
 				Family:            "test",
@@ -349,7 +349,7 @@ Weigh anchor!
 
   License
     MIT License             
-    Copyright (c) Ollama    
+    Copyright (c) Rose    
 
 `
 		if diff := cmp.Diff(expect, b.String()); diff != "" {
@@ -519,7 +519,7 @@ func TestDeleteHandler(t *testing.T) {
 		}
 	}))
 
-	t.Setenv("OLLAMA_HOST", mockServer.URL)
+	t.Setenv("ROSE_HOST", mockServer.URL)
 	t.Cleanup(mockServer.Close)
 
 	cmd := &cobra.Command{}
@@ -568,7 +568,7 @@ func TestRunEmbeddingModel(t *testing.T) {
 		http.NotFound(w, r)
 	}))
 
-	t.Setenv("OLLAMA_HOST", mockServer.URL)
+	t.Setenv("ROSE_HOST", mockServer.URL)
 	t.Cleanup(mockServer.Close)
 
 	cmd := &cobra.Command{}
@@ -641,7 +641,7 @@ func TestListRunningHandlerShowsRunner(t *testing.T) {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 	}))
-	t.Setenv("OLLAMA_HOST", mockServer.URL)
+	t.Setenv("ROSE_HOST", mockServer.URL)
 	t.Cleanup(mockServer.Close)
 
 	cmd := &cobra.Command{}
@@ -699,7 +699,7 @@ func TestRunHandlerRunnerFlag(t *testing.T) {
 			http.NotFound(w, r)
 		}
 	}))
-	t.Setenv("OLLAMA_HOST", mockServer.URL)
+	t.Setenv("ROSE_HOST", mockServer.URL)
 	t.Cleanup(mockServer.Close)
 
 	cmd := &cobra.Command{}
@@ -774,7 +774,7 @@ func TestRunEmbeddingModelWithFlags(t *testing.T) {
 		http.NotFound(w, r)
 	}))
 
-	t.Setenv("OLLAMA_HOST", mockServer.URL)
+	t.Setenv("ROSE_HOST", mockServer.URL)
 	t.Cleanup(mockServer.Close)
 
 	cmd := &cobra.Command{}
@@ -864,7 +864,7 @@ func TestRunEmbeddingModelPipedInput(t *testing.T) {
 		http.NotFound(w, r)
 	}))
 
-	t.Setenv("OLLAMA_HOST", mockServer.URL)
+	t.Setenv("ROSE_HOST", mockServer.URL)
 	t.Cleanup(mockServer.Close)
 
 	cmd := &cobra.Command{}
@@ -927,7 +927,7 @@ func TestRunEmbeddingModelNoInput(t *testing.T) {
 		http.NotFound(w, r)
 	}))
 
-	t.Setenv("OLLAMA_HOST", mockServer.URL)
+	t.Setenv("ROSE_HOST", mockServer.URL)
 	t.Cleanup(mockServer.Close)
 
 	cmd := &cobra.Command{}
@@ -978,7 +978,7 @@ func TestRunHandler_CloudAuthErrorOnShow_PrintsSigninMessage(t *testing.T) {
 		}
 	}))
 
-	t.Setenv("OLLAMA_HOST", mockServer.URL)
+	t.Setenv("ROSE_HOST", mockServer.URL)
 	t.Cleanup(mockServer.Close)
 
 	cmd := &cobra.Command{}
@@ -1006,7 +1006,7 @@ func TestRunHandler_CloudAuthErrorOnShow_PrintsSigninMessage(t *testing.T) {
 		t.Fatal("expected run to stop before /api/generate after unauthorized /api/show")
 	}
 
-	if !strings.Contains(out, "You need to be signed in to Ollama to run Cloud models.") {
+	if !strings.Contains(out, "You need to be signed in to Rose to run Cloud models.") {
 		t.Fatalf("expected sign-in guidance message, got %q", out)
 	}
 
@@ -1040,7 +1040,7 @@ func TestRunHandler_CloudAuthErrorOnGenerate_PrintsSigninMessage(t *testing.T) {
 		}
 	}))
 
-	t.Setenv("OLLAMA_HOST", mockServer.URL)
+	t.Setenv("ROSE_HOST", mockServer.URL)
 	t.Cleanup(mockServer.Close)
 
 	cmd := &cobra.Command{}
@@ -1064,7 +1064,7 @@ func TestRunHandler_CloudAuthErrorOnGenerate_PrintsSigninMessage(t *testing.T) {
 		t.Fatalf("RunHandler returned error: %v", err)
 	}
 
-	if !strings.Contains(out, "You need to be signed in to Ollama to run Cloud models.") {
+	if !strings.Contains(out, "You need to be signed in to Rose to run Cloud models.") {
 		t.Fatalf("expected sign-in guidance message, got %q", out)
 	}
 
@@ -1118,7 +1118,7 @@ func TestRunHandler_ExplicitCloudStubMissing_PullsNormalizedNameTEMP(t *testing.
 		}
 	}))
 
-	t.Setenv("OLLAMA_HOST", mockServer.URL)
+	t.Setenv("ROSE_HOST", mockServer.URL)
 	t.Cleanup(mockServer.Close)
 
 	cmd := &cobra.Command{}
@@ -1189,7 +1189,7 @@ func TestRunHandler_ExplicitCloudStubPresent_SkipsPullTEMP(t *testing.T) {
 		}
 	}))
 
-	t.Setenv("OLLAMA_HOST", mockServer.URL)
+	t.Setenv("ROSE_HOST", mockServer.URL)
 	t.Cleanup(mockServer.Close)
 
 	cmd := &cobra.Command{}
@@ -1256,7 +1256,7 @@ func TestRunHandler_ExplicitCloudStubPullFailure_IsBestEffortTEMP(t *testing.T) 
 		}
 	}))
 
-	t.Setenv("OLLAMA_HOST", mockServer.URL)
+	t.Setenv("ROSE_HOST", mockServer.URL)
 	t.Cleanup(mockServer.Close)
 
 	cmd := &cobra.Command{}
@@ -1482,7 +1482,7 @@ func TestPushHandler(t *testing.T) {
 			}))
 			defer mockServer.Close()
 
-			t.Setenv("OLLAMA_HOST", mockServer.URL)
+			t.Setenv("ROSE_HOST", mockServer.URL)
 			tmpDir := t.TempDir()
 			t.Setenv("HOME", tmpDir)
 			t.Setenv("USERPROFILE", tmpDir)
@@ -1577,7 +1577,7 @@ func TestListHandler(t *testing.T) {
 			}))
 			defer mockServer.Close()
 
-			t.Setenv("OLLAMA_HOST", mockServer.URL)
+			t.Setenv("ROSE_HOST", mockServer.URL)
 
 			cmd := &cobra.Command{}
 			cmd.SetContext(t.Context())
@@ -1669,7 +1669,7 @@ func TestCreateHandler(t *testing.T) {
 				}
 				handler(w, r)
 			}))
-			t.Setenv("OLLAMA_HOST", mockServer.URL)
+			t.Setenv("ROSE_HOST", mockServer.URL)
 			t.Cleanup(mockServer.Close)
 			tempFile, err := os.CreateTemp(t.TempDir(), "modelfile")
 			if err != nil {
@@ -1820,7 +1820,7 @@ func TestCreateHandlerRejectsForceForGGUF(t *testing.T) {
 }
 
 func TestSharedBlobStore(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 	blobs, err := manifest.BlobsPath("")
 	if err != nil {
 		t.Fatal(err)
@@ -1860,7 +1860,7 @@ func TestSharedBlobStore(t *testing.T) {
 	defer separate.Close()
 
 	t.Run("shared store", func(t *testing.T) {
-		t.Setenv("OLLAMA_HOST", shared.URL)
+		t.Setenv("ROSE_HOST", shared.URL)
 		client, err := api.ClientFromEnvironment()
 		if err != nil {
 			t.Fatal(err)
@@ -1872,7 +1872,7 @@ func TestSharedBlobStore(t *testing.T) {
 	})
 
 	t.Run("separate store", func(t *testing.T) {
-		t.Setenv("OLLAMA_HOST", separate.URL)
+		t.Setenv("ROSE_HOST", separate.URL)
 		client, err := api.ClientFromEnvironment()
 		if err != nil {
 			t.Fatal(err)
@@ -1883,9 +1883,9 @@ func TestSharedBlobStore(t *testing.T) {
 		assertNoBlobs(t)
 	})
 
-	t.Run("OLLAMA_CREATE_REMOTE forces upload", func(t *testing.T) {
-		t.Setenv("OLLAMA_HOST", shared.URL)
-		t.Setenv("OLLAMA_CREATE_REMOTE", "1")
+	t.Run("ROSE_CREATE_REMOTE forces upload", func(t *testing.T) {
+		t.Setenv("ROSE_HOST", shared.URL)
+		t.Setenv("ROSE_CREATE_REMOTE", "1")
 		client, err := api.ClientFromEnvironment()
 		if err != nil {
 			t.Fatal(err)
@@ -1926,7 +1926,7 @@ func (s *blobServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func TestCreateBlob(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 	src := filepath.Join(t.TempDir(), "model.gguf")
 	data := []byte("blob contents")
 	if err := os.WriteFile(src, data, 0o644); err != nil {
@@ -1942,7 +1942,7 @@ func TestCreateBlob(t *testing.T) {
 		}
 		server := httptest.NewServer(bs)
 		t.Cleanup(server.Close)
-		t.Setenv("OLLAMA_HOST", server.URL)
+		t.Setenv("ROSE_HOST", server.URL)
 		client, err := api.ClientFromEnvironment()
 		if err != nil {
 			t.Fatal(err)
@@ -2024,7 +2024,7 @@ func TestCreateHandlerRejectsAdaptersBeforeUpload(t *testing.T) {
 }
 
 func TestCreateHandlerRejectsTypicalPBeforeUpload(t *testing.T) {
-	t.Setenv("OLLAMA_HOST", "127.0.0.1:0")
+	t.Setenv("ROSE_HOST", "127.0.0.1:0")
 	dir := t.TempDir()
 	modelfile := filepath.Join(dir, "Modelfile")
 	if err := os.WriteFile(modelfile, []byte("FROM base\nPARAMETER typical_p 0.5\n"), 0o644); err != nil {
@@ -2044,7 +2044,7 @@ func TestCreateHandlerRejectsTypicalPBeforeUpload(t *testing.T) {
 }
 
 func TestCreateHandlerRejectsForceForRemoteSafetensors(t *testing.T) {
-	t.Setenv("OLLAMA_CREATE_REMOTE", "1")
+	t.Setenv("ROSE_CREATE_REMOTE", "1")
 	dir := t.TempDir()
 	modelDir := filepath.Join(dir, "model")
 	if err := os.Mkdir(modelDir, 0o755); err != nil {
@@ -2156,7 +2156,7 @@ func TestCreateHandlerManifestList(t *testing.T) {
 		}
 		w.(http.Flusher).Flush()
 	}))
-	t.Setenv("OLLAMA_HOST", mockServer.URL)
+	t.Setenv("ROSE_HOST", mockServer.URL)
 	t.Cleanup(mockServer.Close)
 
 	cmd := &cobra.Command{}
@@ -2989,7 +2989,7 @@ func TestLoadOrUnloadModel_CloudModelAuth(t *testing.T) {
 			}))
 			defer mockServer.Close()
 
-			t.Setenv("OLLAMA_HOST", mockServer.URL)
+			t.Setenv("ROSE_HOST", mockServer.URL)
 
 			cmd := &cobra.Command{}
 			cmd.SetContext(t.Context())
@@ -3054,10 +3054,10 @@ func TestIsLocalhost(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Setenv("OLLAMA_HOST", tt.host)
+			t.Setenv("ROSE_HOST", tt.host)
 			got := isLocalhost()
 			if got != tt.expected {
-				t.Errorf("isLocalhost() with OLLAMA_HOST=%q = %v, want %v", tt.host, got, tt.expected)
+				t.Errorf("isLocalhost() with ROSE_HOST=%q = %v, want %v", tt.host, got, tt.expected)
 			}
 		})
 	}

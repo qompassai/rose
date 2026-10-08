@@ -62,18 +62,18 @@ func TestThinkingGrammarRules(t *testing.T) {
 	format := "root ::= \"{\" space \"}\"\nspace ::= | \" \"\n"
 	grammar := thinkingGrammar([]string{"</think>"}, format)
 	for _, want := range []string{
-		"root ::= ollama-thinking-0\n",
-		"ollama-thinking-0 ::= | [^<] ollama-thinking-0 | [<] ollama-thinking-1\n",
-		"ollama-thinking-7 ::= | [^<>] ollama-thinking-0 | [<] ollama-thinking-1 | [>] ollama-format\n",
-		"ollama-format ::= \"{\" space \"}\"\nspace ::= | \" \"\n",
+		"root ::= rose-thinking-0\n",
+		"rose-thinking-0 ::= | [^<] rose-thinking-0 | [<] rose-thinking-1\n",
+		"rose-thinking-7 ::= | [^<>] rose-thinking-0 | [<] rose-thinking-1 | [>] rose-format\n",
+		"rose-format ::= \"{\" space \"}\"\nspace ::= | \" \"\n",
 	} {
 		if !strings.Contains(grammar, want) {
 			t.Errorf("grammar lacks %q:\n%s", want, grammar)
 		}
 	}
 
-	grammar = thinkingGrammar([]string{"</think>"}, "root ::= ollama-x\nollama-x ::= \"{}\"\n")
-	if !strings.HasPrefix(grammar, "root ::= ollama-ollama-thinking-0\n") || !strings.Contains(grammar, "ollama-ollama-format ::= ollama-x\n") {
+	grammar = thinkingGrammar([]string{"</think>"}, "root ::= rose-x\nollama-x ::= \"{}\"\n")
+	if !strings.HasPrefix(grammar, "root ::= rose-rose-thinking-0\n") || !strings.Contains(grammar, "rose-rose-format ::= rose-x\n") {
 		t.Errorf("grammar does not avoid the format's rule prefix:\n%s", grammar)
 	}
 }

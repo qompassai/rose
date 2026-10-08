@@ -11,7 +11,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/ollama/ollama/api"
+	"github.com/qompassai/rose/api"
 )
 
 var _ Scorer = (*llamaServerRunner)(nil)

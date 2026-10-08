@@ -24,17 +24,17 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/compatmigrate"
-	"github.com/ollama/ollama/create"
-	"github.com/ollama/ollama/envconfig"
-	"github.com/ollama/ollama/format"
-	"github.com/ollama/ollama/fs/gguf"
-	"github.com/ollama/ollama/manifest"
-	"github.com/ollama/ollama/mlx/quant"
-	"github.com/ollama/ollama/mlxrunner"
-	"github.com/ollama/ollama/types/errtypes"
-	"github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/compatmigrate"
+	"github.com/qompassai/rose/create"
+	"github.com/qompassai/rose/envconfig"
+	"github.com/qompassai/rose/format"
+	"github.com/qompassai/rose/fs/gguf"
+	"github.com/qompassai/rose/manifest"
+	"github.com/qompassai/rose/mlx/quant"
+	"github.com/qompassai/rose/mlxrunner"
+	"github.com/qompassai/rose/types/errtypes"
+	"github.com/qompassai/rose/types/model"
 )
 
 var (
@@ -436,7 +436,7 @@ func writeSafetensorsManifest(r api.CreateRequest, draftDir string, fn func(resp
 }
 
 func stageSafetensorsSourceFiles(ctx context.Context, files map[string]string) (string, func(), error) {
-	dir, err := os.MkdirTemp("", "ollama-create-safetensors-*")
+	dir, err := os.MkdirTemp("", "rose-create-safetensors-*")
 	if err != nil {
 		return "", nil, err
 	}
@@ -845,7 +845,7 @@ func createModel(ctx context.Context, r api.CreateRequest, name model.Name, base
 
 		if layer.GGUF != nil {
 			switch layer.MediaType {
-			case "application/vnd.ollama.image.model", manifest.MediaTypeImageDraft:
+			case "application/vnd.rose.image.model", manifest.MediaTypeImageDraft:
 				rewritten, changed, err := compatmigrate.RewriteLlama3MetadataLayer(layer.Layer)
 				if err != nil {
 					return err
@@ -856,7 +856,7 @@ func createModel(ctx context.Context, r api.CreateRequest, name model.Name, base
 			}
 
 			switch layer.MediaType {
-			case "application/vnd.ollama.image.model":
+			case "application/vnd.rose.image.model":
 				config.ModelFormat = cmp.Or(config.ModelFormat, "gguf")
 				config.ModelFamily = cmp.Or(config.ModelFamily, layer.GGUF.Architecture())
 				config.ModelType = cmp.Or(config.ModelType, format.HumanNumber(layer.parameterCount))
@@ -1099,9 +1099,9 @@ func ggufLayersWithMediaType(digest, sourceName, mediaType string, fn func(resp 
 		return nil, fmt.Errorf("%w: %s is a LoRA adapter", errAdaptersUnsupported, sourceName)
 	}
 	if mediaType == "" {
-		mediaType = "application/vnd.ollama.image.model"
+		mediaType = "application/vnd.rose.image.model"
 		if isProjectorGGUF(metadata) {
-			mediaType = "application/vnd.ollama.image.projector"
+			mediaType = "application/vnd.rose.image.projector"
 		}
 	}
 

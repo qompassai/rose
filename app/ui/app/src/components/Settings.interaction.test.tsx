@@ -183,7 +183,7 @@ describe("Settings reset interactions", () => {
       open: vi.fn(),
       confirm: vi.fn(() => true),
       location: { reload: vi.fn() },
-      OLLAMA_TOOLS: false,
+      ROSE_TOOLS: false,
     });
     vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   });

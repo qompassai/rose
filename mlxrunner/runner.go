@@ -12,16 +12,16 @@ import (
 
 	"golang.org/x/sync/errgroup"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/manifest"
-	"github.com/ollama/ollama/mlx"
-	"github.com/ollama/ollama/mlx/mlxthread"
-	"github.com/ollama/ollama/mlxrunner/batch"
-	"github.com/ollama/ollama/mlxrunner/cache"
-	"github.com/ollama/ollama/mlxrunner/model"
-	_ "github.com/ollama/ollama/mlxrunner/model/architectures"
-	"github.com/ollama/ollama/mlxrunner/sample"
-	"github.com/ollama/ollama/mlxrunner/tokenizer"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/manifest"
+	"github.com/qompassai/rose/mlx"
+	"github.com/qompassai/rose/mlx/mlxthread"
+	"github.com/qompassai/rose/mlxrunner/batch"
+	"github.com/qompassai/rose/mlxrunner/cache"
+	"github.com/qompassai/rose/mlxrunner/model"
+	_ "github.com/qompassai/rose/mlxrunner/model/architectures"
+	"github.com/qompassai/rose/mlxrunner/sample"
+	"github.com/qompassai/rose/mlxrunner/tokenizer"
 )
 
 // Request is a short-lived struct that carries a completion request through

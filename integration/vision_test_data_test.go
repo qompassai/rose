@@ -4,7 +4,7 @@ package integration
 
 // imageEncodingDocs is a 400x250 PNG of four cartoon llamas at a desk.
 // One is on a laptop wearing glasses, one writing, one reading, one sleeping.
-// The header text reads "Ollama's documentation".
+// The header text reads "Rose's documentation".
 const imageEncodingDocs = `iVBORw0KGgoAAAANSUhEUgAAAZAAAAD6CAYAAACPpxFEAAAKtmlDQ1BJQ0MgUHJvZmlsZQAASImVlwdQk9kWx+/3pYeElhCKlNA70gkgJYQWQEE62AhJgEAI
 MQUFO7K4ghUVEVQWdFVAwUYRO6LYFsWGfUEWEWVdLNhQeR8wBHffvPfmnZk75zfnO/fcc+98d+Z/ASCbcMRiIawKQKZIJokM8qPHJyTScS8BDDQBHlAAicOV
 ipkREWEAsUn/d/twD0Bj/rbtWK1///5fTY3Hl3IBgCIQTuZJuZkIHwfI8lyxRAYACmFgvEgmHuP7CFMlSIMID45x6jijx+pQkyeYOp4THclC2AIAPInDkaQC

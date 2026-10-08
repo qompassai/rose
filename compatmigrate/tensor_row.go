@@ -8,7 +8,7 @@ import (
 
 	"github.com/x448/float16"
 
-	"github.com/ollama/ollama/fs/gguf"
+	"github.com/qompassai/rose/fs/gguf"
 )
 
 const (

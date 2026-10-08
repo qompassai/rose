@@ -81,9 +81,9 @@ func tryLoadFromDir(dir string) bool {
 }
 
 // libOllamaRoots returns candidate directories for MLX dynamic libraries.
-// Production: exe_dir/lib/ollama (Windows release layout),
-// exe_dir/../lib/ollama (standard bin/lib layout), and exe_dir (macOS bundle).
-// Development: build/lib/ollama and build/*/lib/ollama.
+// Production: exe_dir/lib/rose (Windows release layout),
+// exe_dir/../lib/rose (standard bin/lib layout), and exe_dir (macOS bundle).
+// Development: build/lib/rose and build/*/lib/rose.
 func libOllamaRoots() []string {
 	var roots []string
 
@@ -95,18 +95,18 @@ func libOllamaRoots() []string {
 		exeDir := filepath.Dir(exe)
 		switch runtime.GOOS {
 		case "darwin":
-			roots = append(roots, filepath.Join(exeDir, "lib", "ollama"))
-			roots = append(roots, filepath.Join(exeDir, "..", "lib", "ollama"))
+			roots = append(roots, filepath.Join(exeDir, "lib", "rose"))
+			roots = append(roots, filepath.Join(exeDir, "..", "lib", "rose"))
 			roots = append(roots, exeDir) // app bundle: Contents/Resources/
 		case "linux":
-			roots = append(roots, filepath.Join(exeDir, "..", "lib", "ollama"))
+			roots = append(roots, filepath.Join(exeDir, "..", "lib", "rose"))
 		case "windows":
-			roots = append(roots, filepath.Join(exeDir, "lib", "ollama"))
-			roots = append(roots, filepath.Join(exeDir, "..", "lib", "ollama"))
+			roots = append(roots, filepath.Join(exeDir, "lib", "rose"))
+			roots = append(roots, filepath.Join(exeDir, "..", "lib", "rose"))
 		}
 	}
 
-	// Development paths: build/lib/ollama and build/*/lib/ollama.
+	// Development paths: build/lib/rose and build/*/lib/rose.
 	// Reverse-sort and filter the glob results so higher-versioned Metal
 	// builds (e.g., metal-v4) are tried before lower ones (metal-v3),
 	// and incompatible variants are skipped. Without this, alphabetical
@@ -114,11 +114,11 @@ func libOllamaRoots() []string {
 	for _, base := range repoBuildDirs() {
 		platform := runtime.GOOS + "-" + runtime.GOARCH
 		platformAlt := runtime.GOOS + "_" + runtime.GOARCH
-		roots = append(roots, filepath.Join(base, "lib", "ollama"))
-		if matches, err := filepath.Glob(filepath.Join(base, "*", "lib", "ollama")); err == nil {
+		roots = append(roots, filepath.Join(base, "lib", "rose"))
+		if matches, err := filepath.Glob(filepath.Join(base, "*", "lib", "rose")); err == nil {
 			sort.Sort(sort.Reverse(sort.StringSlice(matches)))
 			for _, m := range matches {
-				// Extract the build dir name (e.g., "metal-v4" from "build/metal-v4/lib/ollama")
+				// Extract the build dir name (e.g., "metal-v4" from "build/metal-v4/lib/rose")
 				rel, _ := filepath.Rel(base, m)
 				variant := strings.SplitN(rel, string(filepath.Separator), 2)[0]
 				if isCompatibleMLXVariant(variant) {
@@ -126,7 +126,7 @@ func libOllamaRoots() []string {
 				}
 			}
 		}
-		if matches, err := filepath.Glob(filepath.Join(base, platform, "*", "lib", "ollama")); err == nil {
+		if matches, err := filepath.Glob(filepath.Join(base, platform, "*", "lib", "rose")); err == nil {
 			sort.Sort(sort.Reverse(sort.StringSlice(matches)))
 			for _, m := range matches {
 				variant := filepath.Base(filepath.Dir(filepath.Dir(m)))
@@ -136,10 +136,10 @@ func libOllamaRoots() []string {
 			}
 		}
 		repoRoot := filepath.Dir(base)
-		roots = append(roots, filepath.Join(repoRoot, "dist", platform, "lib", "ollama"))
-		roots = append(roots, filepath.Join(repoRoot, "dist", platformAlt, "lib", "ollama"))
+		roots = append(roots, filepath.Join(repoRoot, "dist", platform, "lib", "rose"))
+		roots = append(roots, filepath.Join(repoRoot, "dist", platformAlt, "lib", "rose"))
 		if runtime.GOOS == "darwin" {
-			roots = append(roots, filepath.Join(repoRoot, "dist", "darwin", "lib", "ollama"))
+			roots = append(roots, filepath.Join(repoRoot, "dist", "darwin", "lib", "rose"))
 		}
 	}
 	return roots
@@ -194,10 +194,10 @@ func init() {
 		return
 	}
 
-	// OLLAMA_LLM_LIBRARY overrides variant selection (e.g., "mlx_metal_v3").
+	// ROSE_LLM_LIBRARY overrides variant selection (e.g., "mlx_metal_v3").
 	// When set to an mlx_* value, only that specific subdir is tried.
 	// The GGML runner ignores mlx_* values (see discover/runner.go).
-	forcedVariant, _ := os.LookupEnv("OLLAMA_LLM_LIBRARY")
+	forcedVariant, _ := os.LookupEnv("ROSE_LLM_LIBRARY")
 	if forcedVariant != "" && !strings.HasPrefix(forcedVariant, "mlx_") {
 		forcedVariant = "" // not an MLX variant, ignore
 	}

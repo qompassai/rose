@@ -1,5 +1,5 @@
-#ifndef OLLAMA_XGRAMMAR_DYNAMIC_H
-#define OLLAMA_XGRAMMAR_DYNAMIC_H
+#ifndef ROSE_XGRAMMAR_DYNAMIC_H
+#define ROSE_XGRAMMAR_DYNAMIC_H
 
 #include "native/xgrammar.h"
 

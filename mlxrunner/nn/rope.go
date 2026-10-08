@@ -3,7 +3,7 @@ package nn
 import (
 	"math"
 
-	"github.com/ollama/ollama/mlx"
+	"github.com/qompassai/rose/mlx"
 )
 
 // RopeParameters carries common RoPE metadata embedded in model configs.

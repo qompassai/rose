@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ollama/ollama/api"
+	"github.com/qompassai/rose/api"
 )
 
 func TestCompactionTrimPreservesProtectedState(t *testing.T) {
@@ -663,7 +663,7 @@ func TestCompactionPreservesNamespacedFunctionCallIdentity(t *testing.T) {
 		"stream":true,
 		"tools":[{"type":"namespace","name":"mcp__codex_apps__github","tools":[{"type":"function","name":"_get_repo","parameters":{"type":"object"}}]}],
 		"input":[
-			{"type":"function_call","call_id":"call_repo","namespace":"mcp__codex_apps__github","name":"_get_repo","arguments":"{\"repo\":\"ollama/ollama\"}"},
+			{"type":"function_call","call_id":"call_repo","namespace":"mcp__codex_apps__github","name":"_get_repo","arguments":"{\"repo\":\"rose/rose\"}"},
 			{"type":"function_call_output","call_id":"call_repo","output":"found"},
 			{"type":"message","role":"assistant","content":"done"},
 			{"type":"compaction_trigger"}
@@ -842,7 +842,7 @@ func TestExpandResponsesCompactionInputPreservesCodexRetainedPrefix(t *testing.T
 func TestExpandResponsesCompactionInputRejectsForeignPayload(t *testing.T) {
 	body := []byte(`{"model":"test","input":[{"type":"compaction","encrypted_content":"opaque-provider-state"}]}`)
 	_, changed, err := ExpandResponsesCompactionInput(body)
-	if changed || err == nil || !strings.Contains(err.Error(), "not an Ollama payload") {
+	if changed || err == nil || !strings.Contains(err.Error(), "not an Rose payload") {
 		t.Fatalf("changed=%v err=%v", changed, err)
 	}
 }

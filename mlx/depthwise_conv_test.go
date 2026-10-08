@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/ollama/ollama/mlx/mlxthread/mlxthreadtest"
+	"github.com/qompassai/rose/mlx/mlxthread/mlxthreadtest"
 )
 
 func TestDepthwiseConvSiLUMatchesGraph(t *testing.T) {

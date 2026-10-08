@@ -16,9 +16,9 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/decision"
-	"github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/decision"
+	"github.com/qompassai/rose/types/model"
 )
 
 func postSystemOne(ctx context.Context, endpoint string, input decision.Request) ([]byte, int, error) {

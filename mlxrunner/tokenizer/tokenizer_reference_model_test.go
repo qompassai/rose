@@ -17,9 +17,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ollama/ollama/manifest"
-	"github.com/ollama/ollama/transfer"
-	"github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/manifest"
+	"github.com/qompassai/rose/transfer"
+	"github.com/qompassai/rose/types/model"
 )
 
 func loadTokenizerReference(t testing.TB, modelName string) []byte {
@@ -131,7 +131,7 @@ func fetchTokenizerManifest(t testing.TB, ctx context.Context, url, digest strin
 
 func TestTokenizerReferenceFetch(t *testing.T) {
 	root := t.TempDir()
-	t.Setenv("OLLAMA_MODELS", filepath.Join(root, "models"))
+	t.Setenv("ROSE_MODELS", filepath.Join(root, "models"))
 	t.Setenv("FETCH_TOKENIZERS", "1")
 	t.Setenv("VERIFY_TOKENIZERS", "")
 	work := filepath.Join(root, "work", "tokenizer")
@@ -152,8 +152,8 @@ func TestTokenizerReferenceFetch(t *testing.T) {
 			MediaType:     manifest.MediaTypeManifest,
 			Runner:        manifest.RunnerMLX,
 			Layers: []manifest.Layer{
-				{MediaType: "application/vnd.ollama.image.json", Name: "tokenizer.json", Digest: digests[i], Size: int64(len(data))},
-				{MediaType: "application/vnd.ollama.image.tensor", Digest: "sha256:" + strings.Repeat("1", 64), Size: 1 << 30},
+				{MediaType: "application/vnd.rose.image.json", Name: "tokenizer.json", Digest: digests[i], Size: int64(len(data))},
+				{MediaType: "application/vnd.rose.image.tensor", Digest: "sha256:" + strings.Repeat("1", 64), Size: 1 << 30},
 			},
 		}
 		var err error

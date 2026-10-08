@@ -105,7 +105,7 @@ it.each([
     name:
       integration === "ChatGPT"
         ? "Add ChatGPT model"
-        : "Ollama model for Fable 5",
+        : "Rose model for Fable 5",
   });
   await expect.element(button).toBeEnabled();
   expect(read.mock.calls.some(([catalog]) => catalog)).toBe(false);

@@ -46,9 +46,9 @@ afterEach(() => {
 const integration: IntegrationStatus = {
   id: "chatgpt",
   name: "ChatGPT",
-  description: "Use Ollama models in ChatGPT",
+  description: "Use Rose models in ChatGPT",
   installed: true,
-  command: "ollama launch chatgpt",
+  command: "rose launch chatgpt",
 };
 
 function status(
@@ -84,18 +84,18 @@ describe("CodexDesktopRow", () => {
       />,
     );
 
-    expect(html).toContain("Connected to Ollama · 0 requests this session");
-    expect(html).not.toContain("Codex + Ollama");
-    expect(html).not.toContain("3 Ollama models");
-    expect(html).toContain('aria-label="Remove Ollama models from ChatGPT"');
+    expect(html).toContain("Connected to Rose · 0 requests this session");
+    expect(html).not.toContain("Codex + Rose");
+    expect(html).not.toContain("3 Rose models");
+    expect(html).toContain('aria-label="Remove Rose models from ChatGPT"');
     expect(html).toContain('aria-pressed="true"');
   });
 
   it.each([
-    { requests: 1, expected: "Connected to Ollama · 1 request this session" },
+    { requests: 1, expected: "Connected to Rose · 1 request this session" },
     {
       requests: 12,
-      expected: "Connected to Ollama · 12 requests this session",
+      expected: "Connected to Rose · 12 requests this session",
     },
   ])(
     "matches Claude's connected copy for $requests requests",
@@ -249,7 +249,7 @@ describe("CodexDesktopRow", () => {
         );
       });
       const toggle = renderer!.root.findByProps({
-        "aria-label": "Add Ollama models to ChatGPT",
+        "aria-label": "Add Rose models to ChatGPT",
       });
       await act(async () => {
         await toggle.props.onClick();
@@ -262,11 +262,11 @@ describe("CodexDesktopRow", () => {
       expect(connect).toHaveBeenCalledWith(true, false);
       expect(
         renderer!.root.findByProps({
-          "aria-label": "Remove Ollama models from ChatGPT",
+          "aria-label": "Remove Rose models from ChatGPT",
         }).props["aria-pressed"],
       ).toBe(true);
       expect(renderer!.root.findByProps({ role: "status" }).children).toContain(
-        "Ollama models added alongside Codex models",
+        "Rose models added alongside Codex models",
       );
     } finally {
       await act(async () => renderer?.unmount());
@@ -398,7 +398,7 @@ describe("CodexDesktopRow", () => {
         expect(toggle.props.disabled).toBe(false);
         expect(
           renderer!.root.findByProps({ role: "alert" }).children,
-        ).toContain("Ollama could not finish connecting ChatGPT.");
+        ).toContain("Rose could not finish connecting ChatGPT.");
       } finally {
         await act(async () => renderer?.unmount());
       }
@@ -438,7 +438,7 @@ describe("CodexDesktopRow", () => {
           );
         });
         const toggle = renderer!.root.findByProps({
-          "aria-label": "Add Ollama models to ChatGPT",
+          "aria-label": "Add Rose models to ChatGPT",
         });
         await act(async () => {
           await toggle.props.onClick();
@@ -453,7 +453,7 @@ describe("CodexDesktopRow", () => {
         expect(renderer!.root.findByProps({ role: "alert" })).toBeTruthy();
         expect(
           renderer!.root.findByProps({
-            "aria-label": "Add Ollama models to ChatGPT",
+            "aria-label": "Add Rose models to ChatGPT",
           }).props["aria-pressed"],
         ).toBe(false);
       } finally {
@@ -484,7 +484,7 @@ describe("CodexDesktopRow", () => {
         );
       });
       const toggle = renderer!.root.findByProps({
-        "aria-label": "Add Ollama models to ChatGPT",
+        "aria-label": "Add Rose models to ChatGPT",
       });
       await act(async () => {
         await toggle.props.onClick();
@@ -499,7 +499,7 @@ describe("CodexDesktopRow", () => {
     }
   });
 
-  it("uses concise restart copy when adding Ollama models", async () => {
+  it("uses concise restart copy when adding Rose models", async () => {
     const confirm = vi.fn(() => false);
     const runningStatus = status({ running: true });
     const connect = vi.fn().mockResolvedValue({
@@ -525,14 +525,14 @@ describe("CodexDesktopRow", () => {
         );
       });
       const toggle = renderer!.root.findByProps({
-        "aria-label": "Add Ollama models to ChatGPT",
+        "aria-label": "Add Rose models to ChatGPT",
       });
       await act(async () => {
         await toggle.props.onClick();
       });
 
       expect(confirm).toHaveBeenCalledWith(
-        "Restart ChatGPT to add Ollama models? Any running task will stop.",
+        "Restart ChatGPT to add Rose models? Any running task will stop.",
       );
       expect(connect).toHaveBeenCalledOnce();
       expect(connect).toHaveBeenCalledWith(true, false);
@@ -541,7 +541,7 @@ describe("CodexDesktopRow", () => {
     }
   });
 
-  it("adds Ollama models after the restart is confirmed", async () => {
+  it("adds Rose models after the restart is confirmed", async () => {
     const confirm = vi.fn(() => true);
     const connectedStatus = status({
       connected: true,
@@ -576,20 +576,20 @@ describe("CodexDesktopRow", () => {
         );
       });
       const toggle = renderer!.root.findByProps({
-        "aria-label": "Add Ollama models to ChatGPT",
+        "aria-label": "Add Rose models to ChatGPT",
       });
       await act(async () => {
         await toggle.props.onClick();
       });
 
       expect(confirm).toHaveBeenCalledWith(
-        "Restart ChatGPT to add Ollama models? Any running task will stop.",
+        "Restart ChatGPT to add Rose models? Any running task will stop.",
       );
       expect(connect).toHaveBeenNthCalledWith(1, true, false);
       expect(connect).toHaveBeenNthCalledWith(2, true, true);
       expect(
         renderer!.root.findByProps({
-          "aria-label": "Remove Ollama models from ChatGPT",
+          "aria-label": "Remove Rose models from ChatGPT",
         }).props["aria-pressed"],
       ).toBe(true);
     } finally {
@@ -637,7 +637,7 @@ describe("CodexDesktopRow", () => {
         );
       });
       const toggle = renderer!.root.findByProps({
-        "aria-label": "Add Ollama models to ChatGPT",
+        "aria-label": "Add Rose models to ChatGPT",
       });
       await act(async () => {
         await toggle.props.onClick();
@@ -711,7 +711,7 @@ describe("CodexDesktopRow", () => {
       />,
     );
 
-    expect(html).toContain('aria-label="Remove Ollama models from ChatGPT"');
+    expect(html).toContain('aria-label="Remove Rose models from ChatGPT"');
     expect(html).not.toContain('disabled=""');
 
     const restore = vi.fn().mockResolvedValue({
@@ -736,7 +736,7 @@ describe("CodexDesktopRow", () => {
         );
       });
       const restoreButton = renderer!.root.findByProps({
-        "aria-label": "Remove Ollama models from ChatGPT",
+        "aria-label": "Remove Rose models from ChatGPT",
       });
       await act(async () => {
         await restoreButton.props.onClick();
@@ -925,8 +925,8 @@ it.each(["failed", "rejected", "save failed"])(
         outcome === "failed"
           ? "launch failed"
           : outcome === "save failed"
-            ? "Ollama couldn’t save your progress. Please try again."
-            : "Ollama could not add its models to ChatGPT.",
+            ? "Rose couldn’t save your progress. Please try again."
+            : "Rose could not add its models to ChatGPT.",
       );
       expect(save).toHaveBeenCalledTimes(outcome === "save failed" ? 1 : 0);
     } finally {
@@ -1249,7 +1249,7 @@ it.each(["returned", "rejected"])(
       getStatus.mockResolvedValue(connectedStatus);
       await act(async () => onFocus?.());
       expect(renderer!.root.findByProps({ role: "alert" }).children).toContain(
-        "Ollama couldn’t save your progress. Please try again.",
+        "Rose couldn’t save your progress. Please try again.",
       );
       const retryButton = renderer!.root.findByProps({
         "aria-label": "Retry saving progress",
@@ -1549,7 +1549,7 @@ it.each(["resolved", "rejected"])(
       });
       expect(connectionButton(renderer!).props["aria-pressed"]).toBe(true);
       expect(renderer!.root.findByProps({ role: "alert" }).children).toContain(
-        "Ollama couldn’t save your progress. Please try again.",
+        "Rose couldn’t save your progress. Please try again.",
       );
       expect(
         renderer!.root.findByProps({ "aria-label": "Retry saving progress" })

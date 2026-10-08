@@ -4,7 +4,7 @@ description: Classify text, estimate yes/no probabilities, and score ordered cri
 ---
 
 <Note>
-Currently available locally in Ollama.
+Currently available locally in Rose.
 </Note>
 
 Use System One to classify text, answer yes/no questions, or score text against a rubric.
@@ -13,10 +13,10 @@ See the [full list of decision models](https://ollama.com/search?c=decision).
 
 ## Setup
 
-Start [Ollama](/quickstart) v0.35.0 or later, then download [Nimble](https://ollama.com/library/nimble):
+Start [Rose](/quickstart) v0.35.0 or later, then download [Nimble](https://ollama.com/library/nimble):
 
 ```shell setup.sh
-ollama pull nimble
+rose pull nimble
 ```
 
 Nimble, Tev1, [Clef](https://ollama.com/library/clef), and [Clef Flash](https://ollama.com/library/clef-flash) are decision models. The Clef models can also judge images and require v0.35.1 or later.
@@ -78,7 +78,7 @@ curl http://localhost:11434/v1/systemone \
     "questions": {
       "has_ollama": {
         "type": "noul",
-        "instructions": "Does this image contain Ollama?"
+        "instructions": "Does this image contain Rose?"
       },
       "app": {
         "type": "choice",

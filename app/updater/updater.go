@@ -24,9 +24,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ollama/ollama/app/store"
-	"github.com/ollama/ollama/app/version"
-	"github.com/ollama/ollama/auth"
+	"github.com/qompassai/rose/app/store"
+	"github.com/qompassai/rose/app/version"
+	"github.com/qompassai/rose/auth"
 )
 
 var (
@@ -98,7 +98,7 @@ func (u *Updater) checkForUpdate(ctx context.Context) (bool, UpdateResponse) {
 	if signature != "" {
 		req.Header.Set("Authorization", signature)
 	}
-	ua := fmt.Sprintf("ollama/%s %s Go/%s %s", version.Version, runtime.GOARCH, runtime.Version(), UserAgentOS)
+	ua := fmt.Sprintf("rose/%s %s Go/%s %s", version.Version, runtime.GOARCH, runtime.Version(), UserAgentOS)
 	req.Header.Set("User-Agent", ua)
 
 	slog.Debug("checking for available update", "requestURL", requestURL, "User-Agent", ua)
@@ -220,7 +220,7 @@ func (u *Updater) DownloadNewRelease(ctx context.Context, updateResp UpdateRespo
 	_, err = os.Stat(filepath.Dir(stageFilename))
 	if errors.Is(err, os.ErrNotExist) {
 		if err := os.MkdirAll(filepath.Dir(stageFilename), 0o755); err != nil {
-			return fmt.Errorf("create ollama dir %s: %v", filepath.Dir(stageFilename), err)
+			return fmt.Errorf("create rose dir %s: %v", filepath.Dir(stageFilename), err)
 		}
 	}
 

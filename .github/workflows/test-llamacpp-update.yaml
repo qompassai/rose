@@ -32,7 +32,7 @@ jobs:
           set -euo pipefail
           VERSION="0.0.0-llamacpp-${GITHUB_SHA::7}"
           {
-            echo "GOFLAGS='-ldflags=-w -s \"-X=github.com/ollama/ollama/version.Version=${VERSION}\" \"-X=github.com/ollama/ollama/server.mode=release\"'"
+            echo "GOFLAGS='-ldflags=-w -s \"-X=github.com/qompassai/rose/version.Version=${VERSION}\" \"-X=github.com/qompassai/rose/server.mode=release\"'"
             echo "VERSION=${VERSION}"
             echo "vendorsha=$(cat LLAMA_CPP_VERSION)-$(cat MLX_VERSION)-$(cat MLX_C_VERSION)"
           } >>"${GITHUB_OUTPUT}"
@@ -58,15 +58,15 @@ jobs:
             MLX_C_VERSION
       - name: Build unsigned Darwin runtime
         run: |
-          cmake -S . -B build/go-license -DOLLAMA_LLAMA_BACKENDS= -DOLLAMA_MLX_BACKENDS= -DOLLAMA_PAYLOAD_INSTALL_PREFIX=dist/darwin-arm64 "-DOLLAMA_GO_LICENSE_TARGETS=darwin/amd64;darwin/arm64"
-          cmake --build build/go-license --target ollama-go-license
+          cmake -S . -B build/go-license -DROSE_LLAMA_BACKENDS= -DROSE_MLX_BACKENDS= -DROSE_PAYLOAD_INSTALL_PREFIX=dist/darwin-arm64 "-DROSE_GO_LICENSE_TARGETS=darwin/amd64;darwin/arm64"
+          cmake --build build/go-license --target rose-go-license
           ./scripts/build_darwin.sh build package
       - name: Log build results
         run: ls -l dist/
       - uses: actions/upload-artifact@v4
         with:
-          name: ollama-darwin.tgz
-          path: dist/ollama-darwin.tgz
+          name: rose-darwin.tgz
+          path: dist/rose-darwin.tgz
           compression-level: 0
 
   # Build payload export stages independently and combine the exported
@@ -225,8 +225,8 @@ jobs:
           set -euo pipefail
           base="dist/linux-${{ matrix.arch }}"
           for payload in \
-            "${base}/bin/ollama" \
-            "${base}/lib/ollama/llama-server"
+            "${base}/bin/rose" \
+            "${base}/lib/rose/llama-server"
           do
             [ -f "${payload}" ] || { echo "missing ${payload}"; exit 1; }
           done
@@ -234,19 +234,19 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for COMPONENT in bin/* lib/ollama/*; do
+          for COMPONENT in bin/* lib/rose/*; do
             case "${COMPONENT}" in
-              bin/ollama*)              echo "${COMPONENT}" >>ollama-linux-${{ matrix.arch }}.tar.in ;;
-              lib/ollama/*.so*)         echo "${COMPONENT}" >>ollama-linux-${{ matrix.arch }}.tar.in ;;
-              lib/ollama/llama-server*|lib/ollama/llama-quantize*) echo "${COMPONENT}" >>ollama-linux-${{ matrix.arch }}.tar.in ;;
-              lib/ollama/cuda_v*)       echo "${COMPONENT}" >>ollama-linux-${{ matrix.arch }}.tar.in ;;
-              lib/ollama/vulkan*)       echo "${COMPONENT}" >>ollama-linux-${{ matrix.arch }}.tar.in ;;
-              lib/ollama/mlx*)          echo "${COMPONENT}" >>ollama-linux-${{ matrix.arch }}-mlx.tar.in ;;
-              lib/ollama/include*)      echo "${COMPONENT}" >>ollama-linux-${{ matrix.arch }}-mlx.tar.in ;;
-              lib/ollama/*_LICENSE|lib/ollama/*_NOTICE) echo "${COMPONENT}" >>ollama-linux-${{ matrix.arch }}.tar.in ;;
-              lib/ollama/cuda_jetpack5) echo "${COMPONENT}" >>ollama-linux-${{ matrix.arch }}-jetpack5.tar.in ;;
-              lib/ollama/cuda_jetpack6) echo "${COMPONENT}" >>ollama-linux-${{ matrix.arch }}-jetpack6.tar.in ;;
-              lib/ollama/rocm_v*)       echo "${COMPONENT}" >>ollama-linux-${{ matrix.arch }}-rocm.tar.in ;;
+              bin/rose*)              echo "${COMPONENT}" >>rose-linux-${{ matrix.arch }}.tar.in ;;
+              lib/rose/*.so*)         echo "${COMPONENT}" >>rose-linux-${{ matrix.arch }}.tar.in ;;
+              lib/rose/llama-server*|lib/rose/llama-quantize*) echo "${COMPONENT}" >>rose-linux-${{ matrix.arch }}.tar.in ;;
+              lib/rose/cuda_v*)       echo "${COMPONENT}" >>rose-linux-${{ matrix.arch }}.tar.in ;;
+              lib/rose/vulkan*)       echo "${COMPONENT}" >>rose-linux-${{ matrix.arch }}.tar.in ;;
+              lib/rose/mlx*)          echo "${COMPONENT}" >>rose-linux-${{ matrix.arch }}-mlx.tar.in ;;
+              lib/rose/include*)      echo "${COMPONENT}" >>rose-linux-${{ matrix.arch }}-mlx.tar.in ;;
+              lib/rose/*_LICENSE|lib/rose/*_NOTICE) echo "${COMPONENT}" >>rose-linux-${{ matrix.arch }}.tar.in ;;
+              lib/rose/cuda_jetpack5) echo "${COMPONENT}" >>rose-linux-${{ matrix.arch }}-jetpack5.tar.in ;;
+              lib/rose/cuda_jetpack6) echo "${COMPONENT}" >>rose-linux-${{ matrix.arch }}-jetpack6.tar.in ;;
+              lib/rose/rocm_v*)       echo "${COMPONENT}" >>rose-linux-${{ matrix.arch }}-rocm.tar.in ;;
             esac
           done
         working-directory: dist/linux-${{ matrix.arch }}
@@ -268,26 +268,26 @@ jobs:
           wait
       - uses: actions/upload-artifact@v4
         with:
-          name: ollama-linux-${{ matrix.arch }}.tar.zst
-          path: ollama-linux-${{ matrix.arch }}.tar.zst
+          name: rose-linux-${{ matrix.arch }}.tar.zst
+          path: rose-linux-${{ matrix.arch }}.tar.zst
           compression-level: 0
       - if: matrix.arch == 'amd64'
         uses: actions/upload-artifact@v4
         with:
-          name: ollama-linux-amd64-rocm.tar.zst
-          path: ollama-linux-amd64-rocm.tar.zst
+          name: rose-linux-amd64-rocm.tar.zst
+          path: rose-linux-amd64-rocm.tar.zst
           compression-level: 0
       - if: matrix.arch == 'arm64'
         uses: actions/upload-artifact@v4
         with:
-          name: ollama-linux-arm64-jetpack5.tar.zst
-          path: ollama-linux-arm64-jetpack5.tar.zst
+          name: rose-linux-arm64-jetpack5.tar.zst
+          path: rose-linux-arm64-jetpack5.tar.zst
           compression-level: 0
       - if: matrix.arch == 'arm64'
         uses: actions/upload-artifact@v4
         with:
-          name: ollama-linux-arm64-jetpack6.tar.zst
-          path: ollama-linux-arm64-jetpack6.tar.zst
+          name: rose-linux-arm64-jetpack6.tar.zst
+          path: rose-linux-arm64-jetpack6.tar.zst
           compression-level: 0
 
   windows-depends:
@@ -465,8 +465,8 @@ jobs:
         run: |
           set -euo pipefail
           for payload in \
-            dist/windows-amd64/lib/ollama/llama-server.exe \
-            dist/windows-arm64/lib/ollama/llama-server.exe
+            dist/windows-amd64/lib/rose/llama-server.exe \
+            dist/windows-arm64/lib/rose/llama-server.exe
           do
             [ -f "$payload" ] || { echo "missing $payload"; exit 1; }
           done
@@ -519,14 +519,14 @@ jobs:
         with:
           node-version: "20"
       - name: Build Windows binaries and app launchers
-        run: ./scripts/build_windows.ps1 ollama ollamaArm64 app appArm64
+        run: ./scripts/build_windows.ps1 rose ollamaArm64 app appArm64
       - name: Verify Windows build payloads
         shell: bash
         run: |
           set -euo pipefail
           for payload in \
-            dist/windows-amd64/ollama.exe \
-            dist/windows-arm64/ollama.exe
+            dist/windows-amd64/rose.exe \
+            dist/windows-arm64/rose.exe
           do
             [ -f "$payload" ] || { echo "missing $payload"; exit 1; }
           done
@@ -574,10 +574,10 @@ jobs:
         run: |
           set -euo pipefail
           for payload in \
-            dist/windows-amd64/ollama.exe \
-            dist/windows-amd64/lib/ollama/llama-server.exe \
-            dist/windows-arm64/ollama.exe \
-            dist/windows-arm64/lib/ollama/llama-server.exe
+            dist/windows-amd64/rose.exe \
+            dist/windows-amd64/lib/rose/llama-server.exe \
+            dist/windows-arm64/rose.exe \
+            dist/windows-arm64/lib/rose/llama-server.exe
           do
             [ -f "$payload" ] || { echo "missing $payload"; exit 1; }
           done
@@ -586,10 +586,10 @@ jobs:
         run: |
           set -euo pipefail
           for arch in amd64 arm64; do
-            cmake -S . -B build/go-license -DOLLAMA_LLAMA_BACKENDS= -DOLLAMA_MLX_BACKENDS= \
-              "-DOLLAMA_PAYLOAD_INSTALL_PREFIX=dist/windows-${arch}" \
-              "-DOLLAMA_GO_LICENSE_TARGETS=windows/${arch}"
-            cmake --build build/go-license --target ollama-go-license
+            cmake -S . -B build/go-license -DROSE_LLAMA_BACKENDS= -DROSE_MLX_BACKENDS= \
+              "-DROSE_PAYLOAD_INSTALL_PREFIX=dist/windows-${arch}" \
+              "-DROSE_GO_LICENSE_TARGETS=windows/${arch}"
+            cmake --build build/go-license --target rose-go-license
           done
       - name: Build unsigned Windows installer and zips
         run: ./scripts/build_windows.ps1 deps installer zip
@@ -601,9 +601,9 @@ jobs:
         run: |
           set -euo pipefail
           for payload in \
-            dist/ollama-windows-amd64.zip \
-            dist/ollama-windows-arm64.zip \
-            dist/ollama-windows-amd64-rocm.zip \
+            dist/rose-windows-amd64.zip \
+            dist/rose-windows-arm64.zip \
+            dist/rose-windows-amd64-rocm.zip \
             dist/OllamaSetup.exe \
             dist/install.ps1
           do
@@ -611,18 +611,18 @@ jobs:
           done
       - uses: actions/upload-artifact@v4
         with:
-          name: ollama-windows-amd64.zip
-          path: dist/ollama-windows-amd64.zip
+          name: rose-windows-amd64.zip
+          path: dist/rose-windows-amd64.zip
           compression-level: 0
       - uses: actions/upload-artifact@v4
         with:
-          name: ollama-windows-arm64.zip
-          path: dist/ollama-windows-arm64.zip
+          name: rose-windows-arm64.zip
+          path: dist/rose-windows-arm64.zip
           compression-level: 0
       - uses: actions/upload-artifact@v4
         with:
-          name: ollama-windows-amd64-rocm.zip
-          path: dist/ollama-windows-amd64-rocm.zip
+          name: rose-windows-amd64-rocm.zip
+          path: dist/rose-windows-amd64-rocm.zip
           compression-level: 0
       - uses: actions/upload-artifact@v4
         with:

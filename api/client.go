@@ -1,7 +1,7 @@
 // Package api implements the client-side API for code wishing to interact
-// with the ollama service. The methods of the [Client] type correspond to
-// the ollama REST API as described in [the API documentation].
-// The ollama command-line client itself uses this package to interact with
+// with the rose service. The methods of the [Client] type correspond to
+// the rose REST API as described in [the API documentation].
+// The rose command-line client itself uses this package to interact with
 // the backend service.
 //
 // # Examples
@@ -9,8 +9,8 @@
 // Several examples of using this package are available [in the GitHub
 // repository].
 //
-// [the API documentation]: https://github.com/ollama/ollama/blob/main/docs/api.md
-// [in the GitHub repository]: https://github.com/ollama/ollama/tree/main/api/examples
+// [the API documentation]: https://github.com/qompassai/rose/blob/main/docs/api.md
+// [in the GitHub repository]: https://github.com/qompassai/rose/tree/main/api/examples
 package api
 
 import (
@@ -27,13 +27,13 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/ollama/ollama/auth"
-	"github.com/ollama/ollama/envconfig"
-	"github.com/ollama/ollama/format"
-	"github.com/ollama/ollama/version"
+	"github.com/qompassai/rose/auth"
+	"github.com/qompassai/rose/envconfig"
+	"github.com/qompassai/rose/format"
+	"github.com/qompassai/rose/version"
 )
 
-// Client encapsulates client state for interacting with the ollama
+// Client encapsulates client state for interacting with the rose
 // service. Use [ClientFromEnvironment] to create new Clients.
 type Client struct {
 	base *url.URL
@@ -63,13 +63,13 @@ func checkError(resp *http.Response, body []byte) error {
 }
 
 // ClientFromEnvironment creates a new [Client] using configuration from the
-// environment variable OLLAMA_HOST, which points to the network host and
-// port on which the ollama service is listening. The format of this variable
+// environment variable ROSE_HOST, which points to the network host and
+// port on which the rose service is listening. The format of this variable
 // is:
 //
 //	<scheme>://<host>:<port>
 //
-// If the variable is not specified, a default ollama host and port will be
+// If the variable is not specified, a default rose host and port will be
 // used.
 func ClientFromEnvironment() (*Client, error) {
 	return &Client{
@@ -136,7 +136,7 @@ func (c *Client) do(ctx context.Context, method, path string, reqData, respData 
 
 	request.Header.Set("Content-Type", "application/json")
 	request.Header.Set("Accept", "application/json")
-	request.Header.Set("User-Agent", fmt.Sprintf("ollama/%s (%s %s) Go/%s", version.Version, runtime.GOARCH, runtime.GOOS, runtime.Version()))
+	request.Header.Set("User-Agent", fmt.Sprintf("rose/%s (%s %s) Go/%s", version.Version, runtime.GOARCH, runtime.GOOS, runtime.Version()))
 
 	if token != "" {
 		request.Header.Set("Authorization", token)
@@ -202,7 +202,7 @@ func (c *Client) stream(ctx context.Context, method, path string, data any, fn f
 
 	request.Header.Set("Content-Type", "application/json")
 	request.Header.Set("Accept", "application/x-ndjson")
-	request.Header.Set("User-Agent", fmt.Sprintf("ollama/%s (%s %s) Go/%s", version.Version, runtime.GOARCH, runtime.GOOS, runtime.Version()))
+	request.Header.Set("User-Agent", fmt.Sprintf("rose/%s (%s %s) Go/%s", version.Version, runtime.GOARCH, runtime.GOOS, runtime.Version()))
 
 	if token != "" {
 		request.Header.Set("Authorization", token)
@@ -310,7 +310,7 @@ func (c *Client) Chat(ctx context.Context, req *ChatRequest, fn ChatResponseFunc
 // returns an error, [Client.Pull] will stop the process and return this error.
 type PullProgressFunc func(ProgressResponse) error
 
-// Pull downloads a model from the ollama library. fn is called each time
+// Pull downloads a model from the rose library. fn is called each time
 // progress is made on the request and can be used to display a progress bar,
 // etc.
 func (c *Client) Pull(ctx context.Context, req *PullRequest, fn PullProgressFunc) error {
@@ -351,7 +351,7 @@ type CreateProgressFunc func(ProgressResponse) error
 // Create creates a model from a [Modelfile]. fn is a progress function that
 // behaves similarly to other methods (see [Client.Pull]).
 //
-// [Modelfile]: https://github.com/ollama/ollama/blob/main/docs/modelfile.mdx
+// [Modelfile]: https://github.com/qompassai/rose/blob/main/docs/modelfile.mdx
 func (c *Client) Create(ctx context.Context, req *CreateRequest, fn CreateProgressFunc) error {
 	return c.stream(ctx, http.MethodPost, "/api/create", req, func(bts []byte) error {
 		var resp ProgressResponse
@@ -480,7 +480,7 @@ func (c *Client) HeadBlob(ctx context.Context, digest string) (bool, error) {
 	return true, nil
 }
 
-// Version returns the Ollama server version as a string.
+// Version returns the Rose server version as a string.
 func (c *Client) Version(ctx context.Context) (string, error) {
 	var version struct {
 		Version string `json:"version"`
@@ -523,12 +523,12 @@ func (c *Client) WebFetchExperimental(ctx context.Context, req *WebFetchRequest)
 	return &resp, nil
 }
 
-// Signout will signout a client for a local ollama server.
+// Signout will signout a client for a local rose server.
 func (c *Client) Signout(ctx context.Context) error {
 	return c.do(ctx, http.MethodPost, "/api/signout", nil, nil)
 }
 
-// Disconnect will disconnect an ollama instance from ollama.com.
+// Disconnect will disconnect an rose instance from ollama.com.
 func (c *Client) Disconnect(ctx context.Context, encodedKey string) error {
 	return c.do(ctx, http.MethodDelete, fmt.Sprintf("/api/user/keys/%s", encodedKey), nil, nil)
 }

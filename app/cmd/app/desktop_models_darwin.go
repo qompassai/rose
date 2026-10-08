@@ -8,8 +8,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/ollama/ollama/cmd/launch"
-	"github.com/ollama/ollama/internal/proxy"
+	"github.com/qompassai/rose/cmd/launch"
+	"github.com/qompassai/rose/internal/proxy"
 )
 
 // Discovery runs on the HTTP server, not WebKit's native message callback.

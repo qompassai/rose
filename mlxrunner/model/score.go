@@ -3,8 +3,8 @@ package model
 import (
 	"context"
 
-	"github.com/ollama/ollama/llm"
-	"github.com/ollama/ollama/mlx"
+	"github.com/qompassai/rose/llm"
+	"github.com/qompassai/rose/mlx"
 )
 
 // ScoreForward evaluates a causal backbone through the runner's prefix cache,

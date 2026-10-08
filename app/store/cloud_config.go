@@ -9,7 +9,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/ollama/ollama/envconfig"
+	"github.com/qompassai/rose/envconfig"
 )
 
 const serverConfigFilename = "server.json"
@@ -19,7 +19,7 @@ type serverConfig struct {
 }
 
 // CloudDisabled returns whether cloud features should be disabled.
-// The source of truth is: OLLAMA_NO_CLOUD OR ~/.ollama/server.json:disable_ollama_cloud.
+// The source of truth is: ROSE_NO_CLOUD OR ~/.rose/server.json:disable_ollama_cloud.
 func (s *Store) CloudDisabled() (bool, error) {
 	disabled, _, err := s.CloudStatus()
 	return disabled, err
@@ -41,7 +41,7 @@ func (s *Store) CloudStatus() (bool, string, error) {
 	return envDisabled || configDisabled, cloudStatusSource(envDisabled, configDisabled), nil
 }
 
-// SetCloudEnabled writes the cloud setting to ~/.ollama/server.json.
+// SetCloudEnabled writes the cloud setting to ~/.rose/server.json.
 func (s *Store) SetCloudEnabled(enabled bool) error {
 	if err := s.ensureDB(); err != nil {
 		return err
@@ -111,7 +111,7 @@ func serverConfigPath() (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("resolve home directory: %w", err)
 	}
-	return filepath.Join(home, ".ollama", serverConfigFilename), nil
+	return filepath.Join(home, ".rose", serverConfigFilename), nil
 }
 
 func cloudStatusSource(envDisabled bool, configDisabled bool) string {

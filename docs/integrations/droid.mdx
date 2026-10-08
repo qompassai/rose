@@ -13,18 +13,18 @@ curl -fsSL https://app.factory.ai/cli | sh
 
 <Note>Droid requires a larger context window. It is recommended to use a context window of at least 64k tokens. See [Context length](/context-length) for more information.</Note>
 
-## Usage with Ollama
+## Usage with Rose
 
 ### Quick setup
 
 ```bash
-ollama launch droid
+rose launch droid
 ```
 
 To configure without launching:
 
 ```shell
-ollama launch droid --config
+rose launch droid --config
 ```
 
 ### Manual setup
@@ -35,7 +35,7 @@ Add a local configuration block to `~/.factory/config.json`:
 {
   "custom_models": [
     {
-      "model_display_name": "qwen3-coder [Ollama]",
+      "model_display_name": "qwen3-coder [Rose]",
       "model": "qwen3-coder",
       "base_url": "http://localhost:11434/v1/",
       "api_key": "not-needed",
@@ -56,7 +56,7 @@ Add the cloud configuration block to `~/.factory/config.json`:
 {
   "custom_models": [
     {
-      "model_display_name": "qwen3-coder [Ollama Cloud]",
+      "model_display_name": "qwen3-coder [Rose Cloud]",
       "model": "qwen3-coder:480b-cloud",
       "base_url": "http://localhost:11434/v1/",
       "api_key": "not-needed",
@@ -69,17 +69,17 @@ Add the cloud configuration block to `~/.factory/config.json`:
 
 ## Connecting to ollama.com
 
-1. Create an [API key](https://ollama.com/settings/keys) from ollama.com and export it as `OLLAMA_API_KEY`.
+1. Create an [API key](https://ollama.com/settings/keys) from ollama.com and export it as `ROSE_API_KEY`.
 2. Add the cloud configuration block to `~/.factory/config.json`:
 
    ```json
    {
      "custom_models": [
        {
-         "model_display_name": "qwen3-coder [Ollama Cloud]",
+         "model_display_name": "qwen3-coder [Rose Cloud]",
          "model": "qwen3-coder:480b",
          "base_url": "https://ollama.com/v1/",
-         "api_key": "OLLAMA_API_KEY",
+         "api_key": "ROSE_API_KEY",
          "provider": "generic-chat-completion-api",
          "max_tokens": 128000
        }

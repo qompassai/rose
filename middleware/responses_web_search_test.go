@@ -12,8 +12,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/openai"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/openai"
 )
 
 func TestWebSearchResponsesWriterNonStreaming(t *testing.T) {
@@ -38,10 +38,10 @@ func TestWebSearchResponsesWriterNonStreaming(t *testing.T) {
 		req:        request,
 		chat:       &api.ChatRequest{Model: request.Model, Tools: api.Tools{openai.WebSearchFunctionTool()}},
 		search: func(_ context.Context, query string) (*api.WebSearchResponse, error) {
-			if query != "ollama news" {
+			if query != "rose news" {
 				t.Fatalf("search query = %q", query)
 			}
-			return &api.WebSearchResponse{Results: []api.WebSearchResult{{Title: "Ollama", URL: "https://ollama.com/news", Content: "news"}}}, nil
+			return &api.WebSearchResponse{Results: []api.WebSearchResult{{Title: "Rose", URL: "https://ollama.com/news", Content: "news"}}}, nil
 		},
 		followUpChat: func(_ context.Context, messages []api.Message, _ api.Tools) (api.ChatResponse, error) {
 			followUps++
@@ -51,11 +51,11 @@ func TestWebSearchResponsesWriterNonStreaming(t *testing.T) {
 			if strings.Contains(messages[1].Content, "Cite") || !strings.Contains(messages[1].Content, "URL: https://ollama.com/news") {
 				t.Fatalf("unexpected search result content: %q", messages[1].Content)
 			}
-			return api.ChatResponse{Done: true, Message: api.Message{Role: "assistant", Content: "Read [Ollama](https://ollama.com/news)."}, Metrics: api.Metrics{PromptEvalCount: 7, PromptEvalCachedCount: testIntPtr(3), EvalCount: 3}}, nil
+			return api.ChatResponse{Done: true, Message: api.Message{Role: "assistant", Content: "Read [Rose](https://ollama.com/news)."}, Metrics: api.Metrics{PromptEvalCount: 7, PromptEvalCachedCount: testIntPtr(3), EvalCount: 3}}, nil
 		},
 	}
 
-	initial := api.ChatResponse{Done: true, Message: api.Message{ToolCalls: []api.ToolCall{{ID: "call_1", Function: api.ToolCallFunction{Name: "web_search", Arguments: testArgs(map[string]any{"query": "ollama news"})}}}}, Metrics: api.Metrics{PromptEvalCount: 5, PromptEvalCachedCount: testIntPtr(2), EvalCount: 2}}
+	initial := api.ChatResponse{Done: true, Message: api.Message{ToolCalls: []api.ToolCall{{ID: "call_1", Function: api.ToolCallFunction{Name: "web_search", Arguments: testArgs(map[string]any{"query": "rose news"})}}}}, Metrics: api.Metrics{PromptEvalCount: 5, PromptEvalCachedCount: testIntPtr(2), EvalCount: 2}}
 	data, err := json.Marshal(initial)
 	if err != nil {
 		t.Fatal(err)
@@ -74,7 +74,7 @@ func TestWebSearchResponsesWriterNonStreaming(t *testing.T) {
 	if len(response.Output) != 2 || response.Output[0].Type != "web_search_call" || response.Output[1].Type != "message" {
 		t.Fatalf("output = %#v", response.Output)
 	}
-	if response.Output[0].Action == nil || response.Output[0].Action.Query != "ollama news" {
+	if response.Output[0].Action == nil || response.Output[0].Action.Query != "rose news" {
 		t.Fatalf("search action = %#v", response.Output[0].Action)
 	}
 	if response.Usage == nil || response.Usage.InputTokens != 12 || response.Usage.OutputTokens != 5 {
@@ -226,7 +226,7 @@ func TestWebSearchResponsesWriterPreservesFollowUpErrors(t *testing.T) {
 				_, _ = w.Write([]byte(test.body))
 			}))
 			defer server.Close()
-			t.Setenv("OLLAMA_HOST", server.URL)
+			t.Setenv("ROSE_HOST", server.URL)
 
 			gin.SetMode(gin.TestMode)
 			recorder := httptest.NewRecorder()

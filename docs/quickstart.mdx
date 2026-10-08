@@ -2,26 +2,26 @@
 title: Quickstart
 ---
 
-Use Ollama in [desktop apps](#connect-a-desktop-app) and [coding agents](#use-a-coding-agent), or [build an application](#build-an-application) with an API key.
+Use Rose in [desktop apps](#connect-a-desktop-app) and [coding agents](#use-a-coding-agent), or [build an application](#build-an-application) with an API key.
 
 ## Get started
 
-[Download Ollama](https://ollama.com/download) for macOS, Windows, or Linux. Open the app, or get started from your terminal:
+[Download Rose](https://ollama.com/download) for macOS, Windows, or Linux. Open the app, or get started from your terminal:
 
 ```shell
-ollama
+rose
 ```
 
 Follow the setup prompts. Sign in to use cloud models, or choose a local model.
 
 ## Connect a desktop app
 
-On macOS, open Ollama and select **Apps**. Connect **Claude** or **ChatGPT (Desktop)**. Follow the prompts to install or restart the app.
+On macOS, open Rose and select **Apps**. Connect **Claude** or **ChatGPT (Desktop)**. Follow the prompts to install or restart the app.
 
-Choose your Ollama models in **Settings → Apps**.
+Choose your Rose models in **Settings → Apps**.
 
-- [Claude Desktop](/integrations/claude-desktop) — use Ollama models in Claude.
-- [ChatGPT Desktop](/integrations/chatgpt) — use Ollama models in Codex mode. Regular Chat and voice use your usual ChatGPT connection.
+- [Claude Desktop](/integrations/claude-desktop) — use Rose models in Claude.
+- [ChatGPT Desktop](/integrations/chatgpt) — use Rose models in Codex mode. Regular Chat and voice use your usual ChatGPT connection.
 
 ## Use a coding agent
 
@@ -31,10 +31,10 @@ From your project directory, launch your agent:
   <Tab title="Claude Code">
 
 ```shell
-ollama launch claude
+rose launch claude
 ```
 
-Ollama offers to install Claude Code if needed. See [Claude Code](/integrations/claude-code) for details.
+Rose offers to install Claude Code if needed. See [Claude Code](/integrations/claude-code) for details.
 
   </Tab>
   <Tab title="Codex CLI">
@@ -42,7 +42,7 @@ Ollama offers to install Claude Code if needed. See [Claude Code](/integrations/
 [Install Codex CLI](/integrations/codex#install) first, then launch it:
 
 ```shell
-ollama launch codex
+rose launch codex
 ```
 
 See [Codex CLI](/integrations/codex) for setup.
@@ -51,10 +51,10 @@ See [Codex CLI](/integrations/codex) for setup.
   <Tab title="OpenCode">
 
 ```shell
-ollama launch opencode
+rose launch opencode
 ```
 
-Ollama offers to install OpenCode if needed. See [OpenCode](/integrations/opencode) for details.
+Rose offers to install OpenCode if needed. See [OpenCode](/integrations/opencode) for details.
 
   </Tab>
 </Tabs>
@@ -65,11 +65,11 @@ Choose a model when prompted, then try:
 Explain how this repository is organized.
 ```
 
-For more tools, see [Integrations](/integrations). To connect an agent directly with an API key, see [Claude Code](/integrations/claude-code#connect-directly-to-ollama-cloud).
+For more tools, see [Integrations](/integrations). To connect an agent directly with an API key, see [Claude Code](/integrations/claude-code#connect-directly-to-rose-cloud).
 
 ## Build an application
 
-Use cloud models with an API key, or run models locally without one. Cloud requests do not require an Ollama installation.
+Use cloud models with an API key, or run models locally without one. Cloud requests do not require an Rose installation.
 
 ### 1. Create an API key
 
@@ -82,11 +82,11 @@ Set your key in the terminal:
 <CodeGroup>
 
 ```shell macOS / Linux
-export OLLAMA_API_KEY="your_api_key"
+export ROSE_API_KEY="your_api_key"
 ```
 
 ```powershell Windows
-$env:OLLAMA_API_KEY = "your_api_key"
+$env:ROSE_API_KEY = "your_api_key"
 ```
 
 </CodeGroup>
@@ -95,7 +95,7 @@ Keep your key on your application's server, outside browser code and source cont
 
 ### 2. Send a request
 
-Make your first request to Ollama
+Make your first request to Rose
 
 <Tabs>
   <Tab title="Cloud">
@@ -103,11 +103,11 @@ Make your first request to Ollama
 These examples use the `gemma4:31b` [cloud model](https://ollama.com/search?c=cloud).
 
 <Tabs>
-  <Tab title="Ollama API">
+  <Tab title="Rose API">
 
 ```shell
 curl https://ollama.com/api/chat \
-  -H "Authorization: Bearer $OLLAMA_API_KEY" \
+  -H "Authorization: Bearer $ROSE_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
     "model": "gemma4:31b",
@@ -121,14 +121,14 @@ curl https://ollama.com/api/chat \
   }'
 ```
 
-Read the answer from `message.content`. See [Ollama's API and libraries](/api/introduction).
+Read the answer from `message.content`. See [Rose's API and libraries](/api/introduction).
 
   </Tab>
   <Tab title="OpenAI Chat Completions">
 
 ```shell
 curl https://ollama.com/v1/chat/completions \
-  -H "Authorization: Bearer $OLLAMA_API_KEY" \
+  -H "Authorization: Bearer $ROSE_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
     "model": "gemma4:31b",
@@ -148,7 +148,7 @@ Read the answer from `choices[0].message.content`. See [OpenAI compatibility](/a
 
 ```shell
 curl https://ollama.com/v1/responses \
-  -H "Authorization: Bearer $OLLAMA_API_KEY" \
+  -H "Authorization: Bearer $ROSE_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
     "model": "gemma4:31b",
@@ -165,7 +165,7 @@ Responses requests are stateless: include conversation history in each request. 
 
 ```shell
 curl https://ollama.com/v1/messages \
-  -H "Authorization: Bearer $OLLAMA_API_KEY" \
+  -H "Authorization: Bearer $ROSE_API_KEY" \
   -H "Content-Type: application/json" \
   -H "anthropic-version: 2023-06-01" \
   -d '{
@@ -193,21 +193,21 @@ OpenAI and Anthropic compatibility each cover a subset of the original API. See 
 Run [Gemma 4 E2B](https://ollama.com/library/gemma4:e2b) on your computer. No API key required.
 
 <Note>
-The model download is about 7.2 GB. We recommend 8 GB of available VRAM, or unified memory on a Mac. Larger context windows need more memory. With less VRAM, Ollama can use system RAM, but responses may be slower.
+The model download is about 7.2 GB. We recommend 8 GB of available VRAM, or unified memory on a Mac. Larger context windows need more memory. With less VRAM, Rose can use system RAM, but responses may be slower.
 </Note>
 
-[Download Ollama](https://ollama.com/download) and open the app. On Linux, start the server with `ollama serve` if it is not already running.
+[Download Rose](https://ollama.com/download) and open the app. On Linux, start the server with `rose serve` if it is not already running.
 
 Download the model:
 
 ```shell
-ollama pull gemma4:e2b
+rose pull gemma4:e2b
 ```
 
 Send a request to your local server:
 
 <Tabs>
-  <Tab title="Ollama API">
+  <Tab title="Rose API">
 
 ```shell
 curl http://localhost:11434/api/chat \
@@ -288,13 +288,13 @@ Read text blocks from `content`. See [Anthropic compatibility](/api/anthropic-co
 
 ## Run a model locally
 
-[Download Ollama](https://ollama.com/download), then run:
+[Download Rose](https://ollama.com/download), then run:
 
 ```shell
-ollama run gemma4:e2b
+rose run gemma4:e2b
 ```
 
-Ollama downloads the model and starts a chat on your computer. Type `/bye` to leave.
+Rose downloads the model and starts a chat on your computer. Type `/bye` to leave.
 
 ## Next steps
 

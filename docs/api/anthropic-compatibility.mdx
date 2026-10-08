@@ -2,21 +2,21 @@
 title: Anthropic compatibility
 ---
 
-Connect Anthropic clients and tools such as Claude Code to Ollama. Ollama supports a subset of the [Anthropic Messages API](https://platform.claude.com/docs/en/api/http/messages/create).
+Connect Anthropic clients and tools such as Claude Code to Rose. Rose supports a subset of the [Anthropic Messages API](https://platform.claude.com/docs/en/api/http/messages/create).
 
 ## Direct cloud access
 
-Set your [API key](https://ollama.com/settings/keys) in `OLLAMA_API_KEY`. No Ollama installation required.
+Set your [API key](https://ollama.com/settings/keys) in `ROSE_API_KEY`. No Rose installation required.
 
 ```shell
-export OLLAMA_API_KEY="your_api_key"
+export ROSE_API_KEY="your_api_key"
 ```
 
 Send a request with bearer authentication:
 
 ```shell
 curl https://ollama.com/v1/messages \
-  -H "Authorization: Bearer $OLLAMA_API_KEY" \
+  -H "Authorization: Bearer $ROSE_API_KEY" \
   -H "Content-Type: application/json" \
   -H "anthropic-version: 2023-06-01" \
   -d '{
@@ -37,14 +37,14 @@ Compatible models support messages, streaming, and function calling. Tool-choice
 
 ## Local server usage
 
-These examples connect to your local Ollama server. Use `ollama` as the placeholder API key. To use cloud models through this server, [sign in to Ollama](/api/authentication#signing-in).
+These examples connect to your local Rose server. Use `rose` as the placeholder API key. To use cloud models through this server, [sign in to Rose](/api/authentication#signing-in).
 
 ### Environment variables
 
-To use Ollama with tools that expect the Anthropic API (like Claude Code), set these environment variables:
+To use Rose with tools that expect the Anthropic API (like Claude Code), set these environment variables:
 
 ```shell
-export ANTHROPIC_AUTH_TOKEN=ollama  # required but ignored
+export ANTHROPIC_AUTH_TOKEN=rose  # required but ignored
 export ANTHROPIC_BASE_URL=http://localhost:11434
 ```
 
@@ -57,7 +57,7 @@ import anthropic
 
 client = anthropic.Anthropic(
     base_url='http://localhost:11434',
-    api_key='ollama',  # required but ignored
+    api_key='rose',  # required but ignored
 )
 
 message = client.messages.create(
@@ -75,7 +75,7 @@ import Anthropic from "@anthropic-ai/sdk";
 
 const anthropic = new Anthropic({
   baseURL: "http://localhost:11434",
-  apiKey: "ollama", // required but ignored
+  apiKey: "rose", // required but ignored
 });
 
 const message = await anthropic.messages.create({
@@ -90,7 +90,7 @@ console.log(message.content[0].text);
 ```shell basic.sh
 curl -X POST http://localhost:11434/v1/messages \
 -H "Content-Type: application/json" \
--H "x-api-key: ollama" \
+-H "x-api-key: rose" \
 -H "anthropic-version: 2023-06-01" \
 -d '{
   "model": "qwen3-coder",
@@ -110,7 +110,7 @@ import anthropic
 
 client = anthropic.Anthropic(
     base_url='http://localhost:11434',
-    api_key='ollama',
+    api_key='rose',
 )
 
 with client.messages.stream(
@@ -127,7 +127,7 @@ import Anthropic from "@anthropic-ai/sdk";
 
 const anthropic = new Anthropic({
   baseURL: "http://localhost:11434",
-  apiKey: "ollama",
+  apiKey: "rose",
 });
 
 const stream = await anthropic.messages.stream({
@@ -168,7 +168,7 @@ import anthropic
 
 client = anthropic.Anthropic(
     base_url='http://localhost:11434',
-    api_key='ollama',
+    api_key='rose',
 )
 
 message = client.messages.create(
@@ -204,7 +204,7 @@ import Anthropic from "@anthropic-ai/sdk";
 
 const anthropic = new Anthropic({
   baseURL: "http://localhost:11434",
-  apiKey: "ollama",
+  apiKey: "rose",
 });
 
 const message = await anthropic.messages.create({
@@ -267,7 +267,7 @@ curl -X POST http://localhost:11434/v1/messages \
 
 ## Using with Claude Code
 
-See the [Claude Code guide](/integrations/claude-code) for Ollama Launch and [direct cloud setup](/integrations/claude-code#connect-directly-to-ollama-cloud).
+See the [Claude Code guide](/integrations/claude-code) for Rose Launch and [direct cloud setup](/integrations/claude-code#connect-directly-to-rose-cloud).
 
 ## Endpoints
 
@@ -333,14 +333,14 @@ Use `/api/show` to discover a model's supported thinking values and default. `th
 
 ## Models
 
-Ollama supports both local and cloud models.
+Rose supports both local and cloud models.
 
 ### Local models
 
 Pull a local model before use:
 
 ```shell
-ollama pull qwen3-coder
+rose pull qwen3-coder
 ```
 
 Recommended local models:
@@ -349,14 +349,14 @@ Recommended local models:
 
 ### Cloud models
 
-Browse the [cloud model catalog](https://ollama.com/search?c=cloud). Through a signed-in Ollama server, use a cloud name such as `gemma4:cloud` without a separate pull. For direct cloud requests, use the hosted identifier, such as `gemma4:31b`.
+Browse the [cloud model catalog](https://ollama.com/search?c=cloud). Through a signed-in Rose server, use a cloud name such as `gemma4:cloud` without a separate pull. For direct cloud requests, use the hosted identifier, such as `gemma4:31b`.
 
 ### Default model names on a local server
 
-For tooling that relies on default Anthropic model names such as `claude-3-5-sonnet`, use `ollama cp` to copy an existing model name:
+For tooling that relies on default Anthropic model names such as `claude-3-5-sonnet`, use `rose cp` to copy an existing model name:
 
 ```shell
-ollama cp qwen3-coder claude-3-5-sonnet
+rose cp qwen3-coder claude-3-5-sonnet
 ```
 
 Afterwards, this new model name can be specified in the `model` field:

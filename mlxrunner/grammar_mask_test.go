@@ -8,9 +8,9 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/ollama/ollama/mlx"
-	"github.com/ollama/ollama/mlx/mlxtest"
-	"github.com/ollama/ollama/mlxrunner/xgrammar"
+	"github.com/qompassai/rose/mlx"
+	"github.com/qompassai/rose/mlx/mlxtest"
+	"github.com/qompassai/rose/mlxrunner/xgrammar"
 )
 
 func TestApplyTokenMask(t *testing.T) {

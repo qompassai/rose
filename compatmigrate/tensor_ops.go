@@ -5,7 +5,7 @@ import (
 	"io"
 	"slices"
 
-	"github.com/ollama/ollama/fs/gguf"
+	"github.com/qompassai/rose/fs/gguf"
 )
 
 func splitSourceTensorDim(t *sourceTensor, dim int, names ...string) ([]*outTensor, error) {

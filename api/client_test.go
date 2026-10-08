@@ -38,7 +38,7 @@ func TestClientFromEnvironment(t *testing.T) {
 
 	for k, v := range testCases {
 		t.Run(k, func(t *testing.T) {
-			t.Setenv("OLLAMA_HOST", v.value)
+			t.Setenv("ROSE_HOST", v.value)
 
 			client, err := ClientFromEnvironment()
 			if err != v.err {
@@ -432,7 +432,7 @@ func TestClientWebSearchExperimentalUsesLocalRoute(t *testing.T) {
 			t.Fatal(err)
 		}
 		if err := json.NewEncoder(w).Encode(WebSearchResponse{
-			Results: []WebSearchResult{{Title: "Ollama", URL: "https://ollama.com", Content: "models"}},
+			Results: []WebSearchResult{{Title: "Rose", URL: "https://ollama.com", Content: "models"}},
 		}); err != nil {
 			t.Fatal(err)
 		}
@@ -440,7 +440,7 @@ func TestClientWebSearchExperimentalUsesLocalRoute(t *testing.T) {
 	defer ts.Close()
 
 	client := NewClient(&url.URL{Scheme: "http", Host: ts.Listener.Addr().String()}, http.DefaultClient)
-	resp, err := client.WebSearchExperimental(t.Context(), &WebSearchRequest{Query: "ollama", MaxResults: 3})
+	resp, err := client.WebSearchExperimental(t.Context(), &WebSearchRequest{Query: "rose", MaxResults: 3})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -450,10 +450,10 @@ func TestClientWebSearchExperimentalUsesLocalRoute(t *testing.T) {
 	if gotPath != "/api/experimental/web_search" {
 		t.Fatalf("path = %q, want /api/experimental/web_search", gotPath)
 	}
-	if gotRequest.Query != "ollama" || gotRequest.MaxResults != 3 {
+	if gotRequest.Query != "rose" || gotRequest.MaxResults != 3 {
 		t.Fatalf("request = %#v", gotRequest)
 	}
-	if len(resp.Results) != 1 || resp.Results[0].Title != "Ollama" {
+	if len(resp.Results) != 1 || resp.Results[0].Title != "Rose" {
 		t.Fatalf("response = %#v", resp)
 	}
 }
@@ -507,7 +507,7 @@ func TestClientWebSearchExperimentalErrors(t *testing.T) {
 			defer ts.Close()
 
 			client := NewClient(&url.URL{Scheme: "http", Host: ts.Listener.Addr().String()}, http.DefaultClient)
-			_, err := client.WebSearchExperimental(t.Context(), &WebSearchRequest{Query: "ollama"})
+			_, err := client.WebSearchExperimental(t.Context(), &WebSearchRequest{Query: "rose"})
 			if err == nil {
 				t.Fatal("expected error")
 			}
@@ -527,7 +527,7 @@ func TestClientWebFetchExperimentalUsesLocalRoute(t *testing.T) {
 			t.Fatal(err)
 		}
 		if err := json.NewEncoder(w).Encode(WebFetchResponse{
-			Title:   "Ollama",
+			Title:   "Rose",
 			Content: "models",
 			Links:   []string{"https://ollama.com/library"},
 		}); err != nil {
@@ -550,7 +550,7 @@ func TestClientWebFetchExperimentalUsesLocalRoute(t *testing.T) {
 	if gotRequest.URL != "https://ollama.com" {
 		t.Fatalf("request = %#v", gotRequest)
 	}
-	if resp.Title != "Ollama" || resp.Content != "models" {
+	if resp.Title != "Rose" || resp.Content != "models" {
 		t.Fatalf("response = %#v", resp)
 	}
 }

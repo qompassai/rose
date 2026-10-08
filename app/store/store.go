@@ -1,7 +1,7 @@
 //go:build windows || darwin
 
 // Package store provides a simple JSON file store for the desktop application
-// to save and load data such as ollama server configuration, messages,
+// to save and load data such as rose server configuration, messages,
 // login information and more.
 package store
 
@@ -16,8 +16,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/ollama/ollama/app/types/not"
-	"github.com/ollama/ollama/internal/onboarding"
+	"github.com/qompassai/rose/app/types/not"
+	"github.com/qompassai/rose/internal/onboarding"
 )
 
 type File struct {
@@ -122,16 +122,16 @@ func NewChat(id string) *Chat {
 }
 
 type Settings struct {
-	// Expose is a boolean that indicates if the ollama server should
+	// Expose is a boolean that indicates if the rose server should
 	// be exposed to the network
 	Expose bool
 
-	// Browser is a boolean that indicates if the ollama server should
+	// Browser is a boolean that indicates if the rose server should
 	// be exposed to browser windows (e.g. CORS set to allow all origins)
 	Browser bool
 
 	// Survey is a boolean that indicates if the user allows anonymous
-	// inference information to be shared with Ollama
+	// inference information to be shared with Rose
 	Survey bool
 
 	// Models is a string that contains the models to load on startup
@@ -147,10 +147,10 @@ type Settings struct {
 	// WorkingDir specifies the working directory for all agent operations
 	WorkingDir string
 
-	// ContextLength specifies the context length for the ollama server (using OLLAMA_CONTEXT_LENGTH)
+	// ContextLength specifies the context length for the rose server (using ROSE_CONTEXT_LENGTH)
 	ContextLength int
 
-	// TurboEnabled indicates if Ollama Turbo features are enabled
+	// TurboEnabled indicates if Rose Turbo features are enabled
 	TurboEnabled bool
 
 	// Maps gpt-oss specific frontend name' BrowserToolEnabled' to db field 'websearch_enabled'
@@ -177,10 +177,10 @@ type Settings struct {
 	// AutoUpdateEnabled indicates if automatic updates should be downloaded
 	AutoUpdateEnabled bool
 
-	// ClaudeDesktopUsed records whether Claude Desktop has ever been connected through Ollama.
+	// ClaudeDesktopUsed records whether Claude Desktop has ever been connected through Rose.
 	ClaudeDesktopUsed bool
 
-	// CodexDesktopUsed records whether ChatGPT has successfully connected through Ollama.
+	// CodexDesktopUsed records whether ChatGPT has successfully connected through Rose.
 	// Only MarkCodexDesktopUsed updates it; SetSettings preserves the stored value.
 	CodexDesktopUsed bool
 }
@@ -204,11 +204,11 @@ var defaultDBPath = onboarding.AppDatabasePath()
 var legacyConfigPath = func() string {
 	switch runtime.GOOS {
 	case "windows":
-		return filepath.Join(os.Getenv("LOCALAPPDATA"), "Ollama", "config.json")
+		return filepath.Join(os.Getenv("LOCALAPPDATA"), "Rose", "config.json")
 	case "darwin":
-		return filepath.Join(os.Getenv("HOME"), "Library", "Application Support", "Ollama", "config.json")
+		return filepath.Join(os.Getenv("HOME"), "Library", "Application Support", "Rose", "config.json")
 	default:
-		return filepath.Join(os.Getenv("HOME"), ".ollama", "config.json")
+		return filepath.Join(os.Getenv("HOME"), ".rose", "config.json")
 	}
 }()
 
@@ -277,7 +277,7 @@ func (s *Store) ensureDB() error {
 }
 
 // migrateCloudSetting migrates legacy airplane_mode into server.json exactly once.
-// After this, cloud state is sourced from server.json OR OLLAMA_NO_CLOUD.
+// After this, cloud state is sourced from server.json OR ROSE_NO_CLOUD.
 func (s *Store) migrateCloudSetting(database *database) error {
 	migrated, err := database.isCloudSettingMigrated()
 	if err != nil {
@@ -400,13 +400,13 @@ func (s *Store) Settings() (Settings, error) {
 
 	// Set default models directory if not set
 	if settings.Models == "" {
-		dir := os.Getenv("OLLAMA_MODELS")
+		dir := os.Getenv("ROSE_MODELS")
 		if dir != "" {
 			settings.Models = dir
 		} else {
 			home, err := os.UserHomeDir()
 			if err == nil {
-				settings.Models = filepath.Join(home, ".ollama", "models")
+				settings.Models = filepath.Join(home, ".rose", "models")
 			}
 		}
 	}

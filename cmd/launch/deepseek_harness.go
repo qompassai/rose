@@ -9,18 +9,18 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/ollama/ollama/cmd/config"
-	"github.com/ollama/ollama/cmd/internal/fileutil"
-	"github.com/ollama/ollama/envconfig"
-	"github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/cmd/config"
+	"github.com/qompassai/rose/cmd/internal/fileutil"
+	"github.com/qompassai/rose/envconfig"
+	"github.com/qompassai/rose/types/model"
 	"gopkg.in/yaml.v3"
 )
 
 const (
 	deepSeekHarnessIntegrationName = "dsh"
 	deepSeekHarnessNpmPackage      = "@deepseek-ai/dsh@latest"
-	deepSeekHarnessProvider        = "ollama"
-	deepSeekHarnessAPIKeyEnv       = "OLLAMA_LAUNCH_DSH_API_KEY"
+	deepSeekHarnessProvider        = "rose"
+	deepSeekHarnessAPIKeyEnv       = "ROSE_LAUNCH_DSH_API_KEY"
 	deepSeekHarnessWebSettings     = "web-search-deepseek"
 )
 
@@ -30,9 +30,9 @@ var (
 	deepSeekHarnessGOOS     = runtime.GOOS
 )
 
-// DeepSeekHarness is the Ollama-managed DeepSeek Harness integration.
+// DeepSeekHarness is the Rose-managed DeepSeek Harness integration.
 // It redirects only the settings provider for this invocation to an
-// Ollama-owned document. The user's normal DSH_HOME, profiles, sessions,
+// Rose-owned document. The user's normal DSH_HOME, profiles, sessions,
 // credentials, and patch layers remain available and untouched.
 type DeepSeekHarness struct{}
 
@@ -67,14 +67,14 @@ func deepSeekHarnessLaunchArgs(patchPath string, args []string) []string {
 func validateDeepSeekHarnessArgs(args []string) error {
 	for _, arg := range args {
 		if arg == "--patch" || strings.HasPrefix(arg, "--patch=") {
-			return fmt.Errorf("conflicting extra argument %q: ollama launch dsh manages --patch", arg)
+			return fmt.Errorf("conflicting extra argument %q: rose launch dsh manages --patch", arg)
 		}
 	}
 	return nil
 }
 
 func deepSeekHarnessLaunchEnv(env []string) []string {
-	return deepSeekHarnessUpsertEnv(env, deepSeekHarnessAPIKeyEnv, "ollama")
+	return deepSeekHarnessUpsertEnv(env, deepSeekHarnessAPIKeyEnv, "rose")
 }
 
 func deepSeekHarnessUpsertEnv(env []string, key, value string) []string {
@@ -95,7 +95,7 @@ func ensureDeepSeekHarnessInstalled() (string, error) {
 	}
 	npm, err := deepSeekHarnessLookPath("npm")
 	if err != nil {
-		return "", fmt.Errorf("dsh is not installed and npm (Node.js) is required\n\nInstall Node.js first:\n  https://nodejs.org/\n\nThen re-run:\n  ollama launch dsh")
+		return "", fmt.Errorf("dsh is not installed and npm (Node.js) is required\n\nInstall Node.js first:\n  https://nodejs.org/\n\nThen re-run:\n  rose launch dsh")
 	}
 
 	ok, err := ConfirmPrompt("DeepSeek Harness is not installed. Install with npm?")
@@ -294,7 +294,7 @@ func applyDeepSeekHarnessSettings(document *yaml.Node, primary string, models []
 	providers := deepSeekHarnessEnsureYAMLMapping(llm, "providers")
 	provider := deepSeekHarnessEnsureYAMLMapping(providers, deepSeekHarnessProvider)
 	for key, value := range map[string]any{
-		"displayName": "Ollama",
+		"displayName": "Rose",
 		"apiKeyEnv":   deepSeekHarnessAPIKeyEnv,
 		"api":         "openai-completions",
 		"baseURL":     deepSeekHarnessBaseURL(),
@@ -500,7 +500,7 @@ func deepSeekHarnessConfigDir() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return filepath.Join(home, ".ollama", "launch", "dsh"), nil
+	return filepath.Join(home, ".rose", "launch", "dsh"), nil
 }
 
 func deepSeekHarnessSettingsPath() (string, error) {
@@ -516,7 +516,7 @@ func deepSeekHarnessPatchPath() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return filepath.Join(dir, "ollama.cordis.yml"), nil
+	return filepath.Join(dir, "rose.cordis.yml"), nil
 }
 
 func writeDeepSeekHarnessFile(path string, data []byte) error {

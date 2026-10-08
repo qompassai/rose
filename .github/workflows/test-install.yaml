@@ -17,6 +17,6 @@ jobs:
       - name: Run install script
         run: sh ./scripts/install.sh
         env:
-          OLLAMA_NO_START: 1 # do not start app
-      - name: Verify ollama is available
-        run: ollama --version
+          ROSE_NO_START: 1 # do not start app
+      - name: Verify rose is available
+        run: rose --version

@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ollama/ollama/api"
+	"github.com/qompassai/rose/api"
 )
 
 func TestFetchClaudeDesktopModelsUsesAppAwareContract(t *testing.T) {
@@ -216,7 +216,7 @@ func TestSelectClaudeDesktopModelsPrioritizesExplicitSelection(t *testing.T) {
 		t.Fatal("custom selection was marked as recommended")
 	}
 
-	withoutSentinel := SelectClaudeDesktopModels(available, []string{"Ollama Cloud", "ollama:cloud", "qwen3:8b"})
+	withoutSentinel := SelectClaudeDesktopModels(available, []string{"Rose Cloud", "rose:cloud", "qwen3:8b"})
 	if got, want := claudeDesktopModelNames(withoutSentinel), []string{"qwen3:8b"}; !slices.Equal(got, want) {
 		t.Fatalf("selection without invalid sentinel = %v, want %v", got, want)
 	}
@@ -228,7 +228,7 @@ func TestClaudeDesktopModelsFromCloudInventoryVerifiesWithoutRecommending(t *tes
 		"glm-5.2:cloud",
 		"gemma4:31b-cloud",
 		"qwen3:8b",
-		"Ollama Cloud",
+		"Rose Cloud",
 	})
 	if len(models) != 3 {
 		t.Fatalf("models = %+v, want three account cloud models", models)
@@ -339,7 +339,7 @@ func TestSelectClaudeDesktopModelsAssignsValidatedClaudeIDs(t *testing.T) {
 	}
 
 	// Custom installed models use the same validated slots while preserving the
-	// Ollama route separately.
+	// Rose route separately.
 	withCustom := SelectClaudeDesktopModels(available, []string{"kimi-k3:cloud", "mycustommodel:7b"})
 	if len(withCustom) != 2 || withCustom[1].Name != "mycustommodel:7b" {
 		t.Fatalf("custom selection = %v", claudeDesktopModelNames(withCustom))
@@ -348,7 +348,7 @@ func TestSelectClaudeDesktopModelsAssignsValidatedClaudeIDs(t *testing.T) {
 		t.Fatalf("custom gateway ID = %q, want validated slot %q", got, want)
 	}
 	if withCustom[1].OllamaModel != "mycustommodel:7b" {
-		t.Fatalf("custom Ollama route = %q", withCustom[1].OllamaModel)
+		t.Fatalf("custom Rose route = %q", withCustom[1].OllamaModel)
 	}
 
 	// Reordering the persisted selection reassigns the slots in that same order.

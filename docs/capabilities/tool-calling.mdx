@@ -2,7 +2,7 @@
 title: Tool calling 
 ---
 
-Ollama supports tool calling (also known as function calling) which allows a model to invoke tools and incorporate their results into its replies.
+Rose supports tool calling (also known as function calling) which allows a model to invoke tools and incorporate their results into its replies.
 
 ## Calling a single tool
 Invoke a single tool and include its response in a follow-up request. 
@@ -62,17 +62,17 @@ Also known as "single-shot" tool calling.
     ```
   </Tab>
   <Tab title="Python">
-    Install the Ollama Python SDK:
+    Install the Rose Python SDK:
     ```bash
     # with pip
-    pip install ollama -U
+    pip install rose -U
 
     # with uv
-    uv add ollama    
+    uv add rose    
     ```
 
     ```python
-    from ollama import chat
+    from rose import chat
 
     def get_temperature(city: str) -> str:
       """Get the current temperature for a city
@@ -108,17 +108,17 @@ Also known as "single-shot" tool calling.
     ```
   </Tab>
   <Tab title="JavaScript">
-    Install the Ollama JavaScript library:
+    Install the Rose JavaScript library:
     ```bash
     # with npm
-    npm i ollama
+    npm i rose
 
     # with bun
-    bun i ollama
+    bun i rose
     ```
 
     ```typescript
-    import ollama from 'ollama'
+    import rose from 'rose'
 
     function getTemperature(city: string): string {
       const temperatures: Record<string, string> = {
@@ -148,7 +148,7 @@ Also known as "single-shot" tool calling.
 
     const messages = [{ role: 'user', content: "What is the temperature in New York?" }]
 
-    const response = await ollama.chat({
+    const response = await rose.chat({
       model: 'qwen3',
       messages,
       tools,
@@ -165,7 +165,7 @@ Also known as "single-shot" tool calling.
       messages.push({ role: 'tool', tool_name: call.function.name, content: result })
 
       // generate the final response
-      const finalResponse = await ollama.chat({ model: 'qwen3', messages, tools, think: true })
+      const finalResponse = await rose.chat({ model: 'qwen3', messages, tools, think: true })
       console.log(finalResponse.message.content)
     }
     ```
@@ -270,7 +270,7 @@ Also known as "single-shot" tool calling.
   </Tab>
   <Tab title="Python">
     ```python
-    from ollama import chat
+    from rose import chat
 
     def get_temperature(city: str) -> str:
       """Get the current temperature for a city
@@ -333,7 +333,7 @@ Also known as "single-shot" tool calling.
   </Tab>
   <Tab title="JavaScript">
     ```typescript
-    import ollama from 'ollama'
+    import rose from 'rose'
 
     function getTemperature(city: string): string {
       const temperatures: { [key: string]: string } = {
@@ -386,7 +386,7 @@ Also known as "single-shot" tool calling.
 
     const messages = [{ role: 'user', content: 'What are the current weather conditions and temperature in New York and London?' }]
 
-    const response = await ollama.chat({
+    const response = await rose.chat({
       model: 'qwen3',
       messages,
       tools,
@@ -414,7 +414,7 @@ Also known as "single-shot" tool calling.
       }
 
       // generate the final response
-      const finalResponse = await ollama.chat({ model: 'qwen3', messages, tools, think: true })
+      const finalResponse = await rose.chat({ model: 'qwen3', messages, tools, think: true })
       console.log(finalResponse.message.content)
     }
     ```
@@ -431,7 +431,7 @@ It also might help to tell the model that it is in a loop and can make multiple 
 <Tabs>
   <Tab title="Python">
     ```python
-    from ollama import chat, ChatResponse
+    from rose import chat, ChatResponse
 
 
     def add(a: int, b: int) -> int:
@@ -492,7 +492,7 @@ It also might help to tell the model that it is in a loop and can make multiple 
   </Tab>
   <Tab title="JavaScript">
     ```typescript
-    import ollama from 'ollama'
+    import rose from 'rose'
 
     type ToolName = 'add' | 'multiply'
 
@@ -546,7 +546,7 @@ It also might help to tell the model that it is in a loop and can make multiple 
       const messages = [{ role: 'user', content: 'What is (11434+12341)*412?' }]
 
       while (true) {
-        const response = await ollama.chat({
+        const response = await rose.chat({
           model: 'qwen3',
           messages,
           tools,
@@ -590,7 +590,7 @@ When streaming, gather every chunk of `thinking`, `content`, and `tool_calls`, t
 <Tabs>
   <Tab title="Python">
 ```python
-from ollama import chat 
+from rose import chat 
 
 
 def get_temperature(city: str) -> str:
@@ -658,7 +658,7 @@ while True:
   </Tab>
   <Tab title="JavaScript">
 ```typescript
-import ollama from 'ollama'
+import rose from 'rose'
 
 function getTemperature(city: string): string {
   const temperatures: Record<string, string> = {
@@ -687,7 +687,7 @@ async function agentLoop() {
   const messages = [{ role: 'user', content: "What is the temperature in New York?" }]
 
   while (true) {
-    const stream = await ollama.chat({
+    const stream = await rose.chat({
       model: 'qwen3',
       messages,
       tools: [getTemperatureTool],
@@ -747,12 +747,12 @@ agentLoop().catch(console.error)
 This loop streams the assistant response, accumulates partial fields, passes them back together, and appends the tool results so the model can complete its answer.
 
 
-## Using functions as tools with Ollama Python SDK
+## Using functions as tools with Rose Python SDK
 The Python SDK automatically parses functions as a tool schema so we can pass them directly.
 Schemas can still be passed if needed.
 
 ```python
-from ollama import chat
+from rose import chat
 
 def get_temperature(city: str) -> str:
   """Get the current temperature for a city

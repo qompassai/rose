@@ -6,12 +6,12 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ollama/ollama/llm"
-	"github.com/ollama/ollama/mlx"
-	"github.com/ollama/ollama/mlxrunner/batch"
-	"github.com/ollama/ollama/mlxrunner/cache"
-	"github.com/ollama/ollama/mlxrunner/model"
-	"github.com/ollama/ollama/mlxrunner/tokenizer"
+	"github.com/qompassai/rose/llm"
+	"github.com/qompassai/rose/mlx"
+	"github.com/qompassai/rose/mlxrunner/batch"
+	"github.com/qompassai/rose/mlxrunner/cache"
+	"github.com/qompassai/rose/mlxrunner/model"
+	"github.com/qompassai/rose/mlxrunner/tokenizer"
 )
 
 // textOnlyModel satisfies model.Model but not model.MediaModel.

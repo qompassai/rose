@@ -11,16 +11,16 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/go-cmp/cmp"
 
-	"github.com/ollama/ollama/api"
-	gguftest "github.com/ollama/ollama/internal/testutil/gguf"
-	"github.com/ollama/ollama/llm"
-	"github.com/ollama/ollama/ml"
+	"github.com/qompassai/rose/api"
+	gguftest "github.com/qompassai/rose/internal/testutil/gguf"
+	"github.com/qompassai/rose/llm"
+	"github.com/qompassai/rose/ml"
 )
 
 // TestGenerateWithBuiltinRenderer tests that api/generate uses built-in renderers
 // when in chat-like flow (messages present, no suffix, no template)
 func TestGenerateWithBuiltinRenderer(t *testing.T) {
-	t.Setenv("OLLAMA_CONTEXT_LENGTH", "4096")
+	t.Setenv("ROSE_CONTEXT_LENGTH", "4096")
 	gin.SetMode(gin.TestMode)
 
 	mock := mockRunner{
@@ -205,7 +205,7 @@ func TestGenerateWithBuiltinRenderer(t *testing.T) {
 
 // TestGenerateWithDebugRenderOnly tests that debug_render_only works with built-in renderers
 func TestGenerateWithDebugRenderOnly(t *testing.T) {
-	t.Setenv("OLLAMA_CONTEXT_LENGTH", "4096")
+	t.Setenv("ROSE_CONTEXT_LENGTH", "4096")
 	gin.SetMode(gin.TestMode)
 
 	mock := mockRunner{

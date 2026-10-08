@@ -122,7 +122,7 @@ func TestControlsDoNotStopWorker(t *testing.T) {
 }
 
 func TestRunReplaysFatalWithoutStoppingWorker(t *testing.T) {
-	if marker := os.Getenv("OLLAMA_TEST_MLX_FATAL_MARKER"); marker != "" {
+	if marker := os.Getenv("ROSE_TEST_MLX_FATAL_MARKER"); marker != "" {
 		thread, err := Start("test", nil)
 		if err != nil {
 			t.Fatal(err)
@@ -150,7 +150,7 @@ func TestRunReplaysFatalWithoutStoppingWorker(t *testing.T) {
 	ctx, cancel := context.WithTimeout(t.Context(), 10*time.Second)
 	defer cancel()
 	cmd := exec.CommandContext(ctx, os.Args[0], "-test.run=^TestRunReplaysFatalWithoutStoppingWorker$", "-test.timeout=2s")
-	cmd.Env = append(os.Environ(), "OLLAMA_TEST_MLX_FATAL_MARKER="+marker)
+	cmd.Env = append(os.Environ(), "ROSE_TEST_MLX_FATAL_MARKER="+marker)
 	output, err := cmd.CombinedOutput()
 	if err == nil {
 		t.Fatal("subprocess succeeded, want Fatal failure")
@@ -222,7 +222,7 @@ func TestRunRejectsRecursiveDispatch(t *testing.T) {
 }
 
 func TestRunRejectsTestingTGoexit(t *testing.T) {
-	if method := os.Getenv("OLLAMA_TEST_MLX_GOEXIT"); method != "" {
+	if method := os.Getenv("ROSE_TEST_MLX_GOEXIT"); method != "" {
 		thread, err := Start("test", nil)
 		if err != nil {
 			t.Fatal(err)
@@ -245,7 +245,7 @@ func TestRunRejectsTestingTGoexit(t *testing.T) {
 			ctx, cancel := context.WithTimeout(t.Context(), 10*time.Second)
 			defer cancel()
 			cmd := exec.CommandContext(ctx, os.Args[0], "-test.run=^TestRunRejectsTestingTGoexit$", "-test.timeout=2s")
-			cmd.Env = append(os.Environ(), "OLLAMA_TEST_MLX_GOEXIT="+method)
+			cmd.Env = append(os.Environ(), "ROSE_TEST_MLX_GOEXIT="+method)
 			output, err := cmd.CombinedOutput()
 			if err == nil {
 				t.Fatal("subprocess succeeded, want misuse failure")

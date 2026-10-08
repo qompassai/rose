@@ -5,8 +5,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/ollama/ollama/manifest"
-	modeltypes "github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/manifest"
+	modeltypes "github.com/qompassai/rose/types/model"
 )
 
 // Root wraps a model's manifest with pre-scanned quantization metadata.

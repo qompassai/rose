@@ -15,13 +15,13 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ollama/ollama/api"
-	appui "github.com/ollama/ollama/app/ui"
-	"github.com/ollama/ollama/cmd/config"
-	"github.com/ollama/ollama/cmd/launch"
-	"github.com/ollama/ollama/internal/modelref"
-	"github.com/ollama/ollama/internal/proxy"
-	modelpkg "github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/api"
+	appui "github.com/qompassai/rose/app/ui"
+	"github.com/qompassai/rose/cmd/config"
+	"github.com/qompassai/rose/cmd/launch"
+	"github.com/qompassai/rose/internal/modelref"
+	"github.com/qompassai/rose/internal/proxy"
+	modelpkg "github.com/qompassai/rose/types/model"
 )
 
 const (
@@ -316,7 +316,7 @@ func applyCodexDesktopModelsLocked(selected []string, restartConfirmed, openWhen
 			}
 		}
 		_ = config.SaveIntegration(codexDesktopIntegrationName, previous)
-		return fmt.Errorf("start ChatGPT with selected Ollama models: %w", err)
+		return fmt.Errorf("start ChatGPT with selected Rose models: %w", err)
 	} else {
 		applyErr := err
 		_ = config.SaveIntegration(codexDesktopIntegrationName, previous)
@@ -330,11 +330,11 @@ func applyCodexDesktopModelsLocked(selected []string, restartConfirmed, openWhen
 			// Restore the original profile if the previous selection is no longer usable.
 			if restoreErr := codexDesktop.RestoreFromDesktop(true); restoreErr != nil {
 				return errors.Join(
-					fmt.Errorf("apply ChatGPT models: %v; restore previous Ollama profile: %w", applyErr, rollbackErr),
+					fmt.Errorf("apply ChatGPT models: %v; restore previous Rose profile: %w", applyErr, rollbackErr),
 					fmt.Errorf("restore normal ChatGPT profile: %w", restoreErr),
 				)
 			}
-			return fmt.Errorf("apply ChatGPT models: %v; restore previous Ollama profile: %v; restored the normal ChatGPT profile", applyErr, rollbackErr)
+			return fmt.Errorf("apply ChatGPT models: %v; restore previous Rose profile: %v; restored the normal ChatGPT profile", applyErr, rollbackErr)
 		}
 		return fmt.Errorf("apply ChatGPT models: %w", applyErr)
 	}
@@ -460,7 +460,7 @@ func loadCodexDesktopModelInventory(ctx context.Context) (codexDesktopModelInven
 	if len(last.Catalog) > 0 {
 		return last, nil
 	}
-	return codexDesktopModelInventory{}, errors.New("no Ollama models are available for ChatGPT")
+	return codexDesktopModelInventory{}, errors.New("no Rose models are available for ChatGPT")
 }
 
 func loadCodexDesktopRecommendations(ctx context.Context) ([]api.ModelRecommendation, error) {
@@ -906,7 +906,7 @@ func selectCodexDesktopModels(selected []string, available []launch.LaunchModel)
 		}
 	}
 	if len(resolved) == 0 {
-		return "", nil, errors.New("choose at least one available Ollama model for ChatGPT")
+		return "", nil, errors.New("choose at least one available Rose model for ChatGPT")
 	}
 	return resolved[0].Name, resolved, nil
 }

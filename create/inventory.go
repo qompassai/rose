@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/ollama/ollama/fs/safetensors"
+	"github.com/qompassai/rose/fs/safetensors"
 )
 
 // SourceTensor describes one tensor found in a source model: its on-disk type

@@ -18,7 +18,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ollama/ollama/app/store"
+	"github.com/qompassai/rose/app/store"
 )
 
 func TestUpdateStagePathRejectsUnsafeFilename(t *testing.T) {
@@ -33,11 +33,11 @@ func TestUpdateStagePathRejectsUnsafeFilename(t *testing.T) {
 		{"posix_parent", "../OllamaSetup.exe"},
 		{"windows_parent", `..\OllamaSetup.exe`},
 		{"posix_absolute_tmp", "/tmp/OllamaSetup.exe"},
-		{"darwin_absolute_app", "/Applications/Ollama.app"},
-		{"darwin_bundle_path", "Ollama.app/Contents/MacOS/Ollama"},
-		{"darwin_user_download", "~/Downloads/Ollama-darwin.zip"},
+		{"darwin_absolute_app", "/Applications/Rose.app"},
+		{"darwin_bundle_path", "Rose.app/Contents/MacOS/Rose"},
+		{"darwin_user_download", "~/Downloads/Rose-darwin.zip"},
 		{"windows_absolute", `C:\Users\Public\OllamaSetup.exe`},
-		{"colon", "Ollama:Setup.exe"},
+		{"colon", "Rose:Setup.exe"},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			if _, err := updateStagePath(stageDir, "etag", tt.filename); err == nil {

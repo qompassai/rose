@@ -10,13 +10,13 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/manifest"
-	"github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/manifest"
+	"github.com/qompassai/rose/types/model"
 )
 
 func TestApplyModelfileLayersIncludesParameters(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	layers, err := ApplyModelfileLayers(nil, ModelfileLayerOptions{
 		Parameters: map[string]any{
@@ -31,8 +31,8 @@ func TestApplyModelfileLayersIncludesParameters(t *testing.T) {
 	if len(layers) != 1 {
 		t.Fatalf("len(layers) = %d, want 1", len(layers))
 	}
-	if layers[0].MediaType != "application/vnd.ollama.image.params" {
-		t.Fatalf("MediaType = %q, want %q", layers[0].MediaType, "application/vnd.ollama.image.params")
+	if layers[0].MediaType != "application/vnd.rose.image.params" {
+		t.Fatalf("MediaType = %q, want %q", layers[0].MediaType, "application/vnd.rose.image.params")
 	}
 
 	blobPath, err := manifest.BlobsPath(layers[0].Digest)
@@ -54,7 +54,7 @@ func TestApplyModelfileLayersIncludesParameters(t *testing.T) {
 }
 
 func TestApplyModelfileLayersOverlaysInheritedValues(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	layers, err := ApplyModelfileLayers(nil, ModelfileLayerOptions{
 		Template: "{{ .Prompt }}",
@@ -69,11 +69,11 @@ func TestApplyModelfileLayersOverlaysInheritedValues(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	layers, err = appendTextLayer(layers, "application/vnd.ollama.image.prompt", "legacy prompt")
+	layers, err = appendTextLayer(layers, "application/vnd.rose.image.prompt", "legacy prompt")
 	if err != nil {
 		t.Fatal(err)
 	}
-	layers, err = appendTextLayer(layers, "application/vnd.ollama.image.params", `{"top_p":0.4,"repeat_penalty":1.1}`)
+	layers, err = appendTextLayer(layers, "application/vnd.rose.image.params", `{"top_p":0.4,"repeat_penalty":1.1}`)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -104,31 +104,31 @@ func TestApplyModelfileLayersOverlaysInheritedValues(t *testing.T) {
 	for _, layer := range layers {
 		counts[layer.MediaType]++
 		switch layer.MediaType {
-		case "application/vnd.ollama.image.template":
+		case "application/vnd.rose.image.template":
 			gotTemplate = readManifestLayerString(t, layer)
-		case "application/vnd.ollama.image.system":
+		case "application/vnd.rose.image.system":
 			gotSystem = readManifestLayerString(t, layer)
-		case "application/vnd.ollama.image.license":
+		case "application/vnd.rose.image.license":
 			gotLicenses = append(gotLicenses, readManifestLayerString(t, layer))
-		case "application/vnd.ollama.image.params":
+		case "application/vnd.rose.image.params":
 			readManifestLayerJSON(t, layer, &gotParameters)
-		case "application/vnd.ollama.image.messages":
+		case "application/vnd.rose.image.messages":
 			readManifestLayerJSON(t, layer, &gotMessages)
 		}
 	}
 
 	for _, mediaType := range []string{
-		"application/vnd.ollama.image.template",
-		"application/vnd.ollama.image.system",
-		"application/vnd.ollama.image.params",
-		"application/vnd.ollama.image.messages",
+		"application/vnd.rose.image.template",
+		"application/vnd.rose.image.system",
+		"application/vnd.rose.image.params",
+		"application/vnd.rose.image.messages",
 	} {
 		if counts[mediaType] != 1 {
 			t.Errorf("%s layer count = %d, want 1", mediaType, counts[mediaType])
 		}
 	}
-	if counts["application/vnd.ollama.image.prompt"] != 0 {
-		t.Errorf("legacy prompt layer count = %d, want 0", counts["application/vnd.ollama.image.prompt"])
+	if counts["application/vnd.rose.image.prompt"] != 0 {
+		t.Errorf("legacy prompt layer count = %d, want 0", counts["application/vnd.rose.image.prompt"])
 	}
 	if gotTemplate != "{{ .System }}{{ .Prompt }}" {
 		t.Errorf("template = %q, want replacement", gotTemplate)
@@ -154,7 +154,7 @@ func TestApplyModelfileLayersOverlaysInheritedValues(t *testing.T) {
 }
 
 func TestApplyModelfileLayersRejectsInvalidTemplate(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	if _, err := ApplyModelfileLayers(nil, ModelfileLayerOptions{Template: "{{ if .Prompt }}"}); !errors.Is(err, ErrBadTemplate) {
 		t.Fatalf("ApplyModelfileLayers() error = %v, want ErrBadTemplate", err)
@@ -162,7 +162,7 @@ func TestApplyModelfileLayersRejectsInvalidTemplate(t *testing.T) {
 }
 
 func TestNewSafetensorsManifestWriterPreservesBaseConfig(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	base := model.ConfigV2{
 		ModelFormat:   "safetensors",
@@ -198,7 +198,7 @@ func TestNewSafetensorsManifestWriterPreservesBaseConfig(t *testing.T) {
 }
 
 func TestNewSafetensorsManifestWriterDefaultsMinimumVersion(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	writeManifest := NewSafetensorsManifestWriter(SafetensorsManifestOptions{MinVersion: "0.19.0"})
 	if err := writeManifest(context.Background(), "test-min-version", ManifestInfo{}); err != nil {
@@ -211,7 +211,7 @@ func TestNewSafetensorsManifestWriterDefaultsMinimumVersion(t *testing.T) {
 }
 
 func TestNewSafetensorsManifestWriterPreservesExplicitVersion(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	writeManifest := NewSafetensorsManifestWriter(SafetensorsManifestOptions{
 		MinVersion: "0.19.0",
@@ -226,7 +226,7 @@ func TestNewSafetensorsManifestWriterPreservesExplicitVersion(t *testing.T) {
 }
 
 func TestNewSafetensorsManifestWriterDoesNotPublishAfterCancellation(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	ctx, cancel := context.WithCancel(context.Background())
 	writeManifest := NewSafetensorsManifestWriter(SafetensorsManifestOptions{

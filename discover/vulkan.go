@@ -15,7 +15,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/ollama/ollama/ml"
+	"github.com/qompassai/rose/ml"
 )
 
 // vulkanUMARegex matches Vulkan debug lines like:

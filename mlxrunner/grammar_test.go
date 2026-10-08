@@ -12,12 +12,12 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/mlx"
-	"github.com/ollama/ollama/mlx/mlxtest"
-	"github.com/ollama/ollama/mlxrunner/batch"
-	sampler "github.com/ollama/ollama/mlxrunner/sample"
-	"github.com/ollama/ollama/mlxrunner/xgrammar"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/mlx"
+	"github.com/qompassai/rose/mlx/mlxtest"
+	"github.com/qompassai/rose/mlxrunner/batch"
+	sampler "github.com/qompassai/rose/mlxrunner/sample"
+	"github.com/qompassai/rose/mlxrunner/xgrammar"
 )
 
 // schemaTag wraps a JSON Schema into the structural tag the MLX client

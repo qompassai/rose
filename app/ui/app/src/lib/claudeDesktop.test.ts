@@ -129,7 +129,7 @@ describe("claudeDesktopRecoveryMessage", () => {
     expect(
       claudeDesktopRecoveryMessage(
         "Cloud models are off. Select an installed model in Settings.",
-        "Ollama could not open Claude.",
+        "Rose could not open Claude.",
       ),
     ).toBe("Cloud models are off. Select an installed model in Settings.");
   });

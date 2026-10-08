@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	UnknownOllamaKeyErrMsg = "unknown ollama key"
+	UnknownOllamaKeyErrMsg = "unknown rose key"
 	InvalidModelNameErrMsg = "invalid model name"
 )
 

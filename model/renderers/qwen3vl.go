@@ -3,8 +3,8 @@ package renderers
 import (
 	"strings"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/types/model"
 )
 
 type Qwen3VLRenderer struct {
@@ -23,7 +23,7 @@ func (r *Qwen3VLRenderer) renderContent(content api.Message, imageOffset int) (s
 		return renderContentWithImageTags(content.Content, len(content.Images), imageOffset)
 	}
 
-	// This assumes all images are at the front of the message - same assumption as ollama/ollama/runner.go
+	// This assumes all images are at the front of the message - same assumption as rose/rose/runner.go
 	var subSb strings.Builder
 	for range content.Images {
 		// TODO: (jmorganca): how to render this is different for different

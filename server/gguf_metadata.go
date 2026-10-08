@@ -12,10 +12,10 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/ollama/ollama/envconfig"
-	fsgguf "github.com/ollama/ollama/fs/gguf"
-	"github.com/ollama/ollama/manifest"
-	"github.com/ollama/ollama/version"
+	"github.com/qompassai/rose/envconfig"
+	fsgguf "github.com/qompassai/rose/fs/gguf"
+	"github.com/qompassai/rose/manifest"
+	"github.com/qompassai/rose/version"
 )
 
 // A blob's metadata block is extracted once into a file beside the model

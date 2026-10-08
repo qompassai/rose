@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ollama/ollama/api"
+	"github.com/qompassai/rose/api"
 )
 
 const (
@@ -26,7 +26,7 @@ func runLongInputContext(t *testing.T) {
 	// prompts that fill or exceed the slot are still rejected by llama-server.
 	// Accept a context-limit error here because older runners may truncate this
 	// prompt while llama-server reports it as too large to admit.
-	t.Setenv("OLLAMA_NUM_PARALLEL", "1")
+	t.Setenv("ROSE_NUM_PARALLEL", "1")
 
 	timeout := longInputTimeout
 	if testModel != "" {
@@ -91,7 +91,7 @@ func isContextLimitError(err string) bool {
 func runContextExhaustion(t *testing.T) {
 	// Setting NUM_PARALLEL to 1 ensures the allocated context is exactly what
 	// we asked for and there is nothing extra that we could spill over into
-	t.Setenv("OLLAMA_NUM_PARALLEL", "1")
+	t.Setenv("ROSE_NUM_PARALLEL", "1")
 
 	// Longer needed for small footprint GPUs
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)

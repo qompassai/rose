@@ -11,9 +11,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/internal/orderedmap"
-	"github.com/ollama/ollama/llm"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/internal/orderedmap"
+	"github.com/qompassai/rose/llm"
 )
 
 type compiledField struct {

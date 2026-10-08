@@ -9,8 +9,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/model/parsers"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/model/parsers"
 )
 
 // glimmerChatTemplate is copied byte-for-byte from hf/chat_template.jinja at

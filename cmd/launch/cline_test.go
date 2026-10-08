@@ -147,7 +147,7 @@ func TestClineEdit(t *testing.T) {
 			t.Errorf("settings.model = %v, want kimi-k2.5:cloud", settings["model"])
 		}
 		if _, ok := settings["apiKey"]; ok {
-			t.Errorf("settings.apiKey = %v, want omitted for local Ollama", settings["apiKey"])
+			t.Errorf("settings.apiKey = %v, want omitted for local Rose", settings["apiKey"])
 		}
 		if settings["baseUrl"] != "http://127.0.0.1:11434/v1" {
 			t.Errorf("settings.baseUrl = %v, want http://127.0.0.1:11434/v1", settings["baseUrl"])
@@ -208,7 +208,7 @@ func TestClineEdit(t *testing.T) {
 			t.Errorf("settings.timeout = %v, want 30000", settings["timeout"])
 		}
 		if _, ok := settings["apiKey"]; ok {
-			t.Errorf("settings.apiKey = %v, want omitted for local Ollama", settings["apiKey"])
+			t.Errorf("settings.apiKey = %v, want omitted for local Rose", settings["apiKey"])
 		}
 		if settings["model"] != "glm-5:cloud" {
 			t.Errorf("settings.model = %v, want glm-5:cloud", settings["model"])
@@ -324,7 +324,7 @@ func TestClineModels(t *testing.T) {
 		}
 	})
 
-	t.Run("returns nil when provider is not ollama", func(t *testing.T) {
+	t.Run("returns nil when provider is not rose", func(t *testing.T) {
 		os.MkdirAll(configDir, 0o755)
 		config := map[string]any{
 			"actModeApiProvider":   "anthropic",
@@ -338,10 +338,10 @@ func TestClineModels(t *testing.T) {
 		}
 	})
 
-	t.Run("returns model when ollama is configured", func(t *testing.T) {
+	t.Run("returns model when rose is configured", func(t *testing.T) {
 		os.MkdirAll(configDir, 0o755)
 		config := map[string]any{
-			"actModeApiProvider":   "ollama",
+			"actModeApiProvider":   "rose",
 			"actModeOllamaModelId": "kimi-k2.5:cloud",
 		}
 		data, _ := json.Marshal(config)
@@ -374,13 +374,13 @@ func TestClineModels(t *testing.T) {
 		}
 	})
 
-	t.Run("ignores stale CLI provider config when ollama is not active", func(t *testing.T) {
+	t.Run("ignores stale CLI provider config when rose is not active", func(t *testing.T) {
 		os.RemoveAll(filepath.Join(tmpDir, ".cline"))
 		os.MkdirAll(configDir, 0o755)
 		os.MkdirAll(filepath.Dir(providersPath), 0o755)
 		legacyConfig := map[string]any{
 			"actModeApiProvider":   "anthropic",
-			"actModeOllamaModelId": "legacy-ollama-model",
+			"actModeOllamaModelId": "legacy-rose-model",
 		}
 		data, _ := json.Marshal(legacyConfig)
 		os.WriteFile(configPath, data, 0o644)
@@ -389,7 +389,7 @@ func TestClineModels(t *testing.T) {
 			"providers": map[string]any{
 				clineLaunchProvider: map[string]any{
 					"settings": map[string]any{
-						"model": "stale-ollama-model",
+						"model": "stale-rose-model",
 					},
 				},
 			},

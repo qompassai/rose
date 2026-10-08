@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/ollama/ollama/mlx/quant"
+	"github.com/qompassai/rose/mlx/quant"
 )
 
 // SourceKind is the overarching dtype for a given safetensors model

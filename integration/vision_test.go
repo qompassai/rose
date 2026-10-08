@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/types/model"
 )
 
 // decodeTestImages returns the test images.
@@ -27,13 +27,13 @@ func decodeTestImages(t *testing.T) (abbeyRoad, docs, ollamaHome api.ImageData) 
 	}
 	ollamaHome, err = base64.StdEncoding.DecodeString(imageEncodingOllamaHome)
 	if err != nil {
-		t.Fatalf("decode ollama home image: %v", err)
+		t.Fatalf("decode rose home image: %v", err)
 	}
 	return
 }
 
 // skipIfNoVisionOverride skips the entire test (at parent level) when
-// OLLAMA_TEST_MODEL is set to a non-vision model. This prevents the parent
+// ROSE_TEST_MODEL is set to a non-vision model. This prevents the parent
 // test from reporting PASS when all subtests are skipped.
 func skipIfNoVisionOverride(t *testing.T) {
 	t.Helper()
@@ -344,7 +344,7 @@ func runVisionMultiImage(t *testing.T, models []string) {
 }
 
 // runVisionImageDescription verifies that the model can describe the contents
-// of the ollama homepage image (a cartoon llama with "Start building with
+// of the rose homepage image (a cartoon llama with "Start building with
 // open models" text). Basic sanity check that the vision pipeline works.
 func runVisionImageDescription(t *testing.T, models []string) {
 	skipUnderMinVRAM(t, 16)

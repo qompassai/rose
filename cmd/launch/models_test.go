@@ -3,9 +3,9 @@ package launch
 import (
 	"testing"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/format"
-	modelpkg "github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/format"
+	modelpkg "github.com/qompassai/rose/types/model"
 )
 
 func TestBuildModelList_UsesInventoryMetadataForInstalledModels(t *testing.T) {

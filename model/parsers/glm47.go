@@ -1,6 +1,6 @@
 package parsers
 
-import "github.com/ollama/ollama/api"
+import "github.com/qompassai/rose/api"
 
 // GLM47Parser extends GLM46Parser with thinking-aware initialization.
 // GLM-4.7's prompt ends with <think> when thinking is enabled, so the parser

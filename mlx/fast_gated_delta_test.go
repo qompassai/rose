@@ -5,7 +5,7 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/ollama/ollama/mlx/mlxthread/mlxthreadtest"
+	"github.com/qompassai/rose/mlx/mlxthread/mlxthreadtest"
 )
 
 // gates stay in (0,1]: both paths treat them as decay factors, and negative

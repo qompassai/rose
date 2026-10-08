@@ -13,10 +13,10 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/ollama/ollama/api"
-	gguftest "github.com/ollama/ollama/internal/testutil/gguf"
-	"github.com/ollama/ollama/llm"
-	"github.com/ollama/ollama/ml"
+	"github.com/qompassai/rose/api"
+	gguftest "github.com/qompassai/rose/internal/testutil/gguf"
+	"github.com/qompassai/rose/llm"
+	"github.com/qompassai/rose/ml"
 )
 
 func getTestTools() []api.Tool {

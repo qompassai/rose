@@ -14,7 +14,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ollama/ollama/api"
+	"github.com/qompassai/rose/api"
 )
 
 const (
@@ -34,8 +34,8 @@ type ResponsesCompactionTrigger struct {
 func (ResponsesCompactionTrigger) responsesInputItem() {}
 
 // ResponsesCompactionItem is the opaque continuation item understood by Codex.
-// Ollama stores a versioned JSON payload in EncryptedContent; the payload is not
-// encrypted and must be consumed by Ollama before another model request.
+// Rose stores a versioned JSON payload in EncryptedContent; the payload is not
+// encrypted and must be consumed by Rose before another model request.
 type ResponsesCompactionItem struct {
 	Type             string `json:"type"`
 	EncryptedContent string `json:"encrypted_content"`
@@ -43,7 +43,7 @@ type ResponsesCompactionItem struct {
 
 func (ResponsesCompactionItem) responsesInputItem() {}
 
-// OllamaCompactionPayload is Ollama's stateless continuation format.
+// OllamaCompactionPayload is Rose's stateless continuation format.
 type OllamaCompactionPayload struct {
 	Type     string        `json:"type"`
 	Version  int           `json:"version"`
@@ -163,7 +163,7 @@ func PrepareStandaloneCompaction(body []byte) (*ResponsesCompactionPlan, error) 
 	return newResponsesCompactionPlan(req, items)
 }
 
-// ExpandResponsesCompactionInput replaces the newest Ollama compaction item
+// ExpandResponsesCompactionInput replaces the newest Rose compaction item
 // with its summary and retained messages. Items on either side of the
 // compaction item remain in their original order.
 func ExpandResponsesCompactionInput(body []byte) ([]byte, bool, error) {
@@ -295,13 +295,13 @@ func decodeOllamaCompactionItem(item json.RawMessage) (OllamaCompactionPayload, 
 	decoder := json.NewDecoder(strings.NewReader(wire.EncryptedContent))
 	decoder.DisallowUnknownFields()
 	if err := decoder.Decode(&payload); err != nil {
-		return OllamaCompactionPayload{}, errors.New("unsupported compaction item: encrypted_content is not an Ollama payload")
+		return OllamaCompactionPayload{}, errors.New("unsupported compaction item: encrypted_content is not an Rose payload")
 	}
 	if payload.Type != OllamaCompactionPayloadType || payload.Version != OllamaCompactionPayloadVersion {
-		return OllamaCompactionPayload{}, fmt.Errorf("unsupported Ollama compaction payload type or version")
+		return OllamaCompactionPayload{}, fmt.Errorf("unsupported Rose compaction payload type or version")
 	}
 	if strings.TrimSpace(payload.Summary) == "" {
-		return OllamaCompactionPayload{}, errors.New("Ollama compaction payload has an empty summary")
+		return OllamaCompactionPayload{}, errors.New("Rose compaction payload has an empty summary")
 	}
 	if err := decoder.Decode(&struct{}{}); !errors.Is(err, io.EOF) {
 		return OllamaCompactionPayload{}, errors.New("unsupported compaction item: encrypted_content contains more than one JSON value")
@@ -565,7 +565,7 @@ func compactionMessage(item ResponsesInputItem) (api.Message, string, error) {
 		}
 		thinking := summary.String()
 		if thinking == "" && value.EncryptedContent != "" {
-			thinking = "[opaque reasoning state omitted during Ollama compaction]"
+			thinking = "[opaque reasoning state omitted during Rose compaction]"
 		}
 		return api.Message{Role: "assistant", Thinking: thinking}, "reasoning", nil
 	case ResponsesAgentMessageInput:
@@ -591,7 +591,7 @@ func validateCompactionContent(contents []ResponsesContent) error {
 			continue
 		}
 		if image.FileID != "" {
-			return errors.New("file_id image inputs are not supported by Ollama compaction")
+			return errors.New("file_id image inputs are not supported by Rose compaction")
 		}
 		if image.ImageURL == "" {
 			return errors.New("compaction image input is missing image_url")

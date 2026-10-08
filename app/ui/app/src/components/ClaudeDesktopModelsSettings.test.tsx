@@ -86,7 +86,7 @@ describe("ClaudeDesktopModelsSettings", () => {
     ).toBe("Sign in required");
   });
 
-  it("renders the five explicit Claude routes and an Ollama model picker", () => {
+  it("renders the five explicit Claude routes and an Rose model picker", () => {
     const html = renderToStaticMarkup(
       <ClaudeDesktopModelsSettings initialStatus={status()} />,
     );
@@ -99,7 +99,7 @@ describe("ClaudeDesktopModelsSettings", () => {
     expect((html.match(/aria-haspopup="listbox"/g) ?? []).length).toBe(5);
     expect(html).not.toContain('for="claude-route-');
     expect(html).toContain(
-      "Choose which Ollama model Claude uses for each model option.",
+      "Choose which Rose model Claude uses for each model option.",
     );
     expect(html).not.toContain("routing");
     expect(html).not.toContain("Built-in defaults");
@@ -108,7 +108,7 @@ describe("ClaudeDesktopModelsSettings", () => {
     expect(html).toContain("Start Claude");
   });
 
-  it("allows the same Ollama model to be assigned to multiple routes", () => {
+  it("allows the same Rose model to be assigned to multiple routes", () => {
     const shared = routes.map((route) => ({
       ...route,
       model: "qwen3:8b",

@@ -22,14 +22,14 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/ollama/ollama/app/auth"
-	"github.com/ollama/ollama/app/logrotate"
-	"github.com/ollama/ollama/app/server"
-	"github.com/ollama/ollama/app/store"
-	"github.com/ollama/ollama/app/tools"
-	"github.com/ollama/ollama/app/ui"
-	"github.com/ollama/ollama/app/updater"
-	"github.com/ollama/ollama/app/version"
+	"github.com/qompassai/rose/app/auth"
+	"github.com/qompassai/rose/app/logrotate"
+	"github.com/qompassai/rose/app/server"
+	"github.com/qompassai/rose/app/store"
+	"github.com/qompassai/rose/app/tools"
+	"github.com/qompassai/rose/app/ui"
+	"github.com/qompassai/rose/app/updater"
+	"github.com/qompassai/rose/app/version"
 )
 
 var (
@@ -38,7 +38,7 @@ var (
 	appStore     *store.Store
 )
 
-var debug = strings.EqualFold(os.Getenv("OLLAMA_DEBUG"), "true") || os.Getenv("OLLAMA_DEBUG") == "1"
+var debug = strings.EqualFold(os.Getenv("ROSE_DEBUG"), "true") || os.Getenv("ROSE_DEBUG") == "1"
 
 var (
 	fastStartup = false
@@ -63,14 +63,14 @@ func main() {
 	if len(os.Args) > 1 {
 		for _, arg := range os.Args {
 			// Handle URL scheme requests (Windows)
-			if strings.HasPrefix(arg, "ollama://") {
+			if strings.HasPrefix(arg, "rose://") {
 				urlSchemeRequest = arg
 				slog.Info("received URL scheme request", "url", arg)
 				continue
 			}
 			switch arg {
 			case "serve":
-				fmt.Fprintln(os.Stderr, "serve command not supported, use ollama")
+				fmt.Fprintln(os.Stderr, "serve command not supported, use rose")
 				os.Exit(1)
 			case "version", "-v", "--version":
 				fmt.Println(version.Version)
@@ -88,7 +88,7 @@ func main() {
 			case "hidden", "-j", "--hide":
 				// startHidden suppresses the UI on startup, and can be triggered multiple ways
 				// On windows, path based via login startup detection
-				// On MacOS via [NSApp isHidden] from `open -j -a /Applications/Ollama.app` or equivalent
+				// On MacOS via [NSApp isHidden] from `open -j -a /Applications/Rose.app` or equivalent
 				// On both via the "hidden" command line argument
 				startHidden = true
 			case "--fast-startup":
@@ -180,7 +180,7 @@ func main() {
 	}
 
 	// on macOS, offer the user to create a symlink
-	// from /usr/local/bin/ollama to the app bundle
+	// from /usr/local/bin/rose to the app bundle
 	installSymlink()
 
 	var ln net.Listener
@@ -203,7 +203,7 @@ func main() {
 
 	st := &store.Store{}
 	if devMode {
-		if dbPath := strings.TrimSpace(os.Getenv("OLLAMA_APP_DB_PATH")); dbPath != "" {
+		if dbPath := strings.TrimSpace(os.Getenv("ROSE_APP_DB_PATH")); dbPath != "" {
 			st.DBPath = dbPath
 			slog.Debug("using development app database", "path", dbPath)
 		}
@@ -212,7 +212,7 @@ func main() {
 
 	// Enable CORS in development mode
 	if devMode {
-		os.Setenv("OLLAMA_CORS", "1")
+		os.Setenv("ROSE_CORS", "1")
 
 		// Check if Vite dev server is running on port 5173
 		var conn net.Conn
@@ -240,7 +240,7 @@ func main() {
 	// ctx is the app-level context that will be used to stop the app
 	ctx, cancel := context.WithCancel(context.Background())
 
-	// octx is the ollama server context that will be used to stop the ollama server
+	// octx is the rose server context that will be used to stop the rose server
 	octx, ocancel := context.WithCancel(ctx)
 
 	// TODO (jmorganca): instead we should instantiate the
@@ -250,7 +250,7 @@ func main() {
 	done := make(chan error, 1)
 	osrv := server.New(st, devMode)
 	go func() {
-		slog.Info("starting ollama server")
+		slog.Info("starting rose server")
 		done <- osrv.Run(octx)
 	}()
 
@@ -337,9 +337,9 @@ func main() {
 	}
 
 	go func() {
-		slog.Debug("waiting for ollama server to be ready")
+		slog.Debug("waiting for rose server to be ready")
 		if err := ui.WaitForServer(ctx, 10*time.Second); err != nil {
-			slog.Warn("ollama server not ready, continuing anyway", "error", err)
+			slog.Warn("rose server not ready, continuing anyway", "error", err)
 		}
 
 		if _, err := uiServer.UserData(ctx); err != nil {
@@ -360,7 +360,7 @@ func main() {
 		slog.Warn("error shutting down desktop server", "error", err)
 	}
 
-	slog.Info("shutting down ollama server")
+	slog.Info("shutting down rose server")
 	cancel()
 	<-done
 }
@@ -505,8 +505,8 @@ func openInBrowser(url string) {
 	}
 }
 
-// parseURLScheme parses an ollama:// URL and validates it
-// Supports: ollama:// (open app), ollama://apps, and ollama://connect (OAuth).
+// parseURLScheme parses an rose:// URL and validates it
+// Supports: rose:// (open app), rose://apps, and rose://connect (OAuth).
 func parseURLScheme(urlSchemeRequest string) (action string, err error) {
 	parsedURL, err := url.Parse(urlSchemeRequest)
 	if err != nil {
@@ -522,12 +522,12 @@ func parseURLScheme(urlSchemeRequest string) (action string, err error) {
 		return "apps", nil
 	}
 
-	// Allow bare ollama:// or ollama:/// to open the app
+	// Allow bare rose:// or rose:/// to open the app
 	if (parsedURL.Host == "" && parsedURL.Path == "") || parsedURL.Path == "/" {
 		return "", nil
 	}
 
-	return "", fmt.Errorf("unsupported ollama:// URL path: %s", urlSchemeRequest)
+	return "", fmt.Errorf("unsupported rose:// URL path: %s", urlSchemeRequest)
 }
 
 // handleURLSchemeInCurrentInstance processes URL scheme requests in the current instance

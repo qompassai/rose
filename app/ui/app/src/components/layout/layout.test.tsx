@@ -8,7 +8,7 @@ describe("SidebarLayout", () => {
   });
 
   it("keeps the macOS title offset in step with the sidebar transition", () => {
-    vi.stubGlobal("window", { OLLAMA_PLATFORM: "darwin" });
+    vi.stubGlobal("window", { ROSE_PLATFORM: "darwin" });
 
     const html = renderToStaticMarkup(
       <SidebarLayout title="Connect your apps" sidebar={<nav />}>

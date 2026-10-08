@@ -70,15 +70,15 @@ function claudeConnectionButton(renderer: ReactTestRenderer) {
 }
 
 describe("Onboarding", () => {
-  it("explains what Ollama is before asking the user to choose a path", () => {
+  it("explains what Rose is before asking the user to choose a path", () => {
     const html = renderToStaticMarkup(<IntroScreen onContinue={vi.fn()} />);
 
-    expect(html).toContain("Welcome to Ollama!");
-    expect(html.indexOf('alt="Ollama waving"')).toBeLessThan(
-      html.indexOf("Welcome to Ollama!"),
+    expect(html).toContain("Welcome to Rose!");
+    expect(html.indexOf('alt="Rose waving"')).toBeLessThan(
+      html.indexOf("Welcome to Rose!"),
     );
     expect(html).toMatch(/<main class="light-only [^"]*bg-white/);
-    expect(html).not.toMatch(/alt="Ollama waving" class="[^"]*dark:/);
+    expect(html).not.toMatch(/alt="Rose waving" class="[^"]*dark:/);
     expect(html).toContain(
       "Run open models with your coding agents so you can spend less while keeping your data private.",
     );
@@ -179,7 +179,7 @@ describe("Onboarding", () => {
 
     vi.stubGlobal("navigator", { platform: "MacIntel" });
     vi.stubGlobal("window", {
-      OLLAMA_PLATFORM: "darwin",
+      ROSE_PLATFORM: "darwin",
       innerHeight: 660,
       addEventListener: vi.fn(),
       removeEventListener: vi.fn(),
@@ -204,7 +204,7 @@ describe("Onboarding", () => {
               {
                 id: "claude-desktop",
                 name: "Claude",
-                description: "Use Ollama models in Claude Desktop",
+                description: "Use Rose models in Claude Desktop",
                 installed: false,
                 action: "connect",
               },
@@ -284,7 +284,7 @@ describe("Onboarding", () => {
     const setClaudeConnected = vi.fn().mockReturnValue(nativeAction);
     vi.stubGlobal("navigator", { platform: "MacIntel" });
     vi.stubGlobal("window", {
-      OLLAMA_PLATFORM: "darwin",
+      ROSE_PLATFORM: "darwin",
       innerHeight: 660,
       addEventListener: vi.fn(),
       removeEventListener: vi.fn(),
@@ -306,7 +306,7 @@ describe("Onboarding", () => {
               {
                 id: "claude-desktop",
                 name: "Claude",
-                description: "Use Ollama models in Claude Desktop",
+                description: "Use Rose models in Claude Desktop",
                 installed: true,
                 action: "connect",
               },
@@ -444,8 +444,8 @@ describe("Onboarding", () => {
       />,
     );
 
-    expect(html).toContain("Welcome to Ollama");
-    expect(html).not.toContain("Run Ollama");
+    expect(html).toContain("Welcome to Rose");
+    expect(html).not.toContain("Run Rose");
     expect(html).not.toContain("Sign up");
   });
 
@@ -476,7 +476,7 @@ describe("Onboarding", () => {
           {
             id: "claude-desktop",
             name: "Claude",
-            description: "Use Ollama models in Claude Desktop",
+            description: "Use Rose models in Claude Desktop",
             installed: true,
             action: "connect",
           },
@@ -526,7 +526,7 @@ describe("Onboarding", () => {
           {
             id: "claude-desktop",
             name: "Claude",
-            description: "Use Ollama models in Claude Desktop",
+            description: "Use Rose models in Claude Desktop",
             installed: true,
             action: "connect",
           },
@@ -553,28 +553,28 @@ describe("Onboarding", () => {
             name: "Cline",
             description: "Autonomous coding agent",
             action: "copy",
-            command: "ollama launch cline",
+            command: "rose launch cline",
           },
           {
             id: "omp",
             name: "Oh My Pi",
             description: "AI coding agent",
             action: "copy",
-            command: "ollama launch omp",
+            command: "rose launch omp",
           },
           {
             id: "pool",
             name: "Poolside",
             description: "Poolside's coding agent",
             action: "copy",
-            command: "ollama launch pool",
+            command: "rose launch pool",
           },
           {
             id: "qwen",
             name: "Qwen Code",
             description: "Qwen's coding agent",
             action: "copy",
-            command: "ollama launch qwen",
+            command: "rose launch qwen",
           },
         ]}
       />,
@@ -605,7 +605,7 @@ describe("Onboarding", () => {
     );
     expect(html).toContain("Your data is never logged or trained on.");
     expect(html).toContain("Sign up");
-    expect(html).toContain("No thanks, I&#x27;ll use Ollama locally");
+    expect(html).toContain("No thanks, I&#x27;ll use Rose locally");
     expect(html).toContain("Sign in");
     expect(html).not.toContain("Skip");
   });
@@ -635,7 +635,7 @@ describe("Onboarding", () => {
       <RunOllamaScreen completionError={null} onRetryCompletion={vi.fn()} />,
     );
 
-    expect(html).toContain("Run Ollama");
+    expect(html).toContain("Run Rose");
     expect(html).toMatch(/<main class="light-only [^"]*bg-white/);
     expect(html).toContain(FIRST_MODEL_COMMAND);
     expect(html).not.toContain("Finish");
@@ -680,13 +680,13 @@ function appsIntegrations(claudeInstalled: boolean): IntegrationStatuses {
     name,
     description: `${name} description`,
     installed: false,
-    command: `ollama launch ${id}`,
+    command: `rose launch ${id}`,
   });
   return [
     {
       id: "claude-desktop",
       name: "Claude",
-      description: "Use Ollama models in Claude Desktop",
+      description: "Use Rose models in Claude Desktop",
       installed: claudeInstalled,
     },
     launcher("claude", "Claude Code"),
@@ -698,7 +698,7 @@ function appsIntegrations(claudeInstalled: boolean): IntegrationStatuses {
       id: "terminal",
       name: "Terminal",
       description: "Run local models from your terminal",
-      command: "ollama",
+      command: "rose",
     },
   ];
 }
@@ -738,7 +738,7 @@ function stubOnboardingWindow(platform = "darwin") {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   vi.stubGlobal("navigator", { platform: "MacIntel" });
   vi.stubGlobal("window", {
-    OLLAMA_PLATFORM: platform,
+    ROSE_PLATFORM: platform,
     setOnboardingWindow: vi.fn(),
   });
 }
@@ -774,7 +774,7 @@ describe("ConnectAppsScreen interactions", () => {
     vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
     vi.stubGlobal("navigator", { platform: "MacIntel" });
     vi.stubGlobal("window", {
-      OLLAMA_PLATFORM: "darwin",
+      ROSE_PLATFORM: "darwin",
       innerHeight: 660,
       addEventListener: vi.fn(),
       removeEventListener: vi.fn(),
@@ -883,14 +883,14 @@ describe("ConnectAppsScreen interactions", () => {
       const copyCommand = vi
         .spyOn(clipboard, "copyTextToClipboard")
         .mockResolvedValue(true);
-      stubAppsWindow({ OLLAMA_PLATFORM: platform });
+      stubAppsWindow({ ROSE_PLATFORM: platform });
       const integrations = [
         ...appsIntegrations(true),
         ...Array.from({ length: 20 }, (_, index) => ({
           id: `extra-${index}`,
           name: `Extra app ${index}`,
           description: "Another supported integration",
-          command: `ollama launch extra-${index}`,
+          command: `rose launch extra-${index}`,
         })),
       ];
       const launchers = integrations.filter((item) => item.command);
@@ -905,7 +905,7 @@ describe("ConnectAppsScreen interactions", () => {
                   id: "chatgpt",
                   name: "ChatGPT",
                   description: "Desktop integration",
-                  command: "ollama launch chatgpt",
+                  command: "rose launch chatgpt",
                 },
               ]}
               initialClaudeStatus={DISCONNECTED_CLAUDE}
@@ -972,7 +972,7 @@ describe("ConnectAppsScreen interactions", () => {
         await card().props.onClick();
       });
       expect(copyCommand).toHaveBeenCalledExactlyOnceWith(
-        "ollama launch codex",
+        "rose launch codex",
       );
       const notice = () => renderer!.root.findByProps({ role: "status" });
       expect(notice()).toBeTruthy();
@@ -1026,7 +1026,7 @@ describe("ConnectAppsScreen interactions", () => {
         expect(
           renderer!.root.findByProps({ role: "alert" }).findByType("code")
             .children,
-        ).toEqual(["ollama launch codex"]);
+        ).toEqual(["rose launch codex"]);
         expect(renderer!.root.findAllByProps({ role: "status" })).toHaveLength(
           0,
         );
@@ -1095,7 +1095,7 @@ describe("ConnectAppsScreen interactions", () => {
         expect(
           renderer!.root.findByProps({ role: "alert" }).findByType("code")
             .children,
-        ).toEqual(["ollama launch codex"]);
+        ).toEqual(["rose launch codex"]);
 
         act(() => {
           events.dispatchEvent(
@@ -1171,7 +1171,7 @@ describe("ConnectAppsScreen interactions", () => {
             .findByProps({ id: "integration-codex" })
             .props.onClick();
         });
-        expect(copyCommand).toHaveBeenCalledWith("ollama launch codex");
+        expect(copyCommand).toHaveBeenCalledWith("rose launch codex");
         expect(connect).not.toHaveBeenCalled();
 
         await act(async () => {

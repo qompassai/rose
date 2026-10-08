@@ -12,7 +12,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/types/model"
 	"gopkg.in/yaml.v3"
 )
 
@@ -35,7 +35,7 @@ func TestDeepSeekHarnessRegistry(t *testing.T) {
 func TestDeepSeekHarnessConfigurePreservesSettingsAndIsIdempotent(t *testing.T) {
 	home := t.TempDir()
 	setTestHome(t, home)
-	t.Setenv("OLLAMA_HOST", "http://127.0.0.1:12345")
+	t.Setenv("ROSE_HOST", "http://127.0.0.1:12345")
 
 	settingsPath, err := deepSeekHarnessSettingsPath()
 	if err != nil {
@@ -44,7 +44,7 @@ func TestDeepSeekHarnessConfigurePreservesSettingsAndIsIdempotent(t *testing.T) 
 	if err := os.MkdirAll(filepath.Dir(settingsPath), 0o700); err != nil {
 		t.Fatal(err)
 	}
-	existing := []byte("# keep-comment\ndefaults: &defaults\n    mode: dark\ntheme: *defaults\nagent-default-model:\n    # keep-reasoning-comment\n    reasoningEffort: high\nllm-pi-ai:\n    providers:\n        custom:\n            api: openai-completions\n            baseURL: https://example.invalid/v1\n            models:\n                - id: custom-model\n        ollama:\n            # keep-retry-comment\n            retryPolicy:\n                maxAttempts: 2\nweb-search-deepseek:\n    maxUses: 3\n")
+	existing := []byte("# keep-comment\ndefaults: &defaults\n    mode: dark\ntheme: *defaults\nagent-default-model:\n    # keep-reasoning-comment\n    reasoningEffort: high\nllm-pi-ai:\n    providers:\n        custom:\n            api: openai-completions\n            baseURL: https://example.invalid/v1\n            models:\n                - id: custom-model\n        rose:\n            # keep-retry-comment\n            retryPolicy:\n                maxAttempts: 2\nweb-search-deepseek:\n    maxUses: 3\n")
 	if err := os.WriteFile(settingsPath, existing, 0o600); err != nil {
 		t.Fatal(err)
 	}
@@ -76,7 +76,7 @@ func TestDeepSeekHarnessConfigurePreservesSettingsAndIsIdempotent(t *testing.T) 
 	secondSettings, _ := os.ReadFile(settingsPath)
 	secondPatch, _ := os.ReadFile(patchPath)
 	if string(firstSettings) != string(secondSettings) || string(firstPatch) != string(secondPatch) {
-		t.Fatal("repeated configuration changed Ollama-managed files")
+		t.Fatal("repeated configuration changed Rose-managed files")
 	}
 	for _, preserved := range []string{"# keep-comment", "&defaults", "*defaults", "# keep-reasoning-comment", "# keep-retry-comment"} {
 		if !strings.Contains(string(firstSettings), preserved) {
@@ -105,11 +105,11 @@ func TestDeepSeekHarnessConfigurePreservesSettingsAndIsIdempotent(t *testing.T) 
 	}
 	provider, _ := providers[deepSeekHarnessProvider].(map[string]any)
 	if provider["baseURL"] != "http://127.0.0.1:12345/v1" || provider["apiKeyEnv"] != deepSeekHarnessAPIKeyEnv {
-		t.Fatalf("Ollama provider = %#v", provider)
+		t.Fatalf("Rose provider = %#v", provider)
 	}
 	retryPolicy, _ := provider["retryPolicy"].(map[string]any)
 	if retryPolicy["maxAttempts"] != 2 {
-		t.Fatalf("Ollama provider settings were not preserved: %#v", provider)
+		t.Fatalf("Rose provider settings were not preserved: %#v", provider)
 	}
 	configuredModels, _ := provider["models"].([]any)
 	if len(configuredModels) != 2 {
@@ -128,7 +128,7 @@ func TestDeepSeekHarnessConfigurePreservesSettingsAndIsIdempotent(t *testing.T) 
 	}
 	web, _ := settings[deepSeekHarnessWebSettings].(map[string]any)
 	if web["baseURL"] != "http://127.0.0.1:12345/v1" || web["apiKeyEnv"] != deepSeekHarnessAPIKeyEnv || web["model"] != "qwen3.5:latest" {
-		t.Fatalf("Ollama web search provider = %#v", web)
+		t.Fatalf("Rose web search provider = %#v", web)
 	}
 	if web["maxUses"] != 3 {
 		t.Fatalf("existing web search settings were not preserved: %#v", web)
@@ -161,7 +161,7 @@ func TestDeepSeekHarnessConfigureSkipsWebSearchWhenCloudDisabled(t *testing.T) {
 		http.NotFound(w, r)
 	}))
 	t.Cleanup(srv.Close)
-	t.Setenv("OLLAMA_HOST", srv.URL)
+	t.Setenv("ROSE_HOST", srv.URL)
 
 	settingsPath, err := deepSeekHarnessSettingsPath()
 	if err != nil {
@@ -195,12 +195,12 @@ func TestDeepSeekHarnessConfigureSkipsWebSearchWhenCloudDisabled(t *testing.T) {
 
 func TestDeepSeekHarnessCurrentModelRejectsDrift(t *testing.T) {
 	setTestHome(t, t.TempDir())
-	t.Setenv("OLLAMA_HOST", "http://127.0.0.1:11434")
+	t.Setenv("ROSE_HOST", "http://127.0.0.1:11434")
 	dsh := &DeepSeekHarness{}
 	if err := dsh.Configure("qwen3.5"); err != nil {
 		t.Fatal(err)
 	}
-	t.Setenv("OLLAMA_HOST", "http://127.0.0.1:9999")
+	t.Setenv("ROSE_HOST", "http://127.0.0.1:9999")
 	if got := dsh.CurrentModel(); got != "" {
 		t.Fatalf("CurrentModel() = %q for stale endpoint", got)
 	}
@@ -208,7 +208,7 @@ func TestDeepSeekHarnessCurrentModelRejectsDrift(t *testing.T) {
 
 func TestDeepSeekHarnessCurrentModelRejectsPatchDrift(t *testing.T) {
 	setTestHome(t, t.TempDir())
-	t.Setenv("OLLAMA_HOST", "http://127.0.0.1:11434")
+	t.Setenv("ROSE_HOST", "http://127.0.0.1:11434")
 	dsh := &DeepSeekHarness{}
 	if err := dsh.Configure("qwen3.5"); err != nil {
 		t.Fatal(err)
@@ -297,7 +297,7 @@ func TestDeepSeekHarnessRunUsesManagedPatchAndCredential(t *testing.T) {
 	setTestHome(t, home)
 	binDir := t.TempDir()
 	logPath := filepath.Join(home, "dsh-invocation")
-	script := "#!/bin/sh\nprintf '%s\\n' \"$@\" > \"$DSH_TEST_LOG\"\nprintf '%s\\n' \"$OLLAMA_LAUNCH_DSH_API_KEY\" >> \"$DSH_TEST_LOG\"\n"
+	script := "#!/bin/sh\nprintf '%s\\n' \"$@\" > \"$DSH_TEST_LOG\"\nprintf '%s\\n' \"$ROSE_LAUNCH_DSH_API_KEY\" >> \"$DSH_TEST_LOG\"\n"
 	bin := filepath.Join(binDir, "dsh")
 	if err := os.WriteFile(bin, []byte(script), 0o755); err != nil {
 		t.Fatal(err)
@@ -379,7 +379,7 @@ func TestDeepSeekHarnessFallsBackToNpxAfterGlobalInstallFailure(t *testing.T) {
 	logPath := filepath.Join(home, "npx-invocation")
 	for name, script := range map[string]string{
 		"npm": "#!/bin/sh\nexit 1\n",
-		"npx": "#!/bin/sh\nprintf '%s\\n' \"$@\" > \"$DSH_NPX_LOG\"\nprintf '%s\\n' \"$OLLAMA_LAUNCH_DSH_API_KEY\" >> \"$DSH_NPX_LOG\"\n",
+		"npx": "#!/bin/sh\nprintf '%s\\n' \"$@\" > \"$DSH_NPX_LOG\"\nprintf '%s\\n' \"$ROSE_LAUNCH_DSH_API_KEY\" >> \"$DSH_NPX_LOG\"\n",
 	} {
 		if err := os.WriteFile(filepath.Join(binDir, name), []byte(script), 0o755); err != nil {
 			t.Fatal(err)
@@ -448,8 +448,8 @@ func TestEnsureDeepSeekHarnessInstalledPreservesGlobalFailureWhenNpxIsUnavailabl
 }
 
 func TestDeepSeekHarnessLaunchArgs(t *testing.T) {
-	got := deepSeekHarnessLaunchArgs("/tmp/ollama.cordis.yml", []string{"--port", "0"})
-	want := []string{"web", "--patch", "/tmp/ollama.cordis.yml", "--port", "0"}
+	got := deepSeekHarnessLaunchArgs("/tmp/rose.cordis.yml", []string{"--port", "0"})
+	want := []string{"web", "--patch", "/tmp/rose.cordis.yml", "--port", "0"}
 	if !slices.Equal(got, want) {
 		t.Fatalf("launch args = %v, want %v", got, want)
 	}

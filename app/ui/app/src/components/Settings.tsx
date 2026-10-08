@@ -418,7 +418,7 @@ export default function Settings() {
     } catch (error) {
       console.error("Failed to reset settings:", error);
       setResetError(
-        "Ollama could not reset every setting. Check the settings above and try again.",
+        "Rose could not reset every setting. Check the settings above and try again.",
       );
     } finally {
       setResettingToDefaults(false);
@@ -450,11 +450,11 @@ export default function Settings() {
         }
       }
     } catch (error) {
-      console.error("Error connecting to Ollama account:", error);
+      console.error("Error connecting to Rose account:", error);
       setConnectionError(
         error instanceof Error
           ? error.message
-          : "Failed to connect to Ollama account",
+          : "Failed to connect to Rose account",
       );
       setIsAwaitingConnection(false);
     }
@@ -466,7 +466,7 @@ export default function Settings() {
       await disconnectUser();
       window.location.reload();
     } catch {
-      setConnectionError("Failed to disconnect Ollama account");
+      setConnectionError("Failed to disconnect Rose account");
     }
   };
 
@@ -492,7 +492,7 @@ export default function Settings() {
           aria-busy={resettingToDefaults}
           className="mx-auto max-w-4xl space-y-4 border-0 p-0"
         >
-          {/* Connect Ollama Account */}
+          {/* Connect Rose Account */}
           <div className="overflow-hidden rounded-xl bg-white dark:bg-neutral-800">
             <div className="p-4">
               <Field>
@@ -571,7 +571,7 @@ export default function Settings() {
                 ) : (
                   <div className="flex items-center justify-between">
                     <div>
-                      <Label>Ollama account</Label>
+                      <Label>Rose account</Label>
                       <Description>Not connected</Description>
                     </div>
                     <Button
@@ -609,7 +609,7 @@ export default function Settings() {
                       <Label>Cloud</Label>
                       <Description>
                         {cloudOverriddenByEnv
-                          ? "The OLLAMA_NO_CLOUD environment variable is currently forcing cloud off."
+                          ? "The ROSE_NO_CLOUD environment variable is currently forcing cloud off."
                           : "Enable cloud models and web search."}
                       </Description>
                     </div>
@@ -637,7 +637,7 @@ export default function Settings() {
                       <div>
                         <Label>Show apps in menu</Label>
                         <Description>
-                          Show connected apps at the top of the Ollama menu.
+                          Show connected apps at the top of the Rose menu.
                         </Description>
                       </div>
                     </div>
@@ -677,15 +677,15 @@ export default function Settings() {
                 </div>
               </Field>
 
-              {/* Expose Ollama */}
+              {/* Expose Rose */}
               <Field>
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-start space-x-3 flex-1">
                     <WifiIcon className="mt-1 h-5 w-5 flex-shrink-0 text-black dark:text-neutral-100" />
                     <div>
-                      <Label>Expose Ollama to the network</Label>
+                      <Label>Expose Rose to the network</Label>
                       <Description>
-                        Allow other devices or services to access Ollama.
+                        Allow other devices or services to access Rose.
                       </Description>
                     </div>
                   </div>
@@ -805,7 +805,7 @@ export default function Settings() {
           )}
 
           {/* Agent Mode */}
-          {window.OLLAMA_TOOLS && (
+          {window.ROSE_TOOLS && (
             <div className="overflow-hidden rounded-xl bg-white dark:bg-neutral-800">
               <div className="space-y-4 p-4">
                 <Field>

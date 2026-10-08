@@ -53,7 +53,7 @@ if(NOT HOST_CXX_COMPILER)
         # compiler is llvm-mingw, the generated host tool otherwise depends on
         # llvm-mingw runtime DLLs being on PATH. Keep that workaround local and
         # explicit: wrap the compiler only to add -static for this host tool.
-        set(_ollama_host_cxx_wrapper "${CMAKE_BINARY_DIR}/ollama-host-cxx.cmd")
+        set(_ollama_host_cxx_wrapper "${CMAKE_BINARY_DIR}/rose-host-cxx.cmd")
         file(TO_NATIVE_PATH "${_ollama_mingw_host_cxx}" _ollama_mingw_host_cxx_native)
         file(WRITE "${_ollama_host_cxx_wrapper}"
             "@echo off\r\n"

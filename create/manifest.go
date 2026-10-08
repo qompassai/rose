@@ -14,10 +14,10 @@ import (
 
 	"golang.org/x/mod/semver"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/manifest"
-	"github.com/ollama/ollama/template"
-	"github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/manifest"
+	"github.com/qompassai/rose/template"
+	"github.com/qompassai/rose/types/model"
 )
 
 var (
@@ -180,19 +180,19 @@ func ApplyModelfileLayers(layers []manifest.Layer, opts ModelfileLayerOptions) (
 		if _, err := template.Parse(opts.Template); err != nil {
 			return nil, fmt.Errorf("%w: %s", ErrBadTemplate, err)
 		}
-		layers = removeLayersByMediaType(layers, "application/vnd.ollama.image.prompt")
-		layers = removeLayersByMediaType(layers, "application/vnd.ollama.image.template")
+		layers = removeLayersByMediaType(layers, "application/vnd.rose.image.prompt")
+		layers = removeLayersByMediaType(layers, "application/vnd.rose.image.template")
 		var err error
-		layers, err = appendTextLayer(layers, "application/vnd.ollama.image.template", opts.Template)
+		layers, err = appendTextLayer(layers, "application/vnd.rose.image.template", opts.Template)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create template layer: %w", err)
 		}
 	}
 
 	if opts.System != "" {
-		layers = removeLayersByMediaType(layers, "application/vnd.ollama.image.system")
+		layers = removeLayersByMediaType(layers, "application/vnd.rose.image.system")
 		var err error
-		layers, err = appendTextLayer(layers, "application/vnd.ollama.image.system", opts.System)
+		layers, err = appendTextLayer(layers, "application/vnd.rose.image.system", opts.System)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create system layer: %w", err)
 		}
@@ -203,7 +203,7 @@ func ApplyModelfileLayers(layers []manifest.Layer, opts ModelfileLayerOptions) (
 		return nil, err
 	}
 	for _, v := range licenses {
-		layers, err = appendTextLayer(layers, "application/vnd.ollama.image.license", v)
+		layers, err = appendTextLayer(layers, "application/vnd.rose.image.license", v)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create license layer: %w", err)
 		}
@@ -212,7 +212,7 @@ func ApplyModelfileLayers(layers []manifest.Layer, opts ModelfileLayerOptions) (
 	if len(opts.Parameters) > 0 {
 		parameters := make(map[string]any)
 		for _, layer := range layers {
-			if layer.MediaType != "application/vnd.ollama.image.params" {
+			if layer.MediaType != "application/vnd.rose.image.params" {
 				continue
 			}
 
@@ -236,13 +236,13 @@ func ApplyModelfileLayers(layers []manifest.Layer, opts ModelfileLayerOptions) (
 			}
 		}
 		maps.Copy(parameters, opts.Parameters)
-		layers = removeLayersByMediaType(layers, "application/vnd.ollama.image.params")
+		layers = removeLayersByMediaType(layers, "application/vnd.rose.image.params")
 
 		var b bytes.Buffer
 		if err := json.NewEncoder(&b).Encode(parameters); err != nil {
 			return nil, fmt.Errorf("failed to encode parameters: %w", err)
 		}
-		layer, err := manifest.NewLayer(&b, "application/vnd.ollama.image.params")
+		layer, err := manifest.NewLayer(&b, "application/vnd.rose.image.params")
 		if err != nil {
 			return nil, fmt.Errorf("failed to create params layer: %w", err)
 		}
@@ -250,12 +250,12 @@ func ApplyModelfileLayers(layers []manifest.Layer, opts ModelfileLayerOptions) (
 	}
 
 	if len(opts.Messages) > 0 {
-		layers = removeLayersByMediaType(layers, "application/vnd.ollama.image.messages")
+		layers = removeLayersByMediaType(layers, "application/vnd.rose.image.messages")
 		var b bytes.Buffer
 		if err := json.NewEncoder(&b).Encode(opts.Messages); err != nil {
 			return nil, fmt.Errorf("failed to encode messages: %w", err)
 		}
-		layer, err := manifest.NewLayer(&b, "application/vnd.ollama.image.messages")
+		layer, err := manifest.NewLayer(&b, "application/vnd.rose.image.messages")
 		if err != nil {
 			return nil, fmt.Errorf("failed to create messages layer: %w", err)
 		}

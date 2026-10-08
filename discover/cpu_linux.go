@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/ollama/ollama/format"
+	"github.com/qompassai/rose/format"
 )
 
 func GetCPUMem() (memInfo, error) {

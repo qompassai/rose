@@ -14,11 +14,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ollama/ollama/envconfig"
-	"github.com/ollama/ollama/format"
-	"github.com/ollama/ollama/llm"
-	"github.com/ollama/ollama/logutil"
-	"github.com/ollama/ollama/ml"
+	"github.com/qompassai/rose/envconfig"
+	"github.com/qompassai/rose/format"
+	"github.com/qompassai/rose/llm"
+	"github.com/qompassai/rose/logutil"
+	"github.com/qompassai/rose/ml"
 )
 
 var (
@@ -103,7 +103,7 @@ func GPUDevices(ctx context.Context, runners []ml.FilteredRunnerDiscovery) []ml.
 				} else if jetpack != "" && filepath.Base(dir) != "cuda_"+jetpack {
 					continue
 				} else if jetpack == "" && strings.Contains(filepath.Base(dir), "cuda_jetpack") {
-					slog.Debug("jetpack not detected (set JETSON_JETPACK or OLLAMA_LLM_LIBRARY to override), skipping", "libDir", dir)
+					slog.Debug("jetpack not detected (set JETSON_JETPACK or ROSE_LLM_LIBRARY to override), skipping", "libDir", dir)
 					continue
 				} else if !envconfig.EnableVulkan(true) && strings.Contains(filepath.Base(dir), "vulkan") {
 					continue
@@ -402,7 +402,7 @@ func filterIntegratedGPUs(devices []ml.DeviceInfo) []ml.DeviceInfo {
 			continue
 		}
 
-		slog.Info("dropping integrated GPU; to enable, set OLLAMA_IGPU_ENABLE=1",
+		slog.Info("dropping integrated GPU; to enable, set ROSE_IGPU_ENABLE=1",
 			"id", device.ID,
 			"library", device.Library,
 			"compute", device.Compute(),
@@ -491,7 +491,7 @@ func bootstrapDevicesWithMetalRetry(firstAttemptCtx, retryParentCtx context.Cont
 	runDiscovery := func(ctx context.Context, extraEnvs map[string]string) ([]ml.DeviceInfo, *llm.StatusWriter, error) {
 		start := time.Now()
 		defer func() {
-			slog.Debug("bootstrap discovery took", "duration", time.Since(start), "OLLAMA_LIBRARY_PATH", ollamaLibDirs, "extra_envs", extraEnvs)
+			slog.Debug("bootstrap discovery took", "duration", time.Since(start), "ROSE_LIBRARY_PATH", ollamaLibDirs, "extra_envs", extraEnvs)
 		}()
 		return bootstrapDevicesWithStatusWatchdog(ctx, ollamaLibDirs, extraEnvs)
 	}
@@ -519,7 +519,7 @@ func bootstrapDevicesWithMetalRetry(firstAttemptCtx, retryParentCtx context.Cont
 		}
 	}
 
-	slog.Info("failure during llama-server GPU discovery", "OLLAMA_LIBRARY_PATH", ollamaLibDirs, "extra_envs", extraEnvs, "error", err, "detail", lastDiscoveryStatusError(status))
+	slog.Info("failure during llama-server GPU discovery", "ROSE_LIBRARY_PATH", ollamaLibDirs, "extra_envs", extraEnvs, "error", err, "detail", lastDiscoveryStatusError(status))
 	return devices
 }
 
@@ -581,7 +581,7 @@ func runBootstrapDevicesWithStatusWatchdog(
 	case result := <-resultCh:
 		return result.devices, result.status, result.err
 	case <-ctx.Done():
-		slog.Warn("llama-server GPU discovery watchdog timed out", "OLLAMA_LIBRARY_PATH", ollamaLibDirs, "extra_envs", extraEnvs, "error", ctx.Err())
+		slog.Warn("llama-server GPU discovery watchdog timed out", "ROSE_LIBRARY_PATH", ollamaLibDirs, "extra_envs", extraEnvs, "error", ctx.Err())
 		return nil, nil, ctx.Err()
 	}
 }

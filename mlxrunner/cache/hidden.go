@@ -1,6 +1,6 @@
 package cache
 
-import "github.com/ollama/ollama/mlx"
+import "github.com/qompassai/rose/mlx"
 
 // HiddenCache retains backbone outputs for heads that read earlier tokens.
 // It follows the same prefix snapshots as the attention and recurrent caches.

@@ -3,11 +3,11 @@
 # Prepare MLX runtime libraries for macOS CI unit tests.
 #
 # Building MLX is expensive, so to enable the MLX-specific unit tests this
-# helper finds the newest Ollama release whose MLX_VERSION and MLX_C_VERSION
-# match the current checkout, downloads that release's ollama-darwin.tgz, and
-# extracts only mlx_metal_v* into build/lib/ollama.
+# helper finds the newest Rose release whose MLX_VERSION and MLX_C_VERSION
+# match the current checkout, downloads that release's rose-darwin.tgz, and
+# extracts only mlx_metal_v* into build/lib/rose.
 #
-# The payload also depends on Ollama's payload build rules (cmake glue and
+# The payload also depends on Rose's payload build rules (cmake glue and
 # carried mlx/compat patches) and the xgrammar native wrapper
 # (mlxrunner/xgrammar/native). Rule drift rebuilds the whole payload from
 # source; wrapper-only drift rebuilds just libollama_xgrammar.dylib.
@@ -20,12 +20,12 @@
 
 set -euo pipefail
 
-repo="${OLLAMA_MLX_RELEASE_REPO:-ollama/ollama}"
-scan_limit="${OLLAMA_MLX_RELEASE_SCAN_LIMIT:-50}"
-cache_dir="${OLLAMA_MLX_DARWIN_CACHE:-.cache/mlx-darwin-release}"
-target_dir="${OLLAMA_MLX_DARWIN_TARGET:-build/lib/ollama}"
-ci_build_dir="${OLLAMA_MLX_CI_BUILD_DIR:-build/mlx-ci}"
-tarball="${cache_dir}/ollama-darwin.tgz"
+repo="${ROSE_MLX_RELEASE_REPO:-rose/rose}"
+scan_limit="${ROSE_MLX_RELEASE_SCAN_LIMIT:-50}"
+cache_dir="${ROSE_MLX_DARWIN_CACHE:-.cache/mlx-darwin-release}"
+target_dir="${ROSE_MLX_DARWIN_TARGET:-build/lib/rose}"
+ci_build_dir="${ROSE_MLX_CI_BUILD_DIR:-build/mlx-ci}"
+tarball="${cache_dir}/rose-darwin.tgz"
 tag_file="${cache_dir}/matched-tag"
 pins_file="${cache_dir}/matched-pins"
 target_pins_file="${target_dir}/.mlx-release-pins"
@@ -190,16 +190,16 @@ save_built_payload() {
 # arm64; empty when the platform has no MLX backend, e.g. x86_64 macOS).
 ci_mlx_backend() {
   [ -f "${ci_build_dir}/CMakeCache.txt" ] || return 1
-  sed -n 's/^OLLAMA_MLX_BACKENDS:STRING=//p' "${ci_build_dir}/CMakeCache.txt"
+  sed -n 's/^ROSE_MLX_BACKENDS:STRING=//p' "${ci_build_dir}/CMakeCache.txt"
 }
 
 # Configure the repo-root superbuild and fetch MLX/MLX-C sources at the
 # pinned revisions (only the full payload build needs this).
 build_ci_sources() {
   cmake -S . -B "${ci_build_dir}" \
-    -DOLLAMA_LLAMA_BACKENDS= \
-    -DOLLAMA_PAYLOAD_INSTALL_PREFIX="$(dirname "$(dirname "${target_dir}")")"
-  cmake --build "${ci_build_dir}" --target ollama-mlx-sources
+    -DROSE_LLAMA_BACKENDS= \
+    -DROSE_PAYLOAD_INSTALL_PREFIX="$(dirname "$(dirname "${target_dir}")")"
+  cmake --build "${ci_build_dir}" --target rose-mlx-sources
 }
 
 # Rebuild only libollama_xgrammar.dylib into the extracted payload. The
@@ -209,13 +209,13 @@ build_ci_sources() {
 build_ci_xgrammar() {
   local lib variant
   local xg_build_dir="${ci_build_dir}/xgrammar"
-  local -a configure_args=(-S cmake/mlx -B "${xg_build_dir}" -DOLLAMA_SOURCE_DIR="$(pwd)" -DMLX_BUILD_METAL=OFF)
-  if [ -n "${OLLAMA_XGRAMMAR_SOURCE:-}" ]; then
-    configure_args+=("-DFETCHCONTENT_SOURCE_DIR_XGRAMMAR=${OLLAMA_XGRAMMAR_SOURCE}")
+  local -a configure_args=(-S cmake/mlx -B "${xg_build_dir}" -DROSE_SOURCE_DIR="$(pwd)" -DMLX_BUILD_METAL=OFF)
+  if [ -n "${ROSE_XGRAMMAR_SOURCE:-}" ]; then
+    configure_args+=("-DFETCHCONTENT_SOURCE_DIR_XGRAMMAR=${ROSE_XGRAMMAR_SOURCE}")
   fi
   cmake "${configure_args[@]}"
   cmake --build "${xg_build_dir}" --target ollama_xgrammar
-  lib="${xg_build_dir}/lib/ollama/libollama_xgrammar.dylib"
+  lib="${xg_build_dir}/lib/rose/libollama_xgrammar.dylib"
   [ -f "${lib}" ] || {
     echo "ollama_xgrammar build produced no library at ${lib}" >&2
     exit 1
@@ -246,7 +246,7 @@ build_ci_payload() {
   esac
   echo "Building the ${backend} payload for unit tests"
   rm -rf "${target_dir}"/mlx_metal_v*
-  cmake --build "${ci_build_dir}" --target "ollama-mlx-${backend}"
+  cmake --build "${ci_build_dir}" --target "rose-mlx-${backend}"
   for variant in "${target_dir}"/mlx_metal_v*; do
     [ -d "${variant}" ] || continue
     for lib in libmlx.dylib libmlxc.dylib libollama_xgrammar.dylib; do
@@ -312,7 +312,7 @@ else
       continue
     fi
 
-    url="https://github.com/${repo}/releases/download/${tag}/ollama-darwin.tgz"
+    url="https://github.com/${repo}/releases/download/${tag}/rose-darwin.tgz"
     if curl -fsIL "${url}" >/dev/null; then
       matched_tag="${tag}"
       matched_url="${url}"

@@ -9,10 +9,10 @@ import (
 	"regexp"
 	"strconv"
 
-	"github.com/ollama/ollama/llm"
-	"github.com/ollama/ollama/mlx"
-	"github.com/ollama/ollama/mlxrunner/batch"
-	"github.com/ollama/ollama/mlxrunner/model"
+	"github.com/qompassai/rose/llm"
+	"github.com/qompassai/rose/mlx"
+	"github.com/qompassai/rose/mlxrunner/batch"
+	"github.com/qompassai/rose/mlxrunner/model"
 )
 
 var imgTagPattern = regexp.MustCompile(`\[img-(\d+)\]`)

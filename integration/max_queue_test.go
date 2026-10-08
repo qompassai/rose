@@ -13,13 +13,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ollama/ollama/api"
+	"github.com/qompassai/rose/api"
 )
 
 func runMaxQueue(t *testing.T) {
 	t.Skip("this test needs to be re-evaluated to use a proper embedding model")
 
-	if os.Getenv("OLLAMA_TEST_EXISTING") != "" {
+	if os.Getenv("ROSE_TEST_EXISTING") != "" {
 		t.Skip("Max Queue test requires spawning a local server so we can adjust the queue size")
 		return
 	}
@@ -27,7 +27,7 @@ func runMaxQueue(t *testing.T) {
 	// Note: This test can be quite slow when running in CPU mode, so keep the threadCount low unless your on GPU
 	// Also note that by default Darwin can't sustain > ~128 connections without adjusting limits
 	threadCount := 16
-	t.Setenv("OLLAMA_MAX_QUEUE", strconv.Itoa(threadCount))
+	t.Setenv("ROSE_MAX_QUEUE", strconv.Itoa(threadCount))
 
 	req := api.GenerateRequest{
 		Model:  smol,

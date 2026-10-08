@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/llm"
-	"github.com/ollama/ollama/mlx"
-	"github.com/ollama/ollama/mlxrunner/model"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/llm"
+	"github.com/qompassai/rose/mlx"
+	"github.com/qompassai/rose/mlxrunner/model"
 )
 
 var _ model.CachedScorer = (*Model)(nil)

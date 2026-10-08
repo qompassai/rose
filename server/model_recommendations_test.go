@@ -21,9 +21,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/envconfig"
-	"github.com/ollama/ollama/format"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/envconfig"
+	"github.com/qompassai/rose/format"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -618,7 +618,7 @@ func setupModelRecommendationsTestEnv(t *testing.T, noCloudEnv string) {
 	if noCloudEnv == "" {
 		noCloudEnv = "false"
 	}
-	t.Setenv("OLLAMA_NO_CLOUD", noCloudEnv)
+	t.Setenv("ROSE_NO_CLOUD", noCloudEnv)
 	envconfig.ReloadServerConfig()
 	t.Cleanup(envconfig.ReloadServerConfig)
 }
@@ -633,7 +633,7 @@ func writeTestOllamaPrivateKey(t *testing.T, home string) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	keyPath := filepath.Join(home, ".ollama", "id_ed25519")
+	keyPath := filepath.Join(home, ".rose", "id_ed25519")
 	if err := os.MkdirAll(filepath.Dir(keyPath), 0o755); err != nil {
 		t.Fatal(err)
 	}

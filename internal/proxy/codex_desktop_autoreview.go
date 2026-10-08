@@ -13,7 +13,7 @@ import (
 
 const (
 	// autoReviewModel is the native Codex reviewer alias. The routing catalog
-	// may map requests for this alias to a selected Ollama model.
+	// may map requests for this alias to a selected Rose model.
 	autoReviewModel          = "codex-auto-review"
 	autoReviewSelectedModel  = "selected"
 	guardianDecisionToolName = "submit_guardian_decision"
@@ -166,7 +166,7 @@ func prepareAutoReviewRequest(body []byte) ([]byte, error) {
 	if err := json.Unmarshal(body, &payload); err != nil {
 		return nil, err
 	}
-	// Codex asks its native Guardian for structured assistant text. Ollama uses
+	// Codex asks its native Guardian for structured assistant text. Rose uses
 	// the proxy-owned decision tool instead, so do not send two competing final
 	// output contracts to the selected model.
 	delete(payload, "text")

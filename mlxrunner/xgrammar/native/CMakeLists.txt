@@ -20,8 +20,8 @@ add_library(ollama_xgrammar SHARED xgrammar.cpp)
 target_compile_features(ollama_xgrammar PRIVATE cxx_std_17)
 target_include_directories(ollama_xgrammar PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
 target_compile_definitions(ollama_xgrammar PRIVATE
-    OLLAMA_XGRAMMAR_BUILD=1
-    OLLAMA_XGRAMMAR_VERSION="${XGRAMMAR_VERSION}")
+    ROSE_XGRAMMAR_BUILD=1
+    ROSE_XGRAMMAR_VERSION="${XGRAMMAR_VERSION}")
 # Export only the ollama_xgrammar_* API; xgrammar's own C++ symbols stay hidden.
 set_target_properties(ollama_xgrammar PROPERTIES
     CXX_VISIBILITY_PRESET hidden

@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/ollama/ollama/model/renderers"
+	"github.com/qompassai/rose/model/renderers"
 )
 
 func decisionPrompts(context string, fields []compiledField, renderer string) ([]string, error) {

@@ -4,9 +4,9 @@ import (
 	"math"
 	"testing"
 
-	"github.com/ollama/ollama/mlx"
-	"github.com/ollama/ollama/mlx/mlxtest"
-	"github.com/ollama/ollama/mlxrunner/nn"
+	"github.com/qompassai/rose/mlx"
+	"github.com/qompassai/rose/mlx/mlxtest"
+	"github.com/qompassai/rose/mlxrunner/nn"
 )
 
 func gdnTestConfig() *Config {

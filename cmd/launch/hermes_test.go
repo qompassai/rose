@@ -14,7 +14,7 @@ import (
 
 	"gopkg.in/yaml.v3"
 
-	"github.com/ollama/ollama/cmd/config"
+	"github.com/qompassai/rose/cmd/config"
 )
 
 func withHermesPlatform(t *testing.T, goos string) {
@@ -32,7 +32,7 @@ func withHermesOllamaURL(t *testing.T, rawURL string) {
 	hermesOllamaURL = func() *url.URL {
 		u, err := url.Parse(rawURL)
 		if err != nil {
-			t.Fatalf("parse test Ollama URL: %v", err)
+			t.Fatalf("parse test Rose URL: %v", err)
 		}
 		return u
 	}
@@ -127,7 +127,7 @@ func TestHermesConfigurePreservesExistingConfigAndEnablesWeb(t *testing.T) {
 		}
 	}))
 	defer srv.Close()
-	t.Setenv("OLLAMA_HOST", srv.URL)
+	t.Setenv("ROSE_HOST", srv.URL)
 
 	h := &Hermes{}
 	if err := h.Configure("gemma4"); err != nil {
@@ -145,17 +145,17 @@ func TestHermesConfigurePreservesExistingConfigAndEnablesWeb(t *testing.T) {
 	}
 
 	modelCfg, _ := cfg["model"].(map[string]any)
-	if got, _ := modelCfg["provider"].(string); got != "ollama-launch" {
-		t.Fatalf("expected provider ollama-launch, got %q", got)
+	if got, _ := modelCfg["provider"].(string); got != "rose-launch" {
+		t.Fatalf("expected provider rose-launch, got %q", got)
 	}
 	if got, _ := modelCfg["default"].(string); got != "gemma4" {
 		t.Fatalf("expected default model gemma4, got %q", got)
 	}
 	if got, _ := modelCfg["base_url"].(string); got != srv.URL+"/v1" {
-		t.Fatalf("expected Ollama base_url %q, got %q", srv.URL+"/v1", got)
+		t.Fatalf("expected Rose base_url %q, got %q", srv.URL+"/v1", got)
 	}
-	if got, _ := modelCfg["api_key"].(string); got != "ollama" {
-		t.Fatalf("expected placeholder api_key ollama, got %q", got)
+	if got, _ := modelCfg["api_key"].(string); got != "rose" {
+		t.Fatalf("expected placeholder api_key rose, got %q", got)
 	}
 	if memoryCfg, _ := cfg["memory"].(map[string]any); memoryCfg == nil {
 		t.Fatal("expected unrelated config to be preserved")
@@ -164,12 +164,12 @@ func TestHermesConfigurePreservesExistingConfigAndEnablesWeb(t *testing.T) {
 		t.Fatal("expected launcher-managed config to avoid custom_providers duplicates")
 	}
 	providersCfg, _ := cfg["providers"].(map[string]any)
-	ollamaProvider, _ := providersCfg["ollama-launch"].(map[string]any)
+	ollamaProvider, _ := providersCfg["rose-launch"].(map[string]any)
 	if ollamaProvider == nil {
-		t.Fatal("expected ollama-launch provider entry")
+		t.Fatal("expected rose-launch provider entry")
 	}
-	if got, _ := ollamaProvider["name"].(string); got != "Ollama" {
-		t.Fatalf("expected providers entry name Ollama, got %q", got)
+	if got, _ := ollamaProvider["name"].(string); got != "Rose" {
+		t.Fatalf("expected providers entry name Rose, got %q", got)
 	}
 	if got, _ := ollamaProvider["api"].(string); got != srv.URL+"/v1" {
 		t.Fatalf("expected providers entry api %q, got %q", srv.URL+"/v1", got)
@@ -205,8 +205,8 @@ func TestHermesConfigureUpdatesMatchingCustomProviderWithoutDroppingFields(t *te
 	}
 	existing := "" +
 		"providers:\n" +
-		"  ollama:\n" +
-		"    name: Ollama\n" +
+		"  rose:\n" +
+		"    name: Rose\n" +
 		"    api: http://127.0.0.1:11434/v1\n" +
 		"    default_model: old-model\n" +
 		"    models:\n" +
@@ -214,7 +214,7 @@ func TestHermesConfigureUpdatesMatchingCustomProviderWithoutDroppingFields(t *te
 		"      - older-model\n" +
 		"    extra_field: keep-me\n" +
 		"custom_providers:\n" +
-		"  - name: Ollama\n" +
+		"  - name: Rose\n" +
 		"    base_url: http://127.0.0.1:11434/v1\n" +
 		"    model: old-model\n" +
 		"    api_mode: chat_completions\n" +
@@ -241,7 +241,7 @@ func TestHermesConfigureUpdatesMatchingCustomProviderWithoutDroppingFields(t *te
 		}
 	}))
 	defer srv.Close()
-	t.Setenv("OLLAMA_HOST", srv.URL)
+	t.Setenv("ROSE_HOST", srv.URL)
 
 	h := &Hermes{}
 	if err := h.Configure("gemma4"); err != nil {
@@ -259,8 +259,8 @@ func TestHermesConfigureUpdatesMatchingCustomProviderWithoutDroppingFields(t *te
 	}
 
 	modelCfg, _ := cfg["model"].(map[string]any)
-	if got, _ := modelCfg["provider"].(string); got != "ollama-launch" {
-		t.Fatalf("expected managed providers entry to migrate to ollama-launch, got %q", got)
+	if got, _ := modelCfg["provider"].(string); got != "rose-launch" {
+		t.Fatalf("expected managed providers entry to migrate to rose-launch, got %q", got)
 	}
 
 	customProviders, _ := cfg["custom_providers"].([]any)
@@ -269,12 +269,12 @@ func TestHermesConfigureUpdatesMatchingCustomProviderWithoutDroppingFields(t *te
 	}
 
 	providersCfg, _ := cfg["providers"].(map[string]any)
-	if _, ok := providersCfg["ollama"]; ok {
-		t.Fatal("expected legacy providers.ollama entry to be removed")
+	if _, ok := providersCfg["rose"]; ok {
+		t.Fatal("expected legacy providers.rose entry to be removed")
 	}
-	ollamaProvider, _ := providersCfg["ollama-launch"].(map[string]any)
+	ollamaProvider, _ := providersCfg["rose-launch"].(map[string]any)
 	if ollamaProvider == nil {
-		t.Fatal("expected ollama-launch providers entry to remain")
+		t.Fatal("expected rose-launch providers entry to remain")
 	}
 	if got, _ := ollamaProvider["api"].(string); got != srv.URL+"/v1" {
 		t.Fatalf("expected providers entry api to update to %q, got %q", srv.URL+"/v1", got)
@@ -321,7 +321,7 @@ func TestHermesConfigureUsesLaunchResolvedHostForModelDiscovery(t *testing.T) {
 	defer srv.Close()
 
 	withHermesOllamaURL(t, srv.URL)
-	t.Setenv("OLLAMA_HOST", "http://127.0.0.1:1")
+	t.Setenv("ROSE_HOST", "http://127.0.0.1:1")
 
 	h := &Hermes{}
 	if err := h.Configure("gemma4"); err != nil {
@@ -339,9 +339,9 @@ func TestHermesConfigureUsesLaunchResolvedHostForModelDiscovery(t *testing.T) {
 	}
 
 	providersCfg, _ := cfg["providers"].(map[string]any)
-	ollamaProvider, _ := providersCfg["ollama-launch"].(map[string]any)
+	ollamaProvider, _ := providersCfg["rose-launch"].(map[string]any)
 	if ollamaProvider == nil {
-		t.Fatal("expected ollama-launch provider entry")
+		t.Fatal("expected rose-launch provider entry")
 	}
 	models, _ := ollamaProvider["models"].([]any)
 	if len(models) != 3 {
@@ -400,15 +400,15 @@ func TestHermesConfigureMigratesLegacyManagedAliases(t *testing.T) {
 	}
 	existing := "" +
 		"model:\n" +
-		"  provider: custom:ollama\n" +
+		"  provider: custom:rose\n" +
 		"  default: old-model\n" +
 		"providers:\n" +
-		"  ollama:\n" +
-		"    name: Ollama\n" +
+		"  rose:\n" +
+		"    name: Rose\n" +
 		"    api: http://127.0.0.1:11434/v1\n" +
 		"    default_model: old-model\n" +
 		"custom_providers:\n" +
-		"  - name: Ollama\n" +
+		"  - name: Rose\n" +
 		"    base_url: http://127.0.0.1:11434/v1\n" +
 		"    model: old-model\n"
 	if err := os.WriteFile(configPath, []byte(existing), 0o644); err != nil {
@@ -426,7 +426,7 @@ func TestHermesConfigureMigratesLegacyManagedAliases(t *testing.T) {
 		}
 	}))
 	defer srv.Close()
-	t.Setenv("OLLAMA_HOST", srv.URL)
+	t.Setenv("ROSE_HOST", srv.URL)
 
 	h := &Hermes{}
 	if err := h.Configure("gemma4"); err != nil {
@@ -444,16 +444,16 @@ func TestHermesConfigureMigratesLegacyManagedAliases(t *testing.T) {
 	}
 
 	modelCfg, _ := cfg["model"].(map[string]any)
-	if got, _ := modelCfg["provider"].(string); got != "ollama-launch" {
-		t.Fatalf("expected migrated provider ollama-launch, got %q", got)
+	if got, _ := modelCfg["provider"].(string); got != "rose-launch" {
+		t.Fatalf("expected migrated provider rose-launch, got %q", got)
 	}
 
 	providersCfg, _ := cfg["providers"].(map[string]any)
-	if _, ok := providersCfg["ollama"]; ok {
-		t.Fatal("expected legacy providers.ollama entry to be removed")
+	if _, ok := providersCfg["rose"]; ok {
+		t.Fatal("expected legacy providers.rose entry to be removed")
 	}
-	if _, ok := providersCfg["ollama-launch"]; !ok {
-		t.Fatal("expected providers.ollama-launch entry")
+	if _, ok := providersCfg["rose-launch"]; !ok {
+		t.Fatal("expected providers.rose-launch entry")
 	}
 	if _, ok := cfg["custom_providers"]; ok {
 		t.Fatal("expected managed custom_providers entry to be removed during migration")
@@ -520,11 +520,11 @@ func TestHermesCurrentModelRequiresHealthyManagedConfig(t *testing.T) {
 			name: "wrong base url",
 			cfg: "" +
 				"model:\n" +
-				"  provider: ollama-launch\n" +
+				"  provider: rose-launch\n" +
 				"  default: gemma4\n" +
 				"  base_url: http://127.0.0.1:9999/v1\n" +
 				"providers:\n" +
-				"  ollama-launch:\n" +
+				"  rose-launch:\n" +
 				"    api: http://127.0.0.1:9999/v1\n" +
 				"    default_model: gemma4\n",
 		},
@@ -532,7 +532,7 @@ func TestHermesCurrentModelRequiresHealthyManagedConfig(t *testing.T) {
 			name: "missing managed provider entry",
 			cfg: "" +
 				"model:\n" +
-				"  provider: ollama-launch\n" +
+				"  provider: rose-launch\n" +
 				"  default: gemma4\n" +
 				"  base_url: http://127.0.0.1:11434/v1\n",
 		},
@@ -540,11 +540,11 @@ func TestHermesCurrentModelRequiresHealthyManagedConfig(t *testing.T) {
 			name: "inconsistent managed provider entry",
 			cfg: "" +
 				"model:\n" +
-				"  provider: ollama-launch\n" +
+				"  provider: rose-launch\n" +
 				"  default: gemma4\n" +
 				"  base_url: http://127.0.0.1:11434/v1\n" +
 				"providers:\n" +
-				"  ollama-launch:\n" +
+				"  rose-launch:\n" +
 				"    api: http://127.0.0.1:11434/v1\n" +
 				"    default_model: qwen3.5\n",
 		},
@@ -552,11 +552,11 @@ func TestHermesCurrentModelRequiresHealthyManagedConfig(t *testing.T) {
 			name: "legacy launch managed config",
 			cfg: "" +
 				"model:\n" +
-				"  provider: custom:ollama\n" +
+				"  provider: custom:rose\n" +
 				"  default: gemma4\n" +
 				"  base_url: http://127.0.0.1:11434/v1\n" +
 				"providers:\n" +
-				"  ollama:\n" +
+				"  rose:\n" +
 				"    api: http://127.0.0.1:11434/v1\n" +
 				"    default_model: gemma4\n",
 		},
@@ -564,15 +564,15 @@ func TestHermesCurrentModelRequiresHealthyManagedConfig(t *testing.T) {
 			name: "duplicate managed custom provider",
 			cfg: "" +
 				"model:\n" +
-				"  provider: ollama-launch\n" +
+				"  provider: rose-launch\n" +
 				"  default: gemma4\n" +
 				"  base_url: http://127.0.0.1:11434/v1\n" +
 				"providers:\n" +
-				"  ollama-launch:\n" +
+				"  rose-launch:\n" +
 				"    api: http://127.0.0.1:11434/v1\n" +
 				"    default_model: gemma4\n" +
 				"custom_providers:\n" +
-				"  - name: Ollama\n" +
+				"  - name: Rose\n" +
 				"    base_url: http://127.0.0.1:11434/v1\n" +
 				"    model: gemma4\n",
 		},

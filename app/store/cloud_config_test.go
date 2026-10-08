@@ -53,10 +53,10 @@ func TestCloudDisabled(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tmpHome := t.TempDir()
 			setTestHome(t, tmpHome)
-			t.Setenv("OLLAMA_NO_CLOUD", tt.envValue)
+			t.Setenv("ROSE_NO_CLOUD", tt.envValue)
 
 			if tt.configContent != "" {
-				configDir := filepath.Join(tmpHome, ".ollama")
+				configDir := filepath.Join(tmpHome, ".rose")
 				if err := os.MkdirAll(configDir, 0o755); err != nil {
 					t.Fatalf("mkdir config dir: %v", err)
 				}
@@ -95,7 +95,7 @@ func TestSetCloudEnabled(t *testing.T) {
 	tmpHome := t.TempDir()
 	setTestHome(t, tmpHome)
 
-	configDir := filepath.Join(tmpHome, ".ollama")
+	configDir := filepath.Join(tmpHome, ".rose")
 	if err := os.MkdirAll(configDir, 0o755); err != nil {
 		t.Fatalf("mkdir config dir: %v", err)
 	}

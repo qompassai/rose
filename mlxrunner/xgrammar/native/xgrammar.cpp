@@ -88,14 +88,14 @@ struct ollama_xgrammar_matcher {
         : vocab_size(size), matcher(grammar) {}
 };
 
-#ifndef OLLAMA_XGRAMMAR_VERSION
-#define OLLAMA_XGRAMMAR_VERSION "unknown"
+#ifndef ROSE_XGRAMMAR_VERSION
+#define ROSE_XGRAMMAR_VERSION "unknown"
 #endif
 
 extern "C" {
 
 const char* ollama_xgrammar_version(void) {
-    return OLLAMA_XGRAMMAR_VERSION;
+    return ROSE_XGRAMMAR_VERSION;
 }
 
 const char* ollama_xgrammar_last_error(void) {

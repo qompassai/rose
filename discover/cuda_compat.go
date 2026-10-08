@@ -4,7 +4,7 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/ollama/ollama/ml"
+	"github.com/qompassai/rose/ml"
 )
 
 const (
@@ -46,7 +46,7 @@ func filterOldCUDADriver(_ context.Context, devices []ml.DeviceInfo) []ml.Device
 	runtimeMayUseCompressedFatbins := hasRuntime &&
 		runtimeMajor == cudaV12RuntimeMajor &&
 		runtimeMinor >= minFatbinCompressionCUDARuntimeMinor
-	// CUDA v12.8+ source builds are expected to either use Ollama's PTX packaging
+	// CUDA v12.8+ source builds are expected to either use Rose's PTX packaging
 	// for older compute targets or be built against a matching local driver/toolkit.
 	runtimeMayJITLegacyCompute := hasRuntime &&
 		runtimeMajor == cudaV12RuntimeMajor &&

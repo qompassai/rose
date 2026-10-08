@@ -4,7 +4,7 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/types/model"
 )
 
 func TestGlimmerSafetensorsCapabilities(t *testing.T) {

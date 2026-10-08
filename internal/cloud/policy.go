@@ -1,10 +1,10 @@
 package cloud
 
 import (
-	"github.com/ollama/ollama/envconfig"
+	"github.com/qompassai/rose/envconfig"
 )
 
-const DisabledMessagePrefix = "ollama cloud is disabled"
+const DisabledMessagePrefix = "rose cloud is disabled"
 
 // Status returns whether cloud is disabled and the source of the decision.
 // Source is one of: "none", "env", "config", "both".

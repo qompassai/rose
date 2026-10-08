@@ -2,7 +2,7 @@ package model
 
 import "encoding/json"
 
-// GenerationDefaults contains model-authored sampler defaults keyed by Ollama
+// GenerationDefaults contains model-authored sampler defaults keyed by Rose
 // option names.
 type GenerationDefaults map[string]any
 
@@ -41,7 +41,7 @@ var generationDefaultMappings = []generationDefaultMapping{
 	generationDefault("frequency_penalty", generationDefaultFloat, "general.sampling.penalty_freq", "frequency_penalty"),
 }
 
-// GenerationDefaultOptions returns the Ollama option names that can be populated
+// GenerationDefaultOptions returns the Rose option names that can be populated
 // from model-authored generation defaults.
 func GenerationDefaultOptions() []string {
 	options := make([]string, 0, len(generationDefaultMappings))

@@ -6,9 +6,9 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/ollama/ollama/mlx"
-	"github.com/ollama/ollama/mlxrunner/model"
-	"github.com/ollama/ollama/mlxrunner/nn"
+	"github.com/qompassai/rose/mlx"
+	"github.com/qompassai/rose/mlxrunner/model"
+	"github.com/qompassai/rose/mlxrunner/nn"
 )
 
 // VisionConfig holds configuration for the Gemma 4 vision path: the

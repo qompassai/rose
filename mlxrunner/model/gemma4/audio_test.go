@@ -4,10 +4,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ollama/ollama/mlx/mlxtest"
+	"github.com/qompassai/rose/mlx/mlxtest"
 
-	"github.com/ollama/ollama/mlx"
-	"github.com/ollama/ollama/mlxrunner/model"
+	"github.com/qompassai/rose/mlx"
+	"github.com/qompassai/rose/mlxrunner/model"
 )
 
 func newAudioTestModel() *Model {

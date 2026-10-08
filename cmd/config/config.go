@@ -1,5 +1,5 @@
 // Package config provides integration configuration for external coding tools
-// (Claude Code, Codex, Droid, OpenCode) to use Ollama models.
+// (Claude Code, Codex, Droid, OpenCode) to use Rose models.
 package config
 
 import (
@@ -12,8 +12,8 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/ollama/ollama/cmd/internal/fileutil"
-	"github.com/ollama/ollama/internal/onboarding"
+	"github.com/qompassai/rose/cmd/internal/fileutil"
+	"github.com/qompassai/rose/internal/onboarding"
 )
 
 type integration struct {
@@ -85,7 +85,7 @@ func configPath() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return filepath.Join(home, ".ollama", "config.json"), nil
+	return filepath.Join(home, ".rose", "config.json"), nil
 }
 
 func legacyConfigPath() (string, error) {
@@ -93,10 +93,10 @@ func legacyConfigPath() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return filepath.Join(home, ".ollama", "config", "config.json"), nil
+	return filepath.Join(home, ".rose", "config", "config.json"), nil
 }
 
-// migrateConfig moves the config from the legacy path to ~/.ollama/config.json
+// migrateConfig moves the config from the legacy path to ~/.rose/config.json
 func migrateConfig() (bool, error) {
 	oldPath, err := legacyConfigPath()
 	if err != nil {
@@ -234,7 +234,7 @@ func SaveIntegrationAutoMode(appName string, enabled bool) error {
 	return save(cfg)
 }
 
-// MarkIntegrationOnboarded marks an integration as onboarded in Ollama's config.
+// MarkIntegrationOnboarded marks an integration as onboarded in Rose's config.
 func MarkIntegrationOnboarded(appName string) error {
 	cfg, err := load()
 	if err != nil {

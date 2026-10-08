@@ -13,25 +13,25 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ollama/ollama/cmd/config"
-	"github.com/ollama/ollama/cmd/internal/fileutil"
-	"github.com/ollama/ollama/internal/proxy"
+	"github.com/qompassai/rose/cmd/config"
+	"github.com/qompassai/rose/cmd/internal/fileutil"
+	"github.com/qompassai/rose/internal/proxy"
 )
 
 const (
 	claudeDesktopIntegrationName = "claude-desktop"
-	claudeDesktopProfileName     = "Ollama"
+	claudeDesktopProfileName     = "Rose"
 	claudeDesktopProfileID       = "00000000-0000-4000-8000-000000000114"
 	claudeDesktopGatewayBaseURL  = "http://" + proxy.DefaultClaudeDesktopListenAddr
 	claudeDesktopProbeTimeout    = 2 * time.Second
-	claudeDesktopModelLabel      = "Default Ollama model"
-	claudeDesktopSuccessMessage  = "Claude Desktop profile changed to Ollama."
-	claudeDesktopRestoreMessage  = "To restore the usual Claude profile, run: ollama launch claude-desktop --restore"
+	claudeDesktopModelLabel      = "Default Rose model"
+	claudeDesktopSuccessMessage  = "Claude Desktop profile changed to Rose."
+	claudeDesktopRestoreMessage  = "To restore the usual Claude profile, run: rose launch claude-desktop --restore"
 	claudeDesktopRestoredMessage = "Claude Desktop restored to the usual Claude profile."
 )
 
 // Cowork needs unrestricted egress for user-configured plugins and MCP servers.
-// Restore removes this override with the rest of the Ollama profile settings.
+// Restore removes this override with the rest of the Rose profile settings.
 var claudeDesktopEgressHosts = []string{"*"}
 
 var (
@@ -48,7 +48,7 @@ var (
 )
 
 // ClaudeDesktop configures and launches Claude Desktop in third-party
-// inference mode using the Ollama app's local gateway.
+// inference mode using the Rose app's local gateway.
 type ClaudeDesktop struct{}
 
 // ErrClaudeDesktopRestartConfirmationRequired reports that applying a profile
@@ -67,9 +67,9 @@ func (c *ClaudeDesktop) AutodiscoveredModel() string {
 	return claudeDesktopModelLabel
 }
 
-// ConfigureAutodiscovery points Claude Desktop at Ollama's local gateway
+// ConfigureAutodiscovery points Claude Desktop at Rose's local gateway
 // without pinning a model list, so Claude discovers the selected catalog and
-// exact Ollama route names the gateway advertises.
+// exact Rose route names the gateway advertises.
 func (c *ClaudeDesktop) ConfigureAutodiscovery() error {
 	autoMode, err := claudeDesktopAutoModePreference()
 	if err != nil {
@@ -79,7 +79,7 @@ func (c *ClaudeDesktop) ConfigureAutodiscovery() error {
 }
 
 // ConfigureAutodiscoveryWithAutoMode writes the managed profile with the
-// effective Auto mode state selected by the Ollama app.
+// effective Auto mode state selected by the Rose app.
 func (c *ClaudeDesktop) ConfigureAutodiscoveryWithAutoMode(autoMode bool) error {
 	if err := claudeDesktopSupported(); err != nil {
 		return err
@@ -91,7 +91,7 @@ func (c *ClaudeDesktop) ConfigureAutodiscoveryWithAutoMode(autoMode bool) error 
 	if err != nil {
 		return err
 	}
-	return configureClaudeDesktopTargets(targets, claudeDesktopGatewayBaseURL, "ollama", autoMode)
+	return configureClaudeDesktopTargets(targets, claudeDesktopGatewayBaseURL, "rose", autoMode)
 }
 
 func (c *ClaudeDesktop) RestoreHint() string {
@@ -115,7 +115,7 @@ func (c *ClaudeDesktop) AutodiscoveryConfigured() bool {
 }
 
 // AutodiscoveryConfiguredWithAutoMode reports whether the managed profile has
-// the effective Auto mode state selected by the Ollama app.
+// the effective Auto mode state selected by the Rose app.
 func (c *ClaudeDesktop) AutodiscoveryConfiguredWithAutoMode(autoMode bool) bool {
 	targets, err := claudeDesktopTargetPaths()
 	if err != nil {
@@ -125,7 +125,7 @@ func (c *ClaudeDesktop) AutodiscoveryConfiguredWithAutoMode(autoMode bool) bool 
 }
 
 // UsesOllamaGateway reports whether Claude Desktop is currently routed through
-// Ollama's local gateway. It intentionally ignores auxiliary profile settings
+// Rose's local gateway. It intentionally ignores auxiliary profile settings
 // so the gateway can keep serving while those settings are repaired.
 func (c *ClaudeDesktop) UsesOllamaGateway() bool {
 	targets, err := claudeDesktopTargetPaths()
@@ -135,7 +135,7 @@ func (c *ClaudeDesktop) UsesOllamaGateway() bool {
 	return claudeDesktopTargetsUseOllamaGateway(targets)
 }
 
-// SetInstalledFromDesktop changes the Claude profile from the native Ollama app.
+// SetInstalledFromDesktop changes the Claude profile from the native Rose app.
 func (c *ClaudeDesktop) SetInstalledFromDesktop(installed, restart bool) error {
 	autoMode := false
 	if installed {
@@ -149,7 +149,7 @@ func (c *ClaudeDesktop) SetInstalledFromDesktop(installed, restart bool) error {
 }
 
 // SetInstalledFromDesktopWithAutoMode changes the Claude profile from the
-// native Ollama app with its effective Auto mode state.
+// native Rose app with its effective Auto mode state.
 func (c *ClaudeDesktop) SetInstalledFromDesktopWithAutoMode(installed, restart, autoMode bool) error {
 	if err := claudeDesktopSupported(); err != nil {
 		return err
@@ -362,7 +362,7 @@ func (c *ClaudeDesktop) Run(_ string, _ []LaunchModel, args []string) error {
 	if err := ensureClaudeDesktopGateway(); err != nil {
 		return err
 	}
-	return claudeDesktopLaunchOrRestart("Restart Claude Desktop to use Ollama?", c.ConfigureAutodiscovery)
+	return claudeDesktopLaunchOrRestart("Restart Claude Desktop to use Rose?", c.ConfigureAutodiscovery)
 }
 
 func (c *ClaudeDesktop) Restore() error {
@@ -440,7 +440,7 @@ func ensureClaudeDesktopGateway() error {
 	ctx, cancel := context.WithTimeout(context.Background(), claudeDesktopProbeTimeout)
 	defer cancel()
 	if err := claudeDesktopProbeGateway(ctx, claudeDesktopGatewayBaseURL); err != nil {
-		return fmt.Errorf("Claude gateway is unavailable at %s: %w; restart Ollama and try again", claudeDesktopGatewayBaseURL, err)
+		return fmt.Errorf("Claude gateway is unavailable at %s: %w; restart Rose and try again", claudeDesktopGatewayBaseURL, err)
 	}
 	return nil
 }
@@ -741,7 +741,7 @@ func writeClaudeDesktopMeta(path, id, name string) error {
 func writeClaudeDesktopGatewayProfile(path, baseURL, apiKey string, forceChooser, autoMode bool) error {
 	cfg, err := readClaudeDesktopJSONAllowMissing(path)
 	if err != nil {
-		return fmt.Errorf("parse Claude Desktop Ollama profile: %w", err)
+		return fmt.Errorf("parse Claude Desktop Rose profile: %w", err)
 	}
 	cfg["inferenceProvider"] = "gateway"
 	cfg["inferenceGatewayBaseUrl"] = baseURL
@@ -796,7 +796,7 @@ func restoreClaudeDesktopMeta(path string) error {
 func restoreClaudeDesktopOllamaProfile(path string) error {
 	cfg, err := readClaudeDesktopJSONAllowMissing(path)
 	if err != nil {
-		return fmt.Errorf("parse Claude Desktop Ollama profile: %w", err)
+		return fmt.Errorf("parse Claude Desktop Rose profile: %w", err)
 	}
 	if len(cfg) == 0 {
 		return nil
@@ -1101,7 +1101,7 @@ func defaultClaudeDesktopOpenApp() error {
 		if path := claudeDesktopRunningAppPath(); path != "" {
 			return claudeDesktopOpenAppPath(path)
 		}
-		return errors.New("Claude Desktop executable was not found; open Claude Desktop manually once and re-run 'ollama launch claude-desktop --restore'")
+		return errors.New("Claude Desktop executable was not found; open Claude Desktop manually once and re-run 'rose launch claude-desktop --restore'")
 	case "darwin":
 		path := claudeDesktopAppPath()
 		if path == "" {

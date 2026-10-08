@@ -22,11 +22,11 @@ import (
 
 	"golang.org/x/sync/errgroup"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/format"
-	"github.com/ollama/ollama/manifest"
-	"github.com/ollama/ollama/transfer"
-	"github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/format"
+	"github.com/qompassai/rose/manifest"
+	"github.com/qompassai/rose/transfer"
+	"github.com/qompassai/rose/types/model"
 )
 
 const maxRetries = 6
@@ -391,7 +391,7 @@ func (b *blobDownload) downloadChunk(ctx context.Context, client *http.Client, r
 				}
 
 				if time.Since(lastUpdated) > downloadStallTimeout {
-					const msg = "%s part %d stalled; retrying. If this persists, press ctrl-c to exit, then 'ollama pull' to find a faster connection."
+					const msg = "%s part %d stalled; retrying. If this persists, press ctrl-c to exit, then 'rose pull' to find a faster connection."
 					slog.Info(fmt.Sprintf(msg, b.Digest[7:19], part.N))
 					// reset last updated
 					part.lastUpdatedMu.Lock()

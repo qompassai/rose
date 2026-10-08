@@ -8,17 +8,17 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/manifest"
-	"github.com/ollama/ollama/parser"
-	"github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/manifest"
+	"github.com/qompassai/rose/parser"
+	"github.com/qompassai/rose/types/model"
 )
 
 func TestCreateCapabilities(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	for _, format := range []string{"gguf", "safetensors"} {
 		t.Run(format, func(t *testing.T) {
-			t.Setenv("OLLAMA_MODELS", t.TempDir())
+			t.Setenv("ROSE_MODELS", t.TempDir())
 			var s Server
 			baseCaps := []string{"completion", "vision"}
 			if format == "safetensors" {
@@ -121,7 +121,7 @@ func TestDecisionPublicCapabilities(t *testing.T) {
 				name += "-vision"
 			}
 			t.Run(name, func(t *testing.T) {
-				t.Setenv("OLLAMA_MODELS", t.TempDir())
+				t.Setenv("ROSE_MODELS", t.TempDir())
 				cfg := model.ConfigV2{ModelFormat: format, Parser: "qwen3.5", Capabilities: []string{"decision"}}
 				want := []model.Capability{model.CapabilityDecision}
 				if declaredVision {
@@ -137,13 +137,13 @@ func TestDecisionPublicCapabilities(t *testing.T) {
 						t.Fatal(err)
 					}
 					if err := manifest.WriteManifest(model.ParseName(name), *config, []manifest.Layer{{
-						MediaType: "application/vnd.ollama.image.model", Digest: digest,
+						MediaType: "application/vnd.rose.image.model", Digest: digest,
 					}}); err != nil {
 						t.Fatal(err)
 					}
 				} else {
 					createSafetensorsTestModel(t, name, cfg, []manifest.Layer{{
-						MediaType: "application/vnd.ollama.image.projector", Digest: digest,
+						MediaType: "application/vnd.rose.image.projector", Digest: digest,
 					}})
 				}
 				m, err := GetModel(name)

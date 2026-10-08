@@ -1,8 +1,8 @@
 package renderers
 
 import (
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/types/model"
 )
 
 // ThinkingForRenderer returns the controls of the selected renderer variant.

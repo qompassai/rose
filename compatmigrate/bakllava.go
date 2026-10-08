@@ -6,7 +6,7 @@ import (
 
 type bakllavaMigrator struct{}
 
-// Mirrors needs_default_llava_projector_type in llama/compat/llama-ollama-compat.cpp; keep the two in sync.
+// Mirrors needs_default_llava_projector_type in llama/compat/llama-rose-compat.cpp; keep the two in sync.
 func (bakllavaMigrator) NeedsMigration(src *SourceModel) bool {
 	return src.ProjectorGGUF != nil &&
 		src.ProjectorGGUF.KeyValue("general.architecture").String() == "clip" &&

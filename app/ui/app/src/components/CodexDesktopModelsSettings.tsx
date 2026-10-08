@@ -404,7 +404,7 @@ export const CodexDesktopModelsSettings = forwardRef<
           request === statusRequestRef.current &&
           !operationInFlightRef.current
         ) {
-          setError("Ollama could not load the ChatGPT model settings.");
+          setError("Rose could not load the ChatGPT model settings.");
           setWarning(null);
         }
       } finally {
@@ -476,7 +476,7 @@ export const CodexDesktopModelsSettings = forwardRef<
 
   const applyChanges = async () => {
     if (!window.applyCodexDesktopModels) {
-      setError("ChatGPT model settings are available in the Ollama macOS app.");
+      setError("ChatGPT model settings are available in the Rose macOS app.");
       return;
     }
     if (selected.length === 0 && (!settings?.usesDefaults || hasChanges)) {
@@ -503,8 +503,8 @@ export const CodexDesktopModelsSettings = forwardRef<
         if (
           !window.confirm(
             result.settings.connected
-              ? "Restart ChatGPT to update Ollama models? Any running task will stop."
-              : "Restart ChatGPT to add Ollama models? Any running task will stop.",
+              ? "Restart ChatGPT to update Rose models? Any running task will stop."
+              : "Restart ChatGPT to add Rose models? Any running task will stop.",
           )
         ) {
           return;
@@ -537,7 +537,7 @@ export const CodexDesktopModelsSettings = forwardRef<
         setSettings(normalizeSettings(result.settings));
       }
     } catch {
-      setError("Ollama could not apply the ChatGPT models.");
+      setError("Rose could not apply the ChatGPT models.");
     } finally {
       ++statusRequestRef.current;
       await invalidateDesktopModels("chatgpt");
@@ -552,7 +552,7 @@ export const CodexDesktopModelsSettings = forwardRef<
 
     const resetModels = window.resetCodexDesktopModels;
     if (!resetModels) {
-      setError("Ollama could not reset the ChatGPT models.");
+      setError("Rose could not reset the ChatGPT models.");
       return false;
     }
 
@@ -576,7 +576,7 @@ export const CodexDesktopModelsSettings = forwardRef<
       applyResult(result);
       return true;
     } catch {
-      setError("Ollama could not reset the ChatGPT models.");
+      setError("Rose could not reset the ChatGPT models.");
       return false;
     } finally {
       ++statusRequestRef.current;
@@ -621,7 +621,7 @@ export const CodexDesktopModelsSettings = forwardRef<
                 ChatGPT
               </h2>
               <p className="mt-1 text-base/6 text-zinc-500 sm:text-sm/6 dark:text-zinc-400">
-                Choose up to {maxModels} Ollama models to use in ChatGPT.
+                Choose up to {maxModels} Rose models to use in ChatGPT.
               </p>
             </div>
             <div className="shrink-0">

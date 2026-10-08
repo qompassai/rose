@@ -4,7 +4,7 @@ import (
 	"math"
 	"testing"
 
-	"github.com/ollama/ollama/mlx/mlxthread/mlxthreadtest"
+	"github.com/qompassai/rose/mlx/mlxthread/mlxthreadtest"
 )
 
 func TestGELUCompiledMatchesEager(t *testing.T) {

@@ -17,8 +17,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/klauspost/compress/zstd"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/openai"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/openai"
 )
 
 // maxDecompressedBodySize limits the size of a decompressed request body

@@ -11,7 +11,7 @@ import (
 	"strings"
 	"testing"
 
-	st "github.com/ollama/ollama/fs/safetensors"
+	st "github.com/qompassai/rose/fs/safetensors"
 )
 
 func writeClefSource(t *testing.T, dir string) {

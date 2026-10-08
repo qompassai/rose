@@ -1,4 +1,4 @@
-module github.com/ollama/ollama
+module github.com/qompassai/rose
 
 go 1.26.0
 

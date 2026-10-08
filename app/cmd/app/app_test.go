@@ -6,7 +6,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/ollama/ollama/app/store"
+	"github.com/qompassai/rose/app/store"
 )
 
 func TestShouldShowOnboarding(t *testing.T) {
@@ -51,15 +51,15 @@ func TestDispatchURLSchemeRequest(t *testing.T) {
 		wantApps    bool
 		wantErr     bool
 	}{
-		{name: "bare URL opens app", request: "ollama://", wantOpen: true},
-		{name: "root URL opens app", request: "ollama:///", wantOpen: true},
-		{name: "apps URL opens Apps", request: "ollama://apps", wantApps: true},
-		{name: "apps path opens Apps", request: "ollama:///apps", wantApps: true},
-		{name: "apps trailing slash opens Apps", request: "ollama://apps/", wantApps: true},
-		{name: "connect URL starts connection", request: "ollama://connect", wantConnect: true},
-		{name: "connect path starts connection", request: "ollama:///connect", wantConnect: true},
-		{name: "unsupported URL", request: "ollama://unsupported", wantErr: true},
-		{name: "invalid URL", request: "ollama://%", wantErr: true},
+		{name: "bare URL opens app", request: "rose://", wantOpen: true},
+		{name: "root URL opens app", request: "rose:///", wantOpen: true},
+		{name: "apps URL opens Apps", request: "rose://apps", wantApps: true},
+		{name: "apps path opens Apps", request: "rose:///apps", wantApps: true},
+		{name: "apps trailing slash opens Apps", request: "rose://apps/", wantApps: true},
+		{name: "connect URL starts connection", request: "rose://connect", wantConnect: true},
+		{name: "connect path starts connection", request: "rose:///connect", wantConnect: true},
+		{name: "unsupported URL", request: "rose://unsupported", wantErr: true},
+		{name: "invalid URL", request: "rose://%", wantErr: true},
 	}
 
 	for _, tt := range tests {
@@ -98,7 +98,7 @@ func TestRunInitialWindowsUIWithBareURL(t *testing.T) {
 	runInitialWindowsUI(
 		false,
 		true,
-		"ollama://",
+		"rose://",
 		func() { hiddenCalls++ },
 		func(request string) {
 			urlCalls++
@@ -135,7 +135,7 @@ func TestRunInitialWindowsUIWithAppsURL(t *testing.T) {
 	runInitialWindowsUI(
 		false,
 		true,
-		"ollama://apps",
+		"rose://apps",
 		func() { t.Fatal("unexpected hidden startup") },
 		func(request string) {
 			err := dispatchURLSchemeRequest(request,

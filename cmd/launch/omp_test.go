@@ -11,12 +11,12 @@ import (
 	"strings"
 	"testing"
 
-	modelpkg "github.com/ollama/ollama/types/model"
+	modelpkg "github.com/qompassai/rose/types/model"
 	"gopkg.in/yaml.v3"
 )
 
 func TestMain(m *testing.M) {
-	if os.Getenv("OLLAMA_LAUNCH_OMP_TEST_HELPER") == "1" {
+	if os.Getenv("ROSE_LAUNCH_OMP_TEST_HELPER") == "1" {
 		runOMPTestHelper()
 		return
 	}
@@ -24,7 +24,7 @@ func TestMain(m *testing.M) {
 }
 
 func runOMPTestHelper() {
-	logPath := os.Getenv("OLLAMA_LAUNCH_OMP_TEST_LOG")
+	logPath := os.Getenv("ROSE_LAUNCH_OMP_TEST_LOG")
 	if logPath != "" {
 		f, err := os.OpenFile(logPath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o644)
 		if err == nil {
@@ -34,11 +34,11 @@ func runOMPTestHelper() {
 	}
 
 	if len(os.Args) >= 3 && os.Args[1] == "plugin" && os.Args[2] == "list" {
-		fmt.Print(os.Getenv("OLLAMA_LAUNCH_OMP_TEST_PLUGIN_LIST"))
+		fmt.Print(os.Getenv("ROSE_LAUNCH_OMP_TEST_PLUGIN_LIST"))
 		os.Exit(0)
 	}
 	if len(os.Args) >= 4 && os.Args[1] == "plugin" && os.Args[2] == "install" {
-		if os.Getenv("OLLAMA_LAUNCH_OMP_TEST_FAIL_INSTALL") == "1" {
+		if os.Getenv("ROSE_LAUNCH_OMP_TEST_FAIL_INSTALL") == "1" {
 			_, _ = fmt.Fprintln(os.Stderr, "install failed")
 			os.Exit(1)
 		}
@@ -92,11 +92,11 @@ func TestOMPArgs(t *testing.T) {
 		args  []string
 		want  []string
 	}{
-		{"with model", "gemma4", nil, []string{"--model", "ollama/gemma4"}},
-		{"with cloud model", "kimi-k2.6:cloud", nil, []string{"--model", "ollama/kimi-k2.6:cloud"}},
+		{"with model", "gemma4", nil, []string{"--model", "rose/gemma4"}},
+		{"with cloud model", "kimi-k2.6:cloud", nil, []string{"--model", "rose/kimi-k2.6:cloud"}},
 		{"empty model", "", nil, nil},
-		{"with model and extra", "gemma4", []string{"--help"}, []string{"--model", "ollama/gemma4", "--help"}},
-		{"already qualified", "ollama/gemma4", nil, []string{"--model", "ollama/gemma4"}},
+		{"with model and extra", "gemma4", []string{"--help"}, []string{"--model", "rose/gemma4", "--help"}},
+		{"already qualified", "rose/gemma4", nil, []string{"--model", "rose/gemma4"}},
 	}
 
 	for _, tt := range tests {
@@ -136,7 +136,7 @@ func TestOMPRun_WebSearchPluginLifecycle(t *testing.T) {
 			http.NotFound(w, r)
 		}))
 		t.Cleanup(srv.Close)
-		t.Setenv("OLLAMA_HOST", srv.URL)
+		t.Setenv("ROSE_HOST", srv.URL)
 	}
 
 	setup := func(t *testing.T, pluginList string, cloudDisabled bool) (string, *OMP) {
@@ -144,10 +144,10 @@ func TestOMPRun_WebSearchPluginLifecycle(t *testing.T) {
 		tmpDir := t.TempDir()
 		setOMPTestHome(t, tmpDir)
 		t.Setenv("PATH", tmpDir)
-		t.Setenv("OLLAMA_LAUNCH_OMP_TEST_HELPER", "1")
-		t.Setenv("OLLAMA_LAUNCH_OMP_TEST_PLUGIN_LIST", pluginList)
+		t.Setenv("ROSE_LAUNCH_OMP_TEST_HELPER", "1")
+		t.Setenv("ROSE_LAUNCH_OMP_TEST_PLUGIN_LIST", pluginList)
 		logPath := filepath.Join(tmpDir, "omp.log")
-		t.Setenv("OLLAMA_LAUNCH_OMP_TEST_LOG", logPath)
+		t.Setenv("ROSE_LAUNCH_OMP_TEST_LOG", logPath)
 		setCloudStatus(t, cloudDisabled)
 		seedOMPHelperBinary(t, tmpDir)
 		return logPath, &OMP{}
@@ -171,7 +171,7 @@ func TestOMPRun_WebSearchPluginLifecycle(t *testing.T) {
 		if !strings.Contains(got, "plugin install "+ompWebSearchPlugin+"\n") {
 			t.Fatalf("expected plugin install call, got:\n%s", got)
 		}
-		if !strings.Contains(got, "--model ollama/kimi-k2.6:cloud session\n") {
+		if !strings.Contains(got, "--model rose/kimi-k2.6:cloud session\n") {
 			t.Fatalf("expected final omp launch call, got:\n%s", got)
 		}
 	})
@@ -191,14 +191,14 @@ func TestOMPRun_WebSearchPluginLifecycle(t *testing.T) {
 		if !strings.Contains(got, "plugin install "+ompWebSearchPlugin+"\n") {
 			t.Fatalf("expected plugin refresh install call, got:\n%s", got)
 		}
-		if !strings.Contains(got, "--model ollama/gemma4 chat\n") {
+		if !strings.Contains(got, "--model rose/gemma4 chat\n") {
 			t.Fatalf("expected final omp launch call, got:\n%s", got)
 		}
 	})
 
 	t.Run("web search install failure warns and continues", func(t *testing.T) {
 		logPath, o := setup(t, "No plugins installed\n", false)
-		t.Setenv("OLLAMA_LAUNCH_OMP_TEST_FAIL_INSTALL", "1")
+		t.Setenv("ROSE_LAUNCH_OMP_TEST_FAIL_INSTALL", "1")
 
 		stderr := captureStderr(t, func() {
 			if err := o.Run("gemma4", nil, []string{"chat"}); err != nil {
@@ -213,7 +213,7 @@ func TestOMPRun_WebSearchPluginLifecycle(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if !strings.Contains(string(calls), "--model ollama/gemma4 chat\n") {
+		if !strings.Contains(string(calls), "--model rose/gemma4 chat\n") {
 			t.Fatalf("expected final omp launch call, got:\n%s", calls)
 		}
 	})
@@ -238,7 +238,7 @@ func TestOMPRun_WebSearchPluginLifecycle(t *testing.T) {
 		if strings.Contains(got, "plugin list\n") || strings.Contains(got, "plugin install "+ompWebSearchPlugin+"\n") {
 			t.Fatalf("did not expect plugin management calls, got:\n%s", got)
 		}
-		if !strings.Contains(got, "--model ollama/gemma4 chat\n") {
+		if !strings.Contains(got, "--model rose/gemma4 chat\n") {
 			t.Fatalf("expected final omp launch call, got:\n%s", got)
 		}
 	})
@@ -316,7 +316,7 @@ func TestOMPFindPath(t *testing.T) {
 func TestOMPConfigureWithModelsWritesModelsYML(t *testing.T) {
 	home := t.TempDir()
 	setOMPTestHome(t, home)
-	t.Setenv("OLLAMA_HOST", "http://0.0.0.0:11434")
+	t.Setenv("ROSE_HOST", "http://0.0.0.0:11434")
 
 	o := &OMP{}
 	models := []LaunchModel{
@@ -352,8 +352,8 @@ func TestOMPConfigureWithModelsWritesModelsYML(t *testing.T) {
 		t.Fatalf("auth = %v, want none", provider["auth"])
 	}
 	discovery, _ := provider["discovery"].(map[string]any)
-	if discovery["type"] != "ollama" {
-		t.Fatalf("discovery = %v, want type ollama", discovery)
+	if discovery["type"] != "rose" {
+		t.Fatalf("discovery = %v, want type rose", discovery)
 	}
 
 	entries := ompModelEntriesFromYAML(t, provider)
@@ -402,7 +402,7 @@ func TestOMPConfigureWithModelsPreservesExistingConfig(t *testing.T) {
 providers:
   anthropic:
     baseUrl: https://example.com/anthropic
-  ollama:
+  rose:
     baseUrl: http://old-host:11434
     api: openai-responses
     auth: none
@@ -437,7 +437,7 @@ theme: monochrome
 	cfg := parseOMPConfigYAML(t, data)
 	providers, _ := cfg["providers"].(map[string]any)
 	if _, ok := providers["anthropic"]; !ok {
-		t.Fatalf("expected non-Ollama provider to be preserved: %v", providers)
+		t.Fatalf("expected non-Rose provider to be preserved: %v", providers)
 	}
 
 	provider := ompProviderFromYAML(t, cfg)
@@ -557,7 +557,7 @@ func TestOMPConfigureWithModelsRespectsPiCodingAgentDir(t *testing.T) {
 func TestOMPCurrentModelRequiresHealthyProvider(t *testing.T) {
 	home := t.TempDir()
 	setOMPTestHome(t, home)
-	t.Setenv("OLLAMA_HOST", "http://127.0.0.1:11434")
+	t.Setenv("ROSE_HOST", "http://127.0.0.1:11434")
 
 	modelsPath := filepath.Join(home, ".omp", "agent", "models.yml")
 	if err := os.MkdirAll(filepath.Dir(modelsPath), 0o755); err != nil {
@@ -575,7 +575,7 @@ func TestOMPCurrentModelRequiresHealthyProvider(t *testing.T) {
 				"    api: openai-responses\n" +
 				"    auth: none\n" +
 				"    discovery:\n" +
-				"      type: ollama\n",
+				"      type: rose\n",
 		},
 		{
 			name: "wrong api",
@@ -584,7 +584,7 @@ func TestOMPCurrentModelRequiresHealthyProvider(t *testing.T) {
 				"    api: openai-chat\n" +
 				"    auth: none\n" +
 				"    discovery:\n" +
-				"      type: ollama\n",
+				"      type: rose\n",
 		},
 		{
 			name: "wrong auth",
@@ -593,7 +593,7 @@ func TestOMPCurrentModelRequiresHealthyProvider(t *testing.T) {
 				"    api: openai-responses\n" +
 				"    auth: api-key\n" +
 				"    discovery:\n" +
-				"      type: ollama\n",
+				"      type: rose\n",
 		},
 		{
 			name: "wrong discovery",
@@ -609,7 +609,7 @@ func TestOMPCurrentModelRequiresHealthyProvider(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			cfg := "providers:\n" +
-				"  ollama:\n" +
+				"  rose:\n" +
 				tt.provider +
 				"    models:\n" +
 				"      - id: gemma4\n"
@@ -638,9 +638,9 @@ func ompProviderFromYAML(t *testing.T, cfg map[string]any) map[string]any {
 	if !ok {
 		t.Fatalf("providers missing from config: %v", cfg)
 	}
-	provider, ok := providers["ollama"].(map[string]any)
+	provider, ok := providers["rose"].(map[string]any)
 	if !ok {
-		t.Fatalf("ollama provider missing from config: %v", providers)
+		t.Fatalf("rose provider missing from config: %v", providers)
 	}
 	return provider
 }

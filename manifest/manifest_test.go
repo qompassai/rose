@@ -14,7 +14,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/types/model"
 )
 
 func createManifestAtRoot(t *testing.T, path, root, name string) {
@@ -54,7 +54,7 @@ func createManifestForTest(configDigest, layerDigest, runner string) Manifest {
 		},
 		Layers: []Layer{
 			{
-				MediaType: "application/vnd.ollama.image.model",
+				MediaType: "application/vnd.rose.image.model",
 				Digest:    layerDigest,
 				Size:      34,
 			},
@@ -91,7 +91,7 @@ func writeManifestBlobForTest(t *testing.T, data []byte) string {
 }
 
 func TestWriteManifestStoresManifestAsBlob(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	name := model.ParseName("example")
 	config := Layer{
@@ -151,7 +151,7 @@ func TestWriteManifestStoresManifestAsBlob(t *testing.T) {
 func TestReadManifestSymlink(t *testing.T) {
 	for _, action := range []string{"read", "parse", "prune", "corrupt"} {
 		t.Run(action, func(t *testing.T) {
-			t.Setenv("OLLAMA_MODELS", t.TempDir())
+			t.Setenv("ROSE_MODELS", t.TempDir())
 			name := model.ParseName("example")
 			data := createManifestListData(t,
 				createManifestForTest("sha256:"+strings.Repeat("a", 64), "sha256:"+strings.Repeat("b", 64), RunnerGGML),
@@ -228,7 +228,7 @@ func TestReadManifestSymlink(t *testing.T) {
 }
 
 func TestV2ManifestPathEscapesHostPort(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	name := model.ParseNameBare("127.0.0.1:12345/library/test:latest")
 	data := []byte(`{"schemaVersion":2,"mediaType":"application/vnd.docker.distribution.manifest.v2+json"}`)
@@ -277,7 +277,7 @@ func TestV2ManifestPathEscapesHostPort(t *testing.T) {
 }
 
 func TestManifestStoreLockKeepsManifestBlobDuringConcurrentPrune(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	name := model.ParseName("example")
 	data := []byte(`{"schemaVersion":2,"mediaType":"application/vnd.docker.distribution.manifest.v2+json"}`)
@@ -334,7 +334,7 @@ func TestManifestStoreLockKeepsManifestBlobDuringConcurrentPrune(t *testing.T) {
 }
 
 func TestWriteManifestBlobDoesNotRemoveDestinationOnRenameFailure(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	data := []byte(`{"schemaVersion":2,"mediaType":"application/vnd.docker.distribution.manifest.v2+json"}`)
 	sum := sha256.Sum256(data)
@@ -361,7 +361,7 @@ func TestWriteManifestBlobDoesNotRemoveDestinationOnRenameFailure(t *testing.T) 
 }
 
 func TestParseNamedManifestUsesNamedPathModTime(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	name := model.ParseName("example")
 	data := []byte(`{"schemaVersion":2,"mediaType":"application/vnd.docker.distribution.manifest.v2+json"}`)
@@ -424,7 +424,7 @@ func TestDigestReference(t *testing.T) {
 }
 
 func TestParseNamedManifestByDigestReference(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	m := createManifestForTest(
 		"sha256:"+strings.Repeat("a", 64),
@@ -451,7 +451,7 @@ func TestParseNamedManifestByDigestReference(t *testing.T) {
 }
 
 func TestParseManifestListByDigestReference(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	child := createManifestForTest(
 		"sha256:"+strings.Repeat("a", 64),
@@ -496,7 +496,7 @@ func TestParseManifestListByDigestReference(t *testing.T) {
 }
 
 func TestRemoveNamedByDigestReference(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	name := model.ParseName("example")
 	if err := WriteManifest(
@@ -552,7 +552,7 @@ func TestSelectManifestUsesRunnerPreference(t *testing.T) {
 }
 
 func TestSelectManifestReferenceDoesNotResolveBlob(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	ref, err := NewManifestReference("sha256:"+strings.Repeat("a", 64), RunnerGGML, FormatGGUF)
 	if err != nil {
@@ -578,7 +578,7 @@ func TestSelectManifestReferenceDoesNotResolveBlob(t *testing.T) {
 
 func TestSelectManifestRejectsOldOllamaRunner(t *testing.T) {
 	_, err := selectManifestWithPreferences([]Manifest{
-		createManifestForTest("sha256:"+strings.Repeat("a", 64), "sha256:"+strings.Repeat("b", 64), "ollama"),
+		createManifestForTest("sha256:"+strings.Repeat("a", 64), "sha256:"+strings.Repeat("b", 64), "rose"),
 	}, []string{RunnerGGML})
 	if !errors.Is(err, ErrNoCompatibleManifest) {
 		t.Fatalf("err = %v, want %v", err, ErrNoCompatibleManifest)
@@ -586,7 +586,7 @@ func TestSelectManifestRejectsOldOllamaRunner(t *testing.T) {
 }
 
 func TestParseNamedManifestResolvesManifestList(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	name := model.ParseName("example")
 
@@ -677,7 +677,7 @@ func TestParseNamedManifestResolvesManifestList(t *testing.T) {
 }
 
 func TestTotalSizeForNameIncludesAllManifestListChildren(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	name := model.ParseName("example")
 
@@ -705,12 +705,12 @@ func TestTotalSizeForNameIncludesAllManifestListChildren(t *testing.T) {
 		},
 		Layers: []Layer{
 			{
-				MediaType: "application/vnd.ollama.image.model",
+				MediaType: "application/vnd.rose.image.model",
 				Digest:    sharedLayerDigest,
 				Size:      int64(len(sharedLayerData)),
 			},
 			{
-				MediaType: "application/vnd.ollama.image.model",
+				MediaType: "application/vnd.rose.image.model",
 				Digest:    ggufLayerDigest,
 				Size:      int64(len(ggufLayerData)),
 			},
@@ -775,7 +775,7 @@ func TestTotalSizeForNameIncludesAllManifestListChildren(t *testing.T) {
 }
 
 func TestPartialManifestListTracksPresentAndMissingChildren(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	name := model.ParseName("example")
 
@@ -796,7 +796,7 @@ func TestPartialManifestListTracksPresentAndMissingChildren(t *testing.T) {
 		},
 		Layers: []Layer{
 			{
-				MediaType: "application/vnd.ollama.image.model",
+				MediaType: "application/vnd.rose.image.model",
 				Digest:    layerDigest,
 				Size:      int64(len(layerData)),
 			},
@@ -850,7 +850,7 @@ func TestPartialManifestListTracksPresentAndMissingChildren(t *testing.T) {
 
 func TestParseNamedManifestLeavesLegacyManifestInPlace(t *testing.T) {
 	models := t.TempDir()
-	t.Setenv("OLLAMA_MODELS", models)
+	t.Setenv("ROSE_MODELS", models)
 
 	name := model.ParseName("example")
 	createManifest(t, models, name.Filepath())
@@ -888,7 +888,7 @@ func TestParseNamedManifestLeavesLegacyManifestInPlace(t *testing.T) {
 
 func TestMigrateManifestLinks(t *testing.T) {
 	models := t.TempDir()
-	t.Setenv("OLLAMA_MODELS", models)
+	t.Setenv("ROSE_MODELS", models)
 
 	name := model.ParseName("example")
 	createManifest(t, models, name.Filepath())
@@ -951,7 +951,7 @@ func TestMigrateManifestLinks(t *testing.T) {
 }
 
 func TestRemoveNamedRemovesUnreferencedManifestBlob(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	name := model.ParseName("example")
 	if err := WriteManifest(name, Layer{}, nil); err != nil {
@@ -980,7 +980,7 @@ func TestRemoveNamedRemovesUnreferencedManifestBlob(t *testing.T) {
 }
 
 func TestRemoveNamedTracksManifestListChildBlobs(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	ggmlConfigDigest := writeManifestBlobForTest(t, []byte("ggml config"))
 	ggmlLayerDigest := writeManifestBlobForTest(t, []byte("ggml layer"))
@@ -1055,7 +1055,7 @@ func TestRemoveNamedTracksManifestListChildBlobs(t *testing.T) {
 }
 
 func TestRemoveNamedDigestRemovesManifestListChild(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	ggmlConfigDigest := writeManifestBlobForTest(t, []byte("ggml config"))
 	ggmlLayerDigest := writeManifestBlobForTest(t, []byte("ggml layer"))
@@ -1119,7 +1119,7 @@ func TestRemoveNamedDigestRemovesManifestListChild(t *testing.T) {
 }
 
 func TestParseNamedManifestRejectsUnsafeSymlinks(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	name := model.ParseName("example")
 	manifestPath, err := PathForName(name)
@@ -1177,7 +1177,7 @@ func TestParseNamedManifestRejectsUnsafeSymlinks(t *testing.T) {
 
 func TestParseNamedManifestPrefersV2(t *testing.T) {
 	models := t.TempDir()
-	t.Setenv("OLLAMA_MODELS", models)
+	t.Setenv("ROSE_MODELS", models)
 
 	name := model.ParseName("example")
 
@@ -1207,7 +1207,7 @@ func TestParseNamedManifestPrefersV2(t *testing.T) {
 
 func TestManifestsV2ShadowsLegacy(t *testing.T) {
 	models := t.TempDir()
-	t.Setenv("OLLAMA_MODELS", models)
+	t.Setenv("ROSE_MODELS", models)
 
 	name := model.ParseName("example")
 	createManifest(t, models, name.Filepath())
@@ -1254,23 +1254,23 @@ func TestFindName(t *testing.T) {
 		{name: "corrupt v2 shadows legacy", legacy: `{}`, v2: `{`},
 		{
 			name: "manifest list", found: true,
-			v2: `{"mediaType":"application/vnd.ollama.manifest.list.v2+json","manifests":[{"runner":"llamacpp","config":{"digest":"sha256:abc"}}]}`,
+			v2: `{"mediaType":"application/vnd.rose.manifest.list.v2+json","manifests":[{"runner":"llamacpp","config":{"digest":"sha256:abc"}}]}`,
 		},
 		{
 			name: "manifest list with missing child",
-			v2:   `{"mediaType":"application/vnd.ollama.manifest.list.v2+json","manifests":[{"runner":"llamacpp","digest":"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}]}`,
+			v2:   `{"mediaType":"application/vnd.rose.manifest.list.v2+json","manifests":[{"runner":"llamacpp","digest":"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}]}`,
 		},
 		{
 			name: "unsupported runner",
-			v2:   `{"mediaType":"application/vnd.ollama.manifest.list.v2+json","manifests":[{"runner":"unsupported","config":{"digest":"sha256:abc"}}]}`,
+			v2:   `{"mediaType":"application/vnd.rose.manifest.list.v2+json","manifests":[{"runner":"unsupported","config":{"digest":"sha256:abc"}}]}`,
 		},
 		{
 			name: "nested manifest list",
-			v2:   `{"mediaType":"application/vnd.ollama.manifest.list.v2+json","manifests":[{"runner":"llamacpp","mediaType":"application/vnd.ollama.manifest.list.v2+json","manifests":[{"runner":"llamacpp"}]}]}`,
+			v2:   `{"mediaType":"application/vnd.rose.manifest.list.v2+json","manifests":[{"runner":"llamacpp","mediaType":"application/vnd.rose.manifest.list.v2+json","manifests":[{"runner":"llamacpp"}]}]}`,
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			t.Setenv("OLLAMA_MODELS", t.TempDir())
+			t.Setenv("ROSE_MODELS", t.TempDir())
 			name := model.ParseName("MyOrg/MyModel:Q8")
 			if tc.legacy != "" {
 				if err := WriteLegacyManifestData(name, []byte(tc.legacy)); err != nil {
@@ -1372,7 +1372,7 @@ func TestManifests(t *testing.T) {
 	for n, wants := range cases {
 		t.Run(n, func(t *testing.T) {
 			d := t.TempDir()
-			t.Setenv("OLLAMA_MODELS", d)
+			t.Setenv("ROSE_MODELS", d)
 
 			for _, p := range wants.ps {
 				createManifest(t, d, p)
@@ -1429,7 +1429,7 @@ func TestTensorLayers(t *testing.T) {
 }
 
 func TestReadConfig(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	layer, err := NewLayer(strings.NewReader(`{"model_type":"test"}`), MediaTypeImageJSON)
 	if err != nil {

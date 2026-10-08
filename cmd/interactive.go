@@ -15,12 +15,12 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/envconfig"
-	"github.com/ollama/ollama/internal/modelref"
-	"github.com/ollama/ollama/readline"
-	"github.com/ollama/ollama/types/errtypes"
-	"github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/envconfig"
+	"github.com/qompassai/rose/internal/modelref"
+	"github.com/qompassai/rose/readline"
+	"github.com/qompassai/rose/types/errtypes"
+	"github.com/qompassai/rose/types/model"
 )
 
 type MultilineState int
@@ -83,7 +83,7 @@ func generateInteractive(cmd *cobra.Command, opts runOptions) error {
 		fmt.Fprintln(os.Stderr, "  Ctrl + l            Clear the screen")
 		fmt.Fprintln(os.Stderr, "  Ctrl + g            Open default editor to compose a prompt")
 		fmt.Fprintln(os.Stderr, "  Ctrl + c            Stop the model from responding")
-		fmt.Fprintln(os.Stderr, "  Ctrl + d            Exit ollama (/bye)")
+		fmt.Fprintln(os.Stderr, "  Ctrl + d            Exit rose (/bye)")
 		fmt.Fprintln(os.Stderr, "")
 	}
 
@@ -216,7 +216,7 @@ func generateInteractive(cmd *cobra.Command, opts runOptions) error {
 
 			client, err := api.ClientFromEnvironment()
 			if err != nil {
-				fmt.Println("error: couldn't connect to ollama server")
+				fmt.Println("error: couldn't connect to rose server")
 				return err
 			}
 
@@ -260,7 +260,7 @@ func generateInteractive(cmd *cobra.Command, opts runOptions) error {
 
 			client, err := api.ClientFromEnvironment()
 			if err != nil {
-				fmt.Println("error: couldn't connect to ollama server")
+				fmt.Println("error: couldn't connect to rose server")
 				return err
 			}
 
@@ -409,7 +409,7 @@ func generateInteractive(cmd *cobra.Command, opts runOptions) error {
 			if len(args) > 1 {
 				client, err := api.ClientFromEnvironment()
 				if err != nil {
-					fmt.Println("error: couldn't connect to ollama server")
+					fmt.Println("error: couldn't connect to rose server")
 					return err
 				}
 				req := &api.ShowRequest{
@@ -656,13 +656,13 @@ func editInExternalEditor(content string) (string, error) {
 	// Check that the editor binary exists
 	args := strings.Fields(editor)
 	if len(args) == 0 {
-		return "", fmt.Errorf("no editor configured, set OLLAMA_EDITOR to the path of your preferred editor")
+		return "", fmt.Errorf("no editor configured, set ROSE_EDITOR to the path of your preferred editor")
 	}
 	if _, err := exec.LookPath(args[0]); err != nil {
-		return "", fmt.Errorf("editor %q not found, set OLLAMA_EDITOR to the path of your preferred editor", args[0])
+		return "", fmt.Errorf("editor %q not found, set ROSE_EDITOR to the path of your preferred editor", args[0])
 	}
 
-	tmpFile, err := os.CreateTemp("", "ollama-prompt-*.txt")
+	tmpFile, err := os.CreateTemp("", "rose-prompt-*.txt")
 	if err != nil {
 		return "", fmt.Errorf("creating temp file: %w", err)
 	}

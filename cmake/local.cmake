@@ -1,28 +1,28 @@
-# Local Ollama superbuild targets.
+# Local Rose superbuild targets.
 #
 # This file keeps the repository-root CMake project focused on orchestration:
-# it builds a runnable local Ollama payload by delegating llama.cpp work to the
+# it builds a runnable local Rose payload by delegating llama.cpp work to the
 # llama/server CMake project and building the Go binary into a matching layout.
 
 include(ExternalProject)
 
-set(OLLAMA_LLAMA_BACKENDS "" CACHE STRING
+set(ROSE_LLAMA_BACKENDS "" CACHE STRING
     "Semicolon-separated llama-server GPU backends to build: cuda_v12;cuda_v13;rocm_v7_1;rocm_v7_2;vulkan;cuda_jetpack5;cuda_jetpack6")
 set(_ollama_mlx_backends_doc "Semicolon-separated MLX backends to build: cuda_v13;metal_v3;metal_v4")
-set(OLLAMA_VERSION "0.0.0" CACHE STRING "Ollama version embedded in the local Go binary")
-set(OLLAMA_PAYLOAD_INSTALL_PREFIX "${CMAKE_BINARY_DIR}" CACHE PATH
-    "Build-time staging prefix for nested Ollama native payloads")
+set(ROSE_VERSION "0.0.0" CACHE STRING "Rose version embedded in the local Go binary")
+set(ROSE_PAYLOAD_INSTALL_PREFIX "${CMAKE_BINARY_DIR}" CACHE PATH
+    "Build-time staging prefix for nested Rose native payloads")
 
-string(REGEX REPLACE "^v" "" OLLAMA_VERSION "${OLLAMA_VERSION}")
+string(REGEX REPLACE "^v" "" ROSE_VERSION "${ROSE_VERSION}")
 
-set(OLLAMA_NATIVE_CONFIG_ARG)
+set(ROSE_NATIVE_CONFIG_ARG)
 if(CMAKE_CONFIGURATION_TYPES)
-    set(OLLAMA_NATIVE_CONFIG_ARG --config Release)
+    set(ROSE_NATIVE_CONFIG_ARG --config Release)
 endif()
 
-set(OLLAMA_NATIVE_EXTERNAL_OPTIONS)
+set(ROSE_NATIVE_EXTERNAL_OPTIONS)
 if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.28)
-    list(APPEND OLLAMA_NATIVE_EXTERNAL_OPTIONS BUILD_JOB_SERVER_AWARE TRUE)
+    list(APPEND ROSE_NATIVE_EXTERNAL_OPTIONS BUILD_JOB_SERVER_AWARE TRUE)
 endif()
 
 function(ollama_check_metal_toolchain output_version)
@@ -90,65 +90,65 @@ function(ollama_default_mlx_backends output)
         else()
             set(_backends "metal_v3")
         endif()
-        message(STATUS "Defaulting OLLAMA_MLX_BACKENDS=${_backends} for macOS arm64")
+        message(STATUS "Defaulting ROSE_MLX_BACKENDS=${_backends} for macOS arm64")
     endif()
     set(${output} "${_backends}" PARENT_SCOPE)
 endfunction()
 
-if(NOT DEFINED OLLAMA_MLX_BACKENDS)
+if(NOT DEFINED ROSE_MLX_BACKENDS)
     ollama_default_mlx_backends(_ollama_default_mlx_backends)
-    set(OLLAMA_MLX_BACKENDS "${_ollama_default_mlx_backends}" CACHE STRING "${_ollama_mlx_backends_doc}")
+    set(ROSE_MLX_BACKENDS "${_ollama_default_mlx_backends}" CACHE STRING "${_ollama_mlx_backends_doc}")
 else()
-    set(OLLAMA_MLX_BACKENDS "${OLLAMA_MLX_BACKENDS}" CACHE STRING "${_ollama_mlx_backends_doc}")
+    set(ROSE_MLX_BACKENDS "${ROSE_MLX_BACKENDS}" CACHE STRING "${_ollama_mlx_backends_doc}")
 endif()
 
-if(NOT OLLAMA_HAVE_LLAMA_SERVER)
-    if(OLLAMA_LLAMA_BACKENDS)
-        message(FATAL_ERROR "llama/server is required when OLLAMA_LLAMA_BACKENDS is set")
+if(NOT ROSE_HAVE_LLAMA_SERVER)
+    if(ROSE_LLAMA_BACKENDS)
+        message(FATAL_ERROR "llama/server is required when ROSE_LLAMA_BACKENDS is set")
     endif()
-    if(NOT OLLAMA_MLX_BACKENDS)
-        message(FATAL_ERROR "llama/server is required for local Ollama builds")
+    if(NOT ROSE_MLX_BACKENDS)
+        message(FATAL_ERROR "llama/server is required for local Rose builds")
     endif()
 else()
-    file(READ "${CMAKE_SOURCE_DIR}/LLAMA_CPP_VERSION" OLLAMA_LLAMA_CPP_GIT_TAG)
-    string(STRIP "${OLLAMA_LLAMA_CPP_GIT_TAG}" OLLAMA_LLAMA_CPP_GIT_TAG)
+    file(READ "${CMAKE_SOURCE_DIR}/LLAMA_CPP_VERSION" ROSE_LLAMA_CPP_GIT_TAG)
+    string(STRIP "${ROSE_LLAMA_CPP_GIT_TAG}" ROSE_LLAMA_CPP_GIT_TAG)
     include(${CMAKE_SOURCE_DIR}/llama/compat/compat.cmake)
     if(DEFINED FETCHCONTENT_SOURCE_DIR_LLAMA_CPP AND NOT "${FETCHCONTENT_SOURCE_DIR_LLAMA_CPP}" STREQUAL "")
-        get_filename_component(OLLAMA_LLAMA_CPP_SOURCE_DIR
+        get_filename_component(ROSE_LLAMA_CPP_SOURCE_DIR
             "${FETCHCONTENT_SOURCE_DIR_LLAMA_CPP}" ABSOLUTE BASE_DIR "${CMAKE_SOURCE_DIR}")
-        message(STATUS "Using llama.cpp source override: ${OLLAMA_LLAMA_CPP_SOURCE_DIR}")
-        add_custom_target(ollama-llama-cpp-source)
-    elseif(DEFINED ENV{OLLAMA_LLAMA_CPP_SOURCE})
-        get_filename_component(OLLAMA_LLAMA_CPP_SOURCE_DIR
-            "$ENV{OLLAMA_LLAMA_CPP_SOURCE}" ABSOLUTE BASE_DIR "${CMAKE_SOURCE_DIR}")
-        message(STATUS "Using local llama.cpp source: ${OLLAMA_LLAMA_CPP_SOURCE_DIR}")
-        add_custom_target(ollama-llama-cpp-source)
+        message(STATUS "Using llama.cpp source override: ${ROSE_LLAMA_CPP_SOURCE_DIR}")
+        add_custom_target(rose-llama-cpp-source)
+    elseif(DEFINED ENV{ROSE_LLAMA_CPP_SOURCE})
+        get_filename_component(ROSE_LLAMA_CPP_SOURCE_DIR
+            "$ENV{ROSE_LLAMA_CPP_SOURCE}" ABSOLUTE BASE_DIR "${CMAKE_SOURCE_DIR}")
+        message(STATUS "Using local llama.cpp source: ${ROSE_LLAMA_CPP_SOURCE_DIR}")
+        add_custom_target(rose-llama-cpp-source)
     else()
-        set(OLLAMA_LLAMA_CPP_SOURCE_DIR "${CMAKE_BINARY_DIR}/_deps/llama_cpp-src")
-        ExternalProject_Add(ollama-llama-cpp-source
+        set(ROSE_LLAMA_CPP_SOURCE_DIR "${CMAKE_BINARY_DIR}/_deps/llama_cpp-src")
+        ExternalProject_Add(rose-llama-cpp-source
             GIT_REPOSITORY "https://github.com/ggml-org/llama.cpp.git"
-            GIT_TAG ${OLLAMA_LLAMA_CPP_GIT_TAG}
+            GIT_TAG ${ROSE_LLAMA_CPP_GIT_TAG}
             GIT_SHALLOW TRUE
-            SOURCE_DIR ${OLLAMA_LLAMA_CPP_SOURCE_DIR}
+            SOURCE_DIR ${ROSE_LLAMA_CPP_SOURCE_DIR}
             CONFIGURE_COMMAND ""
             BUILD_COMMAND ""
             INSTALL_COMMAND ""
-            PATCH_COMMAND ${OLLAMA_LLAMA_CPP_COMPAT_PATCH_COMMAND}
+            PATCH_COMMAND ${ROSE_LLAMA_CPP_COMPAT_PATCH_COMMAND}
             USES_TERMINAL_DOWNLOAD TRUE
             USES_TERMINAL_PATCH TRUE)
     endif()
 endif()
 
 set(_mlx_source_targets)
-if(OLLAMA_MLX_BACKENDS)
-    file(READ "${CMAKE_SOURCE_DIR}/MLX_VERSION" OLLAMA_MLX_GIT_TAG)
-    string(STRIP "${OLLAMA_MLX_GIT_TAG}" OLLAMA_MLX_GIT_TAG)
-    file(READ "${CMAKE_SOURCE_DIR}/MLX_C_VERSION" OLLAMA_MLX_C_GIT_TAG)
-    string(STRIP "${OLLAMA_MLX_C_GIT_TAG}" OLLAMA_MLX_C_GIT_TAG)
+if(ROSE_MLX_BACKENDS)
+    file(READ "${CMAKE_SOURCE_DIR}/MLX_VERSION" ROSE_MLX_GIT_TAG)
+    string(STRIP "${ROSE_MLX_GIT_TAG}" ROSE_MLX_GIT_TAG)
+    file(READ "${CMAKE_SOURCE_DIR}/MLX_C_VERSION" ROSE_MLX_C_GIT_TAG)
+    string(STRIP "${ROSE_MLX_C_GIT_TAG}" ROSE_MLX_C_GIT_TAG)
 
     # Apply carried MLX and MLX-C patches to fetched sources and local overrides.
     find_package(Git REQUIRED)
-    set(OLLAMA_MLX_COMPAT_PATCH_COMMAND
+    set(ROSE_MLX_COMPAT_PATCH_COMMAND
         ${CMAKE_COMMAND}
             -DPATCH_DIR=${CMAKE_SOURCE_DIR}/mlx/compat/mlx
             -DPATCH_LABEL=mlx/compat/mlx
@@ -157,42 +157,42 @@ if(OLLAMA_MLX_BACKENDS)
 
     set(_mlx_source_override FALSE)
     if(DEFINED FETCHCONTENT_SOURCE_DIR_MLX AND NOT "${FETCHCONTENT_SOURCE_DIR_MLX}" STREQUAL "")
-        get_filename_component(OLLAMA_MLX_SOURCE_DIR
+        get_filename_component(ROSE_MLX_SOURCE_DIR
             "${FETCHCONTENT_SOURCE_DIR_MLX}" ABSOLUTE BASE_DIR "${CMAKE_SOURCE_DIR}")
-        message(STATUS "Using MLX source override: ${OLLAMA_MLX_SOURCE_DIR}")
+        message(STATUS "Using MLX source override: ${ROSE_MLX_SOURCE_DIR}")
         set(_mlx_source_override TRUE)
-    elseif(DEFINED ENV{OLLAMA_MLX_SOURCE})
-        get_filename_component(OLLAMA_MLX_SOURCE_DIR
-            "$ENV{OLLAMA_MLX_SOURCE}" ABSOLUTE BASE_DIR "${CMAKE_SOURCE_DIR}")
-        message(STATUS "Using local MLX source: ${OLLAMA_MLX_SOURCE_DIR}")
+    elseif(DEFINED ENV{ROSE_MLX_SOURCE})
+        get_filename_component(ROSE_MLX_SOURCE_DIR
+            "$ENV{ROSE_MLX_SOURCE}" ABSOLUTE BASE_DIR "${CMAKE_SOURCE_DIR}")
+        message(STATUS "Using local MLX source: ${ROSE_MLX_SOURCE_DIR}")
         set(_mlx_source_override TRUE)
     else()
-        set(OLLAMA_MLX_SOURCE_DIR "${CMAKE_BINARY_DIR}/_deps/mlx-src")
-        ExternalProject_Add(ollama-mlx-source
+        set(ROSE_MLX_SOURCE_DIR "${CMAKE_BINARY_DIR}/_deps/mlx-src")
+        ExternalProject_Add(rose-mlx-source
             GIT_REPOSITORY "https://github.com/ml-explore/mlx.git"
-            GIT_TAG ${OLLAMA_MLX_GIT_TAG}
+            GIT_TAG ${ROSE_MLX_GIT_TAG}
             # MLX uses commit hashes while we track closely; switch to shallow when MLX pins move to tags.
             GIT_SHALLOW FALSE
-            SOURCE_DIR ${OLLAMA_MLX_SOURCE_DIR}
+            SOURCE_DIR ${ROSE_MLX_SOURCE_DIR}
             CONFIGURE_COMMAND ""
             BUILD_COMMAND ""
             INSTALL_COMMAND ""
-            PATCH_COMMAND ${OLLAMA_MLX_COMPAT_PATCH_COMMAND}
+            PATCH_COMMAND ${ROSE_MLX_COMPAT_PATCH_COMMAND}
             USES_TERMINAL_DOWNLOAD TRUE
             USES_TERMINAL_PATCH TRUE)
-        list(APPEND _mlx_source_targets ollama-mlx-source)
+        list(APPEND _mlx_source_targets rose-mlx-source)
     endif()
 
     if(_mlx_source_override)
-        add_custom_target(ollama-mlx-override-patch
-            COMMAND ${OLLAMA_MLX_COMPAT_PATCH_COMMAND}
-            WORKING_DIRECTORY ${OLLAMA_MLX_SOURCE_DIR}
-            COMMENT "Applying carried MLX patches to ${OLLAMA_MLX_SOURCE_DIR}"
+        add_custom_target(rose-mlx-override-patch
+            COMMAND ${ROSE_MLX_COMPAT_PATCH_COMMAND}
+            WORKING_DIRECTORY ${ROSE_MLX_SOURCE_DIR}
+            COMMENT "Applying carried MLX patches to ${ROSE_MLX_SOURCE_DIR}"
             VERBATIM)
-        list(APPEND _mlx_source_targets ollama-mlx-override-patch)
+        list(APPEND _mlx_source_targets rose-mlx-override-patch)
     endif()
 
-    set(OLLAMA_MLX_C_COMPAT_PATCH_COMMAND
+    set(ROSE_MLX_C_COMPAT_PATCH_COMMAND
         ${CMAKE_COMMAND}
             -DPATCH_DIR=${CMAKE_SOURCE_DIR}/mlx/compat/mlx-c
             -DPATCH_LABEL=mlx/compat/mlx-c
@@ -201,83 +201,83 @@ if(OLLAMA_MLX_BACKENDS)
 
     set(_mlx_c_source_override FALSE)
     if(DEFINED "FETCHCONTENT_SOURCE_DIR_MLX-C" AND NOT "${FETCHCONTENT_SOURCE_DIR_MLX-C}" STREQUAL "")
-        get_filename_component(OLLAMA_MLX_C_SOURCE_DIR
+        get_filename_component(ROSE_MLX_C_SOURCE_DIR
             "${FETCHCONTENT_SOURCE_DIR_MLX-C}" ABSOLUTE BASE_DIR "${CMAKE_SOURCE_DIR}")
-        message(STATUS "Using MLX-C source override: ${OLLAMA_MLX_C_SOURCE_DIR}")
+        message(STATUS "Using MLX-C source override: ${ROSE_MLX_C_SOURCE_DIR}")
         set(_mlx_c_source_override TRUE)
-    elseif(DEFINED ENV{OLLAMA_MLX_C_SOURCE})
-        get_filename_component(OLLAMA_MLX_C_SOURCE_DIR
-            "$ENV{OLLAMA_MLX_C_SOURCE}" ABSOLUTE BASE_DIR "${CMAKE_SOURCE_DIR}")
-        message(STATUS "Using local MLX-C source: ${OLLAMA_MLX_C_SOURCE_DIR}")
+    elseif(DEFINED ENV{ROSE_MLX_C_SOURCE})
+        get_filename_component(ROSE_MLX_C_SOURCE_DIR
+            "$ENV{ROSE_MLX_C_SOURCE}" ABSOLUTE BASE_DIR "${CMAKE_SOURCE_DIR}")
+        message(STATUS "Using local MLX-C source: ${ROSE_MLX_C_SOURCE_DIR}")
         set(_mlx_c_source_override TRUE)
     else()
-        set(OLLAMA_MLX_C_SOURCE_DIR "${CMAKE_BINARY_DIR}/_deps/mlx-c-src")
-        ExternalProject_Add(ollama-mlx-c-source
+        set(ROSE_MLX_C_SOURCE_DIR "${CMAKE_BINARY_DIR}/_deps/mlx-c-src")
+        ExternalProject_Add(rose-mlx-c-source
             GIT_REPOSITORY "https://github.com/ml-explore/mlx-c.git"
-            GIT_TAG ${OLLAMA_MLX_C_GIT_TAG}
+            GIT_TAG ${ROSE_MLX_C_GIT_TAG}
             # MLX-C uses commit hashes while we track closely; switch to shallow when MLX-C pins move to tags.
             GIT_SHALLOW FALSE
-            SOURCE_DIR ${OLLAMA_MLX_C_SOURCE_DIR}
+            SOURCE_DIR ${ROSE_MLX_C_SOURCE_DIR}
             CONFIGURE_COMMAND ""
             BUILD_COMMAND ""
             INSTALL_COMMAND ""
-            PATCH_COMMAND ${OLLAMA_MLX_C_COMPAT_PATCH_COMMAND}
+            PATCH_COMMAND ${ROSE_MLX_C_COMPAT_PATCH_COMMAND}
             USES_TERMINAL_DOWNLOAD TRUE
             USES_TERMINAL_PATCH TRUE)
-        list(APPEND _mlx_source_targets ollama-mlx-c-source)
+        list(APPEND _mlx_source_targets rose-mlx-c-source)
     endif()
     if(_mlx_c_source_override)
         # Source overrides bypass the ExternalProject patch step, so patches
         # have to be applied to the override checkout as well. The
         # applier is idempotent, which keeps repeated builds safe.
-        add_custom_target(ollama-mlx-c-override-patch
-            COMMAND ${OLLAMA_MLX_C_COMPAT_PATCH_COMMAND}
-            WORKING_DIRECTORY ${OLLAMA_MLX_C_SOURCE_DIR}
-            COMMENT "Applying carried MLX-C patches to ${OLLAMA_MLX_C_SOURCE_DIR}"
+        add_custom_target(rose-mlx-c-override-patch
+            COMMAND ${ROSE_MLX_C_COMPAT_PATCH_COMMAND}
+            WORKING_DIRECTORY ${ROSE_MLX_C_SOURCE_DIR}
+            COMMENT "Applying carried MLX-C patches to ${ROSE_MLX_C_SOURCE_DIR}"
             VERBATIM)
-        list(APPEND _mlx_source_targets ollama-mlx-c-override-patch)
+        list(APPEND _mlx_source_targets rose-mlx-c-override-patch)
     endif()
     # XGrammar has no pre-fetch: without an override each variant's build
     # clones it via FetchContent.
     if(DEFINED FETCHCONTENT_SOURCE_DIR_XGRAMMAR AND NOT "${FETCHCONTENT_SOURCE_DIR_XGRAMMAR}" STREQUAL "")
-        get_filename_component(OLLAMA_XGRAMMAR_SOURCE_DIR
+        get_filename_component(ROSE_XGRAMMAR_SOURCE_DIR
             "${FETCHCONTENT_SOURCE_DIR_XGRAMMAR}" ABSOLUTE BASE_DIR "${CMAKE_SOURCE_DIR}")
-        message(STATUS "Using XGrammar source override: ${OLLAMA_XGRAMMAR_SOURCE_DIR}")
-    elseif(DEFINED ENV{OLLAMA_XGRAMMAR_SOURCE})
-        get_filename_component(OLLAMA_XGRAMMAR_SOURCE_DIR
-            "$ENV{OLLAMA_XGRAMMAR_SOURCE}" ABSOLUTE BASE_DIR "${CMAKE_SOURCE_DIR}")
-        message(STATUS "Using local XGrammar source: ${OLLAMA_XGRAMMAR_SOURCE_DIR}")
+        message(STATUS "Using XGrammar source override: ${ROSE_XGRAMMAR_SOURCE_DIR}")
+    elseif(DEFINED ENV{ROSE_XGRAMMAR_SOURCE})
+        get_filename_component(ROSE_XGRAMMAR_SOURCE_DIR
+            "$ENV{ROSE_XGRAMMAR_SOURCE}" ABSOLUTE BASE_DIR "${CMAKE_SOURCE_DIR}")
+        message(STATUS "Using local XGrammar source: ${ROSE_XGRAMMAR_SOURCE_DIR}")
     endif()
 
     # Refresh the vendored MLX-C headers once the sources are present. Every MLX
     # backend variant shares this destination in the source tree, so the copy has
     # to happen here rather than in each variant's build.
-    add_custom_target(ollama-mlx-vendor-headers
+    add_custom_target(rose-mlx-vendor-headers
         COMMAND ${CMAKE_COMMAND}
-            -DMLX_C_HEADERS_DIR=${OLLAMA_MLX_C_SOURCE_DIR}/mlx/c
+            -DMLX_C_HEADERS_DIR=${ROSE_MLX_C_SOURCE_DIR}/mlx/c
             -DMLX_C_HEADERS_DEST=${CMAKE_SOURCE_DIR}/mlx/include/mlx/c
             -P "${CMAKE_SOURCE_DIR}/cmake/vendor-mlx-c-headers.cmake"
         DEPENDS ${_mlx_source_targets}
         COMMENT "Vendoring MLX-C headers"
         VERBATIM)
-    add_custom_target(ollama-mlx-sources DEPENDS ollama-mlx-vendor-headers)
+    add_custom_target(rose-mlx-sources DEPENDS rose-mlx-vendor-headers)
 endif()
 
-set(OLLAMA_BUILD_PARALLEL "" CACHE STRING
+set(ROSE_BUILD_PARALLEL "" CACHE STRING
     "Number of parallel jobs for nested native builds (empty = use generator default)")
 
 set(_native_parallel_args --parallel)
-if(NOT OLLAMA_BUILD_PARALLEL STREQUAL "")
-    list(APPEND _native_parallel_args ${OLLAMA_BUILD_PARALLEL})
+if(NOT ROSE_BUILD_PARALLEL STREQUAL "")
+    list(APPEND _native_parallel_args ${ROSE_BUILD_PARALLEL})
 endif()
 
-set(OLLAMA_NATIVE_BUILD_TOOL_COMMAND
+set(ROSE_NATIVE_BUILD_TOOL_COMMAND
     ${CMAKE_COMMAND} --build <BINARY_DIR> ${_native_parallel_args})
-set(OLLAMA_NATIVE_BUILD_TARGET_ARG --target)
+set(ROSE_NATIVE_BUILD_TARGET_ARG --target)
 if(CMAKE_GENERATOR MATCHES "Makefiles")
-    set(OLLAMA_NATIVE_BUILD_TOOL_COMMAND
+    set(ROSE_NATIVE_BUILD_TOOL_COMMAND
         "$(MAKE)" -C <BINARY_DIR>)
-    set(OLLAMA_NATIVE_BUILD_TARGET_ARG)
+    set(ROSE_NATIVE_BUILD_TARGET_ARG)
 endif()
 
 function(ollama_escape_cmake_list input output)
@@ -406,18 +406,18 @@ function(ollama_rocm_preset backend output)
     ollama_cache_arg_is_set(CMAKE_HIP_ARCHITECTURES _has_hip_arch)
     if(_has_amdgpu_targets OR _has_hip_arch)
         if(backend STREQUAL "rocm_v7_1" AND NOT WIN32)
-            message(FATAL_ERROR "OLLAMA_LLAMA_BACKENDS=rocm_v7_1 is only supported for Windows ROCm builds")
+            message(FATAL_ERROR "ROSE_LLAMA_BACKENDS=rocm_v7_1 is only supported for Windows ROCm builds")
         elseif(backend STREQUAL "rocm_v7_2" AND WIN32)
-            message(FATAL_ERROR "OLLAMA_LLAMA_BACKENDS=rocm_v7_2 is only supported for Linux ROCm builds")
+            message(FATAL_ERROR "ROSE_LLAMA_BACKENDS=rocm_v7_2 is only supported for Linux ROCm builds")
         endif()
     elseif(backend STREQUAL "rocm_v7_1")
         if(NOT WIN32)
-            message(FATAL_ERROR "OLLAMA_LLAMA_BACKENDS=rocm_v7_1 is only supported for Windows ROCm builds")
+            message(FATAL_ERROR "ROSE_LLAMA_BACKENDS=rocm_v7_1 is only supported for Windows ROCm builds")
         endif()
         set(_preset "${backend}_windows")
     elseif(backend STREQUAL "rocm_v7_2")
         if(WIN32)
-            message(FATAL_ERROR "OLLAMA_LLAMA_BACKENDS=rocm_v7_2 is only supported for Linux ROCm builds")
+            message(FATAL_ERROR "ROSE_LLAMA_BACKENDS=rocm_v7_2 is only supported for Linux ROCm builds")
         endif()
         set(_preset "${backend}_linux")
     else()
@@ -445,11 +445,11 @@ function(ollama_add_llama_server_build name)
     ollama_collect_cache_args_with_prefix("LLAMA_" _llama_cache_args)
     set(_cmake_args
         -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-        -DCMAKE_INSTALL_PREFIX=${OLLAMA_PAYLOAD_INSTALL_PREFIX}
-        -DOLLAMA_LIB_DIR:STRING=${OLLAMA_LIB_DIR}
-        -DOLLAMA_RUNNER_DIR=${ARG_RUNNER_DIR}
-        -DFETCHCONTENT_SOURCE_DIR_LLAMA_CPP=${OLLAMA_LLAMA_CPP_SOURCE_DIR}
-        -DOLLAMA_LLAMA_CPP_SKIP_COMPAT_PATCH=ON
+        -DCMAKE_INSTALL_PREFIX=${ROSE_PAYLOAD_INSTALL_PREFIX}
+        -DROSE_LIB_DIR:STRING=${ROSE_LIB_DIR}
+        -DROSE_RUNNER_DIR=${ARG_RUNNER_DIR}
+        -DFETCHCONTENT_SOURCE_DIR_LLAMA_CPP=${ROSE_LLAMA_CPP_SOURCE_DIR}
+        -DROSE_LLAMA_CPP_SKIP_COMPAT_PATCH=ON
         -DGGML_NATIVE=OFF
         -DGGML_OPENMP=OFF
         ${ARG_CMAKE_ARGS}
@@ -494,17 +494,17 @@ function(ollama_add_llama_server_build name)
             -B <BINARY_DIR>
             ${_cmake_args})
     endif()
-    ExternalProject_Add(ollama-llama-server-${name}
+    ExternalProject_Add(rose-llama-server-${name}
         SOURCE_DIR ${CMAKE_SOURCE_DIR}/llama/server
         BINARY_DIR ${_build_dir}
         CONFIGURE_COMMAND ${_configure_command}
-        BUILD_COMMAND ${OLLAMA_NATIVE_BUILD_TOOL_COMMAND}
-            ${OLLAMA_NATIVE_CONFIG_ARG}
-            ${OLLAMA_NATIVE_BUILD_TARGET_ARG} ${ARG_TARGETS}
+        BUILD_COMMAND ${ROSE_NATIVE_BUILD_TOOL_COMMAND}
+            ${ROSE_NATIVE_CONFIG_ARG}
+            ${ROSE_NATIVE_BUILD_TARGET_ARG} ${ARG_TARGETS}
         INSTALL_COMMAND ${CMAKE_COMMAND} --install <BINARY_DIR>
-            ${OLLAMA_NATIVE_CONFIG_ARG}
+            ${ROSE_NATIVE_CONFIG_ARG}
             --component llama-server
-        DEPENDS ollama-llama-cpp-source
+        DEPENDS rose-llama-cpp-source
         LIST_SEPARATOR |
         # ExternalProject cannot reliably infer when nested FetchContent
         # sources, compat patches, or forwarded GGML/LLAMA cache settings need
@@ -512,7 +512,7 @@ function(ollama_add_llama_server_build name)
         # iteration correct; the nested generator still performs incremental
         # compilation.
         BUILD_ALWAYS TRUE
-        ${OLLAMA_NATIVE_EXTERNAL_OPTIONS}
+        ${ROSE_NATIVE_EXTERNAL_OPTIONS}
         USES_TERMINAL_CONFIGURE TRUE
         USES_TERMINAL_BUILD TRUE
         USES_TERMINAL_INSTALL TRUE)
@@ -528,19 +528,19 @@ function(ollama_add_mlx_build name)
     ollama_collect_cache_args_with_prefix("MLX_" _mlx_cache_args)
     set(_cmake_args
         -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-        -DCMAKE_INSTALL_PREFIX=${OLLAMA_PAYLOAD_INSTALL_PREFIX}
-        -DOLLAMA_LIB_DIR:STRING=${OLLAMA_LIB_DIR}
-        -DOLLAMA_RUNNER_DIR=${ARG_RUNNER_DIR}
-        -DOLLAMA_SOURCE_DIR=${CMAKE_SOURCE_DIR}
-        -DFETCHCONTENT_SOURCE_DIR_MLX=${OLLAMA_MLX_SOURCE_DIR}
-        -DFETCHCONTENT_SOURCE_DIR_MLX-C=${OLLAMA_MLX_C_SOURCE_DIR}
-        -DOLLAMA_MLX_GENERATE_WRAPPERS=OFF
+        -DCMAKE_INSTALL_PREFIX=${ROSE_PAYLOAD_INSTALL_PREFIX}
+        -DROSE_LIB_DIR:STRING=${ROSE_LIB_DIR}
+        -DROSE_RUNNER_DIR=${ARG_RUNNER_DIR}
+        -DROSE_SOURCE_DIR=${CMAKE_SOURCE_DIR}
+        -DFETCHCONTENT_SOURCE_DIR_MLX=${ROSE_MLX_SOURCE_DIR}
+        -DFETCHCONTENT_SOURCE_DIR_MLX-C=${ROSE_MLX_C_SOURCE_DIR}
+        -DROSE_MLX_GENERATE_WRAPPERS=OFF
         ${ARG_CMAKE_ARGS}
         ${_mlx_cache_args}
     )
-    if(OLLAMA_XGRAMMAR_SOURCE_DIR)
+    if(ROSE_XGRAMMAR_SOURCE_DIR)
         list(APPEND _cmake_args
-            -DFETCHCONTENT_SOURCE_DIR_XGRAMMAR=${OLLAMA_XGRAMMAR_SOURCE_DIR})
+            -DFETCHCONTENT_SOURCE_DIR_XGRAMMAR=${ROSE_XGRAMMAR_SOURCE_DIR})
     endif()
     foreach(_arg IN ITEMS
             BLAS_INCLUDE_DIRS
@@ -575,25 +575,25 @@ function(ollama_add_mlx_build name)
             ${_cmake_args})
     endif()
 
-    ExternalProject_Add(ollama-mlx-${name}
+    ExternalProject_Add(rose-mlx-${name}
         SOURCE_DIR ${CMAKE_SOURCE_DIR}/cmake/mlx
         BINARY_DIR ${_build_dir}
         CONFIGURE_COMMAND ${_configure_command}
-        BUILD_COMMAND ${OLLAMA_NATIVE_BUILD_TOOL_COMMAND}
-            ${OLLAMA_NATIVE_CONFIG_ARG}
-            ${OLLAMA_NATIVE_BUILD_TARGET_ARG} mlx
-            ${OLLAMA_NATIVE_BUILD_TARGET_ARG} mlxc
-            ${OLLAMA_NATIVE_BUILD_TARGET_ARG} ollama_xgrammar
+        BUILD_COMMAND ${ROSE_NATIVE_BUILD_TOOL_COMMAND}
+            ${ROSE_NATIVE_CONFIG_ARG}
+            ${ROSE_NATIVE_BUILD_TARGET_ARG} mlx
+            ${ROSE_NATIVE_BUILD_TARGET_ARG} mlxc
+            ${ROSE_NATIVE_BUILD_TARGET_ARG} ollama_xgrammar
         INSTALL_COMMAND ${CMAKE_COMMAND} --install <BINARY_DIR>
-            ${OLLAMA_NATIVE_CONFIG_ARG}
+            ${ROSE_NATIVE_CONFIG_ARG}
             --component MLX
             COMMAND ${CMAKE_COMMAND} --install <BINARY_DIR>
-            ${OLLAMA_NATIVE_CONFIG_ARG}
+            ${ROSE_NATIVE_CONFIG_ARG}
             --component MLX_VENDOR
-        DEPENDS ollama-mlx-sources
+        DEPENDS rose-mlx-sources
         LIST_SEPARATOR |
         BUILD_ALWAYS TRUE
-        ${OLLAMA_NATIVE_EXTERNAL_OPTIONS}
+        ${ROSE_NATIVE_EXTERNAL_OPTIONS}
         USES_TERMINAL_CONFIGURE TRUE
         USES_TERMINAL_BUILD TRUE
         USES_TERMINAL_INSTALL TRUE)
@@ -602,7 +602,7 @@ endfunction()
 find_program(GO_EXECUTABLE go)
 
 if(GO_EXECUTABLE)
-    if(NOT DEFINED OLLAMA_GO_LICENSE_TARGETS)
+    if(NOT DEFINED ROSE_GO_LICENSE_TARGETS)
         execute_process(
             COMMAND "${GO_EXECUTABLE}" env GOOS
             OUTPUT_VARIABLE _go_license_goos
@@ -613,23 +613,23 @@ if(GO_EXECUTABLE)
             OUTPUT_VARIABLE _go_license_goarch
             OUTPUT_STRIP_TRAILING_WHITESPACE
             COMMAND_ERROR_IS_FATAL ANY)
-        set(OLLAMA_GO_LICENSE_TARGETS "${_go_license_goos}/${_go_license_goarch}" CACHE STRING
+        set(ROSE_GO_LICENSE_TARGETS "${_go_license_goos}/${_go_license_goarch}" CACHE STRING
             "Semicolon-separated GOOS/GOARCH targets included in GO_LICENSE")
     endif()
 
-    add_custom_target(ollama-go-license
+    add_custom_target(rose-go-license
         COMMAND ${CMAKE_COMMAND}
             "-DGO_EXECUTABLE=${GO_EXECUTABLE}"
             "-DSOURCE_DIR=${CMAKE_SOURCE_DIR}"
             "-DBINARY_DIR=${CMAKE_BINARY_DIR}"
-            "-DOUTPUT_DIR=${OLLAMA_PAYLOAD_INSTALL_PREFIX}/${OLLAMA_LIB_DIR}"
-            "-DTARGETS=${OLLAMA_GO_LICENSE_TARGETS}"
+            "-DOUTPUT_DIR=${ROSE_PAYLOAD_INSTALL_PREFIX}/${ROSE_LIB_DIR}"
+            "-DTARGETS=${ROSE_GO_LICENSE_TARGETS}"
             -P "${CMAKE_SOURCE_DIR}/cmake/generate_go_license.cmake"
-        BYPRODUCTS "${OLLAMA_PAYLOAD_INSTALL_PREFIX}/${OLLAMA_LIB_DIR}/GO_LICENSE"
+        BYPRODUCTS "${ROSE_PAYLOAD_INSTALL_PREFIX}/${ROSE_LIB_DIR}/GO_LICENSE"
         COMMENT "Collecting Go licenses"
         VERBATIM)
 else()
-    add_custom_target(ollama-go-license
+    add_custom_target(rose-go-license
         COMMAND ${CMAKE_COMMAND} -E echo
             "Go executable not found. Install Go or set GO_EXECUTABLE to collect Go licenses."
         COMMAND ${CMAKE_COMMAND} -E false
@@ -637,58 +637,58 @@ else()
         VERBATIM)
 endif()
 
-if(OLLAMA_MLX_BACKENDS)
+if(ROSE_MLX_BACKENDS)
     if(GO_EXECUTABLE AND (NOT APPLE OR CMAKE_SYSTEM_PROCESSOR STREQUAL CMAKE_HOST_SYSTEM_PROCESSOR))
-        add_custom_target(ollama-mlx-generate-wrappers
+        add_custom_target(rose-mlx-generate-wrappers
             COMMAND ${CMAKE_COMMAND} -E env
                 CC= CGO_CFLAGS= CGO_CXXFLAGS=
                 ${GO_EXECUTABLE} generate ./mlx/...
             WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-            DEPENDS ollama-mlx-sources
+            DEPENDS rose-mlx-sources
             COMMENT "Regenerating MLX Go wrappers"
             VERBATIM)
     else()
-        add_custom_target(ollama-mlx-generate-wrappers
+        add_custom_target(rose-mlx-generate-wrappers
             COMMAND ${CMAKE_COMMAND} -E echo
                 "Cannot regenerate MLX wrappers while Go is unavailable or while cross-compiling"
             COMMAND ${CMAKE_COMMAND} -E false
-            DEPENDS ollama-mlx-sources
+            DEPENDS rose-mlx-sources
             VERBATIM)
     endif()
 endif()
 
-if(OLLAMA_HAVE_LLAMA_SERVER)
-    if(NOT OLLAMA_GO_OUTPUT)
+if(ROSE_HAVE_LLAMA_SERVER)
+    if(NOT ROSE_GO_OUTPUT)
         if(WIN32)
-            set(OLLAMA_GO_OUTPUT ${CMAKE_SOURCE_DIR}/ollama.exe)
+            set(ROSE_GO_OUTPUT ${CMAKE_SOURCE_DIR}/rose.exe)
         else()
-            set(OLLAMA_GO_OUTPUT ${CMAKE_SOURCE_DIR}/ollama)
+            set(ROSE_GO_OUTPUT ${CMAKE_SOURCE_DIR}/rose)
         endif()
     endif()
-    if(NOT IS_ABSOLUTE "${OLLAMA_GO_OUTPUT}")
-        set(OLLAMA_GO_OUTPUT "${CMAKE_SOURCE_DIR}/${OLLAMA_GO_OUTPUT}")
+    if(NOT IS_ABSOLUTE "${ROSE_GO_OUTPUT}")
+        set(ROSE_GO_OUTPUT "${CMAKE_SOURCE_DIR}/${ROSE_GO_OUTPUT}")
     endif()
-    get_filename_component(OLLAMA_GO_OUTPUT "${OLLAMA_GO_OUTPUT}" ABSOLUTE)
-    set(OLLAMA_GO_OUTPUT "${OLLAMA_GO_OUTPUT}" CACHE FILEPATH "Output path for the local Ollama Go binary")
-    get_filename_component(OLLAMA_GO_OUTPUT_DIR "${OLLAMA_GO_OUTPUT}" DIRECTORY)
+    get_filename_component(ROSE_GO_OUTPUT "${ROSE_GO_OUTPUT}" ABSOLUTE)
+    set(ROSE_GO_OUTPUT "${ROSE_GO_OUTPUT}" CACHE FILEPATH "Output path for the local Rose Go binary")
+    get_filename_component(ROSE_GO_OUTPUT_DIR "${ROSE_GO_OUTPUT}" DIRECTORY)
 
-    set(OLLAMA_GO_LDFLAGS
-        "-s -w -X=github.com/ollama/ollama/version.Version=${OLLAMA_VERSION} -X=github.com/ollama/ollama/server.mode=release")
+    set(ROSE_GO_LDFLAGS
+        "-s -w -X=github.com/qompassai/rose/version.Version=${ROSE_VERSION} -X=github.com/qompassai/rose/server.mode=release")
     if(GO_EXECUTABLE)
-        add_custom_target(ollama-go ALL
-            COMMAND ${CMAKE_COMMAND} -E make_directory "${OLLAMA_GO_OUTPUT_DIR}"
+        add_custom_target(rose-go ALL
+            COMMAND ${CMAKE_COMMAND} -E make_directory "${ROSE_GO_OUTPUT_DIR}"
             COMMAND ${CMAKE_COMMAND} -E env CGO_ENABLED=1
-                ${GO_EXECUTABLE} build -trimpath -ldflags "${OLLAMA_GO_LDFLAGS}" -o "${OLLAMA_GO_OUTPUT}" .
+                ${GO_EXECUTABLE} build -trimpath -ldflags "${ROSE_GO_LDFLAGS}" -o "${ROSE_GO_OUTPUT}" .
             WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-            BYPRODUCTS ${OLLAMA_GO_OUTPUT}
-            COMMENT "Building Ollama Go binary"
+            BYPRODUCTS ${ROSE_GO_OUTPUT}
+            COMMENT "Building Rose Go binary"
             VERBATIM)
     else()
-        add_custom_target(ollama-go ALL
+        add_custom_target(rose-go ALL
             COMMAND ${CMAKE_COMMAND} -E echo
-                "Go executable not found. Install Go or set GO_EXECUTABLE to build the local Ollama binary."
+                "Go executable not found. Install Go or set GO_EXECUTABLE to build the local Rose binary."
             COMMAND ${CMAKE_COMMAND} -E false
-            COMMENT "Building Ollama Go binary"
+            COMMENT "Building Rose Go binary"
             VERBATIM)
     endif()
 
@@ -717,18 +717,18 @@ if(OLLAMA_HAVE_LLAMA_SERVER)
         TARGETS llama-server llama-quantize
         CMAKE_ARGS ${_cpu_args})
 
-    add_custom_target(ollama-local ALL
-        DEPENDS ollama-go ollama-llama-server-local
-        COMMENT "Building local Ollama payload")
+    add_custom_target(rose-local ALL
+        DEPENDS rose-go rose-llama-server-local
+        COMMENT "Building local Rose payload")
 
-    install(PROGRAMS "${OLLAMA_GO_OUTPUT}"
+    install(PROGRAMS "${ROSE_GO_OUTPUT}"
         DESTINATION "${CMAKE_INSTALL_BINDIR}"
-        COMPONENT ollama-local)
+        COMPONENT rose-local)
 endif()
 
 set(_backend_targets)
-if(OLLAMA_HAVE_LLAMA_SERVER)
-    foreach(_backend IN LISTS OLLAMA_LLAMA_BACKENDS)
+if(ROSE_HAVE_LLAMA_SERVER)
+    foreach(_backend IN LISTS ROSE_LLAMA_BACKENDS)
         if(_backend STREQUAL "cuda_v12")
             ollama_llama_cuda_preset(${_backend} _cuda_preset)
             set(_cuda_args)
@@ -740,7 +740,7 @@ if(OLLAMA_HAVE_LLAMA_SERVER)
                 RUNNER_DIR ${_backend}
                 TARGETS ggml-cuda
                 CMAKE_ARGS ${_cuda_args})
-            list(APPEND _backend_targets ollama-llama-server-${_backend})
+            list(APPEND _backend_targets rose-llama-server-${_backend})
         elseif(_backend STREQUAL "cuda_v13")
             ollama_llama_cuda_preset(${_backend} _cuda_preset)
             set(_cuda_args)
@@ -752,7 +752,7 @@ if(OLLAMA_HAVE_LLAMA_SERVER)
                 RUNNER_DIR ${_backend}
                 TARGETS ggml-cuda
                 CMAKE_ARGS ${_cuda_args})
-            list(APPEND _backend_targets ollama-llama-server-${_backend})
+            list(APPEND _backend_targets rose-llama-server-${_backend})
         elseif(_backend STREQUAL "rocm_v7_1" OR _backend STREQUAL "rocm_v7_2")
             # ROCm 7.1 and 7.2 currently share build settings. Keep the backend
             # names versioned so future packaging can install side-by-side ROCm
@@ -763,7 +763,7 @@ if(OLLAMA_HAVE_LLAMA_SERVER)
                 -DGGML_BACKEND_DL=ON
                 -DGGML_HIP=ON
                 -DCMAKE_HIP_PLATFORM=amd
-                -DOLLAMA_GPU_BACKEND=hip)
+                -DROSE_GPU_BACKEND=hip)
             ollama_append_cache_arg_if_set(_rocm_args AMDGPU_TARGETS)
             ollama_append_cache_arg_if_set(_rocm_args CMAKE_HIP_ARCHITECTURES)
             ollama_append_cache_arg_if_set(_rocm_args CMAKE_HIP_FLAGS)
@@ -774,7 +774,7 @@ if(OLLAMA_HAVE_LLAMA_SERVER)
                 RUNNER_DIR ${_backend}
                 TARGETS ggml-hip
                 CMAKE_ARGS ${_rocm_args})
-            list(APPEND _backend_targets ollama-llama-server-${_backend})
+            list(APPEND _backend_targets rose-llama-server-${_backend})
         elseif(_backend STREQUAL "vulkan")
             ollama_add_llama_server_build(vulkan
                 RUNNER_DIR vulkan
@@ -783,8 +783,8 @@ if(OLLAMA_HAVE_LLAMA_SERVER)
                     -DBUILD_SHARED_LIBS=ON
                     -DGGML_BACKEND_DL=ON
                     -DGGML_VULKAN=ON
-                    -DOLLAMA_GPU_BACKEND=vulkan)
-            list(APPEND _backend_targets ollama-llama-server-vulkan)
+                    -DROSE_GPU_BACKEND=vulkan)
+            list(APPEND _backend_targets rose-llama-server-vulkan)
         elseif(_backend STREQUAL "cuda_jetpack5")
             if(CMAKE_CUDA_ARCHITECTURES)
                 set(_cuda_preset llama_cuda_jetpack5_user_arch)
@@ -799,7 +799,7 @@ if(OLLAMA_HAVE_LLAMA_SERVER)
                 RUNNER_DIR ${_backend}
                 TARGETS ggml-cuda
                 CMAKE_ARGS ${_cuda_args})
-            list(APPEND _backend_targets ollama-llama-server-${_backend})
+            list(APPEND _backend_targets rose-llama-server-${_backend})
         elseif(_backend STREQUAL "cuda_jetpack6")
             if(CMAKE_CUDA_ARCHITECTURES)
                 set(_cuda_preset llama_cuda_jetpack6_user_arch)
@@ -814,22 +814,22 @@ if(OLLAMA_HAVE_LLAMA_SERVER)
                 RUNNER_DIR ${_backend}
                 TARGETS ggml-cuda
                 CMAKE_ARGS ${_cuda_args})
-            list(APPEND _backend_targets ollama-llama-server-${_backend})
+            list(APPEND _backend_targets rose-llama-server-${_backend})
         else()
             message(FATAL_ERROR
-                "Unknown OLLAMA_LLAMA_BACKENDS entry '${_backend}'")
+                "Unknown ROSE_LLAMA_BACKENDS entry '${_backend}'")
         endif()
     endforeach()
 endif()
 
 if(_backend_targets)
-    add_custom_target(ollama-llama-server-backends ALL
+    add_custom_target(rose-llama-server-backends ALL
         DEPENDS ${_backend_targets}
         COMMENT "Building llama-server GPU backends")
 endif()
 
 set(_mlx_targets)
-foreach(_backend IN LISTS OLLAMA_MLX_BACKENDS)
+foreach(_backend IN LISTS ROSE_MLX_BACKENDS)
     if(_backend STREQUAL "cuda_v13")
         ollama_mlx_cuda_preset(_mlx_cuda_preset)
         set(_mlx_cuda_args)
@@ -840,19 +840,19 @@ foreach(_backend IN LISTS OLLAMA_MLX_BACKENDS)
             PRESET ${_mlx_cuda_preset}
             RUNNER_DIR mlx_cuda_v13
             CMAKE_ARGS ${_mlx_cuda_args})
-        list(APPEND _mlx_targets ollama-mlx-cuda_v13)
+        list(APPEND _mlx_targets rose-mlx-cuda_v13)
     elseif(_backend STREQUAL "metal_v3")
         if(NOT APPLE)
-            message(FATAL_ERROR "OLLAMA_MLX_BACKENDS=metal_v3 is only supported on macOS")
+            message(FATAL_ERROR "ROSE_MLX_BACKENDS=metal_v3 is only supported on macOS")
         endif()
         ollama_check_metal_toolchain(_metal_version)
         ollama_add_mlx_build(metal_v3
             PRESET mlx_metal_v3
             RUNNER_DIR mlx_metal_v3)
-        list(APPEND _mlx_targets ollama-mlx-metal_v3)
+        list(APPEND _mlx_targets rose-mlx-metal_v3)
     elseif(_backend STREQUAL "metal_v4")
         if(NOT APPLE)
-            message(FATAL_ERROR "OLLAMA_MLX_BACKENDS=metal_v4 is only supported on macOS")
+            message(FATAL_ERROR "ROSE_MLX_BACKENDS=metal_v4 is only supported on macOS")
         endif()
         ollama_check_metal_toolchain(_metal_version)
         ollama_macos_sdk_major_version(_ollama_mlx_sdk_major)
@@ -861,25 +861,25 @@ foreach(_backend IN LISTS OLLAMA_MLX_BACKENDS)
             ollama_add_mlx_build(metal_v4
                 PRESET mlx_metal_v4
                 RUNNER_DIR mlx_metal_v4)
-            list(APPEND _mlx_targets ollama-mlx-metal_v4)
+            list(APPEND _mlx_targets rose-mlx-metal_v4)
         else()
             message(FATAL_ERROR
-                "OLLAMA_MLX_BACKENDS=metal_v4 requires the macOS 26.2 SDK. "
-                "Install a newer Xcode or use OLLAMA_MLX_BACKENDS=metal_v3.")
+                "ROSE_MLX_BACKENDS=metal_v4 requires the macOS 26.2 SDK. "
+                "Install a newer Xcode or use ROSE_MLX_BACKENDS=metal_v3.")
         endif()
     else()
         message(FATAL_ERROR
-            "Unknown OLLAMA_MLX_BACKENDS entry '${_backend}'")
+            "Unknown ROSE_MLX_BACKENDS entry '${_backend}'")
     endif()
 endforeach()
 
 if(_mlx_targets)
-    add_custom_target(ollama-mlx-backends ALL
+    add_custom_target(rose-mlx-backends ALL
         DEPENDS ${_mlx_targets}
         COMMENT "Building MLX backends")
 endif()
 
-install(DIRECTORY "${OLLAMA_PAYLOAD_INSTALL_PREFIX}/${OLLAMA_LIB_DIR}/"
-    DESTINATION "${OLLAMA_LIB_DIR}"
-    COMPONENT ollama-local
+install(DIRECTORY "${ROSE_PAYLOAD_INSTALL_PREFIX}/${ROSE_LIB_DIR}/"
+    DESTINATION "${ROSE_LIB_DIR}"
+    COMPONENT rose-local
     USE_SOURCE_PERMISSIONS)

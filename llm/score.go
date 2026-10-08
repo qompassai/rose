@@ -3,7 +3,7 @@ package llm
 import (
 	"context"
 
-	"github.com/ollama/ollama/api"
+	"github.com/qompassai/rose/api"
 )
 
 // Scorer is an optional runner capability for bounded decision scoring.

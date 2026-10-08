@@ -14,9 +14,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/envconfig"
-	"github.com/ollama/ollama/format"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/envconfig"
+	"github.com/qompassai/rose/format"
 )
 
 // Send multiple requests in parallel (concurrently) to a single model and ensure responses are expected
@@ -64,7 +64,7 @@ func runMultiModelStress(t *testing.T) {
 	if testModel != "" {
 		t.Skip("uses hardcoded models, not applicable with model override")
 	}
-	s := os.Getenv("OLLAMA_MAX_VRAM")
+	s := os.Getenv("ROSE_MAX_VRAM")
 	if s == "" {
 		s = "0"
 	}
@@ -74,7 +74,7 @@ func runMultiModelStress(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// All models compatible with ollama-engine
+	// All models compatible with rose-engine
 	smallModels := []string{
 		"llama3.2:1b",
 		"qwen3:0.6b",
@@ -148,7 +148,7 @@ chooseModels:
 	}
 	if targetLoadCount == len(chosenModels) {
 		// TODO consider retrying the medium models
-		slog.Warn("all models being used without exceeding VRAM, set OLLAMA_MAX_VRAM so test can pick larger models")
+		slog.Warn("all models being used without exceeding VRAM, set ROSE_MAX_VRAM so test can pick larger models")
 	}
 
 	// For some iGPU/CPU systems we may end up with lingering 5 minute load timeouts chewing up memory - force unload everything we tried

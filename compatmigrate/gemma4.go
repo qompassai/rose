@@ -7,7 +7,7 @@ import (
 
 type gemma4Migrator struct{}
 
-// Mirrors detect_ollama_gemma4 in llama/compat/llama-ollama-compat.cpp; keep the two in sync.
+// Mirrors detect_ollama_gemma4 in llama/compat/llama-rose-compat.cpp; keep the two in sync.
 func (gemma4Migrator) NeedsMigration(src *SourceModel) bool {
 	if src.GGUF.KeyValue("general.architecture").String() != "gemma4" {
 		return false

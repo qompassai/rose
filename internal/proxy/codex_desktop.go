@@ -21,31 +21,31 @@ import (
 	"time"
 
 	"github.com/klauspost/compress/zstd"
-	"github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/types/model"
 )
 
 const (
-	// CodexDesktopPathPrefix is the loopback-only Ollama server route used as
+	// CodexDesktopPathPrefix is the loopback-only Rose server route used as
 	// Codex's openai_base_url. Codex appends /v1/responses and related paths.
 	CodexDesktopPathPrefix = "/api/codex"
 
-	// CodexDesktopModelCatalogFilename is the combined native and Ollama catalog
+	// CodexDesktopModelCatalogFilename is the combined native and Rose catalog
 	// shown by the Codex model picker.
-	CodexDesktopModelCatalogFilename = "ollama-launch-models.json"
+	CodexDesktopModelCatalogFilename = "rose-launch-models.json"
 
-	// CodexDesktopRoutingCatalogFilename is the Ollama-only routing allow-list,
+	// CodexDesktopRoutingCatalogFilename is the Rose-only routing allow-list,
 	// separate from the combined picker catalog.
-	CodexDesktopRoutingCatalogFilename = "ollama-launch-codex-routing.json"
+	CodexDesktopRoutingCatalogFilename = "rose-launch-codex-routing.json"
 
 	// CodexDesktopManagedAPIKey is a local-only sentinel, never an OpenAI credential.
 	// Reject it before forwarding any request to OpenAI.
-	CodexDesktopManagedAPIKey = "ollama-local-codex"
+	CodexDesktopManagedAPIKey = "rose-local-codex"
 
 	defaultMaxBodyBytes = int64(64 << 20)
 	defaultOpenAIURL    = "https://api.openai.com/v1"
 )
 
-// CodexDesktopConfig describes the upstreams and Ollama-only routing catalog.
+// CodexDesktopConfig describes the upstreams and Rose-only routing catalog.
 type CodexDesktopConfig struct {
 	OllamaURL          string
 	ChatGPTURL         string
@@ -57,8 +57,8 @@ type CodexDesktopConfig struct {
 	Transport          http.RoundTripper
 }
 
-// CodexDesktop routes catalog-listed models to Ollama and other requests to
-// their native upstream, using the existing Ollama listener.
+// CodexDesktop routes catalog-listed models to Rose and other requests to
+// their native upstream, using the existing Rose listener.
 type CodexDesktop struct {
 	ollamaURL          *url.URL
 	chatGPTURL         *url.URL
@@ -93,7 +93,7 @@ type statusResponse struct {
 }
 
 func NewCodexDesktop(config CodexDesktopConfig) (*CodexDesktop, error) {
-	ollamaURL, err := parseBaseURL("Ollama", config.OllamaURL)
+	ollamaURL, err := parseBaseURL("Rose", config.OllamaURL)
 	if err != nil {
 		return nil, err
 	}
@@ -198,21 +198,21 @@ func (h *CodexDesktop) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		catalog, err := loadRoutingCatalog(h.routingCatalogPath)
 		if err != nil {
 			h.logActivity(started, r.Method, suffix, model, "none", http.StatusServiceUnavailable, "catalog_error")
-			writeJSONError(w, http.StatusServiceUnavailable, "read Codex Ollama model catalog: "+err.Error())
+			writeJSONError(w, http.StatusServiceUnavailable, "read Codex Rose model catalog: "+err.Error())
 			return
 		}
 		model, decodedBody, err = autoReview.resolveModel(model, catalog, decodedBody, &h.turnModels)
 		if err != nil {
-			h.logActivity(started, r.Method, suffix, model, "ollama", http.StatusBadRequest, "request_error")
-			writeJSONError(w, http.StatusBadRequest, "prepare Codex Auto-review request for Ollama: "+err.Error())
+			h.logActivity(started, r.Method, suffix, model, "rose", http.StatusBadRequest, "request_error")
+			writeJSONError(w, http.StatusBadRequest, "prepare Codex Auto-review request for Rose: "+err.Error())
 			return
 		}
 		routedModel, routed = catalog.models[modelKey(model)]
 	}
 	decodedBody, err = autoReview.prepareRequest(routed, suffix, decodedBody)
 	if err != nil {
-		h.logActivity(started, r.Method, suffix, model, "ollama", http.StatusBadRequest, "request_error")
-		writeJSONError(w, http.StatusBadRequest, "prepare Codex Auto-review request for Ollama: "+err.Error())
+		h.logActivity(started, r.Method, suffix, model, "rose", http.StatusBadRequest, "request_error")
+		writeJSONError(w, http.StatusBadRequest, "prepare Codex Auto-review request for Rose: "+err.Error())
 		return
 	}
 	if !routed && usesManagedAPIKey(r.Header) {
@@ -237,17 +237,17 @@ func (h *CodexDesktop) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if routed {
 		targetBase = h.ollamaURL
 		targetSuffix = suffix
-		route = "ollama"
+		route = "rose"
 		requestBody, err = normalizeOllamaRequestBody(decodedBody, routedModel)
 		if err != nil {
-			h.logActivity(started, r.Method, suffix, model, "ollama", http.StatusBadRequest, "request_error")
-			writeJSONError(w, http.StatusBadRequest, "prepare Codex request for Ollama: "+err.Error())
+			h.logActivity(started, r.Method, suffix, model, "rose", http.StatusBadRequest, "request_error")
+			writeJSONError(w, http.StatusBadRequest, "prepare Codex request for Rose: "+err.Error())
 			return
 		}
 		requestBody, err = normalizeFullAccessExecTool(requestBody)
 		if err != nil {
-			h.logActivity(started, r.Method, suffix, model, "ollama", http.StatusBadRequest, "request_error")
-			writeJSONError(w, http.StatusBadRequest, "prepare Codex Full Access tools for Ollama: "+err.Error())
+			h.logActivity(started, r.Method, suffix, model, "rose", http.StatusBadRequest, "request_error")
+			writeJSONError(w, http.StatusBadRequest, "prepare Codex Full Access tools for Rose: "+err.Error())
 			return
 		}
 	} else {
@@ -278,7 +278,7 @@ func (h *CodexDesktop) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		body:         requestBody,
 		normalized:   requestBodyNormalized,
 	}
-	h.logger.Debug("routing Codex request", "path", suffix, "model", model, "ollama", routed)
+	h.logger.Debug("routing Codex request", "path", suffix, "model", model, "rose", routed)
 	recorder := &responseRecorder{ResponseWriter: w}
 	aborted := h.serveReverseProxy(recorder, r.WithContext(context.WithValue(r.Context(), proxyRequestKey{}, state)))
 
@@ -293,9 +293,9 @@ func (h *CodexDesktop) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			result = "stream_error"
 			h.upstreamErrors.Add(1)
 			if recorder.writeErr != nil {
-				h.logger.Warn("Codex proxy response write failed", "path", suffix, "model", model, "ollama", routed, "error", recorder.writeErr)
+				h.logger.Warn("Codex proxy response write failed", "path", suffix, "model", model, "rose", routed, "error", recorder.writeErr)
 			} else {
-				h.logger.Warn("Codex proxy response stream aborted", "path", suffix, "model", model, "ollama", routed)
+				h.logger.Warn("Codex proxy response stream aborted", "path", suffix, "model", model, "rose", routed)
 			}
 		default:
 			result = "ok"
@@ -364,7 +364,7 @@ func (h *CodexDesktop) rewrite(pr *httputil.ProxyRequest) {
 	pr.Out.Body = io.NopCloser(bytes.NewReader(state.body))
 	pr.Out.ContentLength = int64(len(state.body))
 	if state.routed {
-		// Never forward Codex credentials to Ollama.
+		// Never forward Codex credentials to Rose.
 		pr.Out.Header = make(http.Header)
 		copyOllamaRequestHeaders(pr.Out.Header, pr.In.Header)
 		return
@@ -403,7 +403,7 @@ func (h *CodexDesktop) modifyResponse(resp *http.Response) error {
 		h.upstreamErrors.Add(1)
 		return &proxyError{
 			status:  http.StatusBadGateway,
-			message: "read Codex Auto-review response from Ollama: " + err.Error(),
+			message: "read Codex Auto-review response from Rose: " + err.Error(),
 			result:  "stream_error",
 		}
 	}
@@ -420,7 +420,7 @@ func (h *CodexDesktop) modifyResponse(resp *http.Response) error {
 		h.upstreamErrors.Add(1)
 		return &proxyError{
 			status:  http.StatusBadGateway,
-			message: "invalid Codex Auto-review response from Ollama: " + err.Error(),
+			message: "invalid Codex Auto-review response from Rose: " + err.Error(),
 			result:  "response_error",
 		}
 	}
@@ -615,11 +615,11 @@ func loadRoutingCatalog(path string) (routingCatalog, error) {
 	autoReviewFallbackModel := strings.TrimSpace(catalog.AutoReviewFallbackModel)
 	if modelKey(autoReviewModel) == modelKey(autoReviewSelectedModel) {
 		if _, ok := models[modelKey(autoReviewFallbackModel)]; !ok {
-			return routingCatalog{}, fmt.Errorf("Auto-review fallback model %q is not in the Ollama routing catalog", autoReviewFallbackModel)
+			return routingCatalog{}, fmt.Errorf("Auto-review fallback model %q is not in the Rose routing catalog", autoReviewFallbackModel)
 		}
 	} else if autoReviewModel != "" {
 		if _, ok := models[modelKey(autoReviewModel)]; !ok {
-			return routingCatalog{}, fmt.Errorf("Auto-review model %q is not in the Ollama routing catalog", autoReviewModel)
+			return routingCatalog{}, fmt.Errorf("Auto-review model %q is not in the Rose routing catalog", autoReviewModel)
 		}
 	}
 	return routingCatalog{

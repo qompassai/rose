@@ -4,7 +4,7 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/ollama/ollama/fs/gguf"
+	"github.com/qompassai/rose/fs/gguf"
 )
 
 func sequence(n int) []float32 {

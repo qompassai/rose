@@ -15,15 +15,15 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/envconfig"
-	gguftest "github.com/ollama/ollama/internal/testutil/gguf"
-	"github.com/ollama/ollama/manifest"
-	"github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/envconfig"
+	gguftest "github.com/qompassai/rose/internal/testutil/gguf"
+	"github.com/qompassai/rose/manifest"
+	"github.com/qompassai/rose/types/model"
 )
 
 func TestGGUFMetadataExtraction(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	big := make([]string, 5000)
 	for i := range big {
@@ -93,7 +93,7 @@ func TestGGUFMetadataExtraction(t *testing.T) {
 }
 
 func TestGGUFMetadataFileRoundTrip(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	_, digest := createBinFile(t, gguftest.KV{
 		"general.architecture": "llama",
@@ -133,7 +133,7 @@ func TestGGUFMetadataFileRoundTrip(t *testing.T) {
 
 // The metadata file is only ever an optimization: anything unusable must be re-extracted.
 func TestGGUFMetadataUnusableFile(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	_, digest := createBinFile(t, gguftest.KV{"general.architecture": "llama"}, nil)
 	if _, err := readGGUFMetadata(digest); err != nil {
@@ -174,7 +174,7 @@ func TestGGUFMetadataUnusableFile(t *testing.T) {
 }
 
 func TestGGUFMetadataRejectsMalformed(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 	dir := t.TempDir()
 
 	for _, tt := range []struct {
@@ -248,7 +248,7 @@ func TestGGUFMetadataOmitRule(t *testing.T) {
 }
 
 func TestGGUFMetadataKeysIncludesOmitted(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	big := make([]string, ggufMetadataMaxArray+1)
 	path, _ := createBinFile(t, gguftest.KV{
@@ -271,7 +271,7 @@ func TestGGUFMetadataKeysIncludesOmitted(t *testing.T) {
 
 // Projector audio detection reads through Keys(), including prefixed forms.
 func TestProjectorAudioFromMetadata(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	for _, tt := range []struct {
 		name  string
@@ -310,7 +310,7 @@ func TestProjectorAudioFromMetadata(t *testing.T) {
 }
 
 func TestGGUFMetadataPathRejectsBadDigest(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 	hex := "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
 
 	for _, digest := range []string{"", "sha256-short", "md5:" + hex, "../escape", "sha256:" + hex + "x"} {
@@ -330,7 +330,7 @@ func TestGGUFMetadataPathRejectsBadDigest(t *testing.T) {
 // file had, so it has to be storable: treating it as corrupt would rescan the
 // blob on every request forever.
 func TestGGUFMetadataWithNothingToCopy(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	path := filepath.Join(t.TempDir(), "empty.gguf")
 	if err := os.WriteFile(path, ggufBytes(0, nil), 0o600); err != nil {
@@ -487,7 +487,7 @@ func deleteModelNamed(t *testing.T, name string) {
 // survives while any manifest still references it and goes with the last one.
 func TestGGUFMetadataRemovedWithLastReference(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	_, digest := createBinFile(t, gguftest.KV{
 		"general.architecture": "llama",
@@ -519,7 +519,7 @@ func TestGGUFMetadataRemovedWithLastReference(t *testing.T) {
 // metadata must go with it.
 func TestGGUFMetadataRemovedOnReplacement(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	_, first := createBinFile(t, gguftest.KV{
 		"general.architecture": "llama",
@@ -554,7 +554,7 @@ func TestGGUFMetadataRemovedOnReplacement(t *testing.T) {
 // A blob missing from disk is still a blob whose metadata has to go. It no
 // longer appears in the blob scan, so pruning has to find its metadata directly.
 func TestGGUFMetadataRemovedForMissingBlob(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	_, orphan := createBinFile(t, gguftest.KV{"general.architecture": "llama"}, nil)
 	if _, err := readGGUFMetadata(orphan); err != nil {
@@ -588,7 +588,7 @@ func TestGGUFMetadataRemovedForMissingBlob(t *testing.T) {
 }
 
 func TestGGUFMetadataNotPublishedAfterDelete(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	// Deletion and publication can finish in either order. The deletion tests
 	// above cover metadata that already exists; put deletion first here to
@@ -620,7 +620,7 @@ func TestGGUFMetadataNotPublishedAfterDelete(t *testing.T) {
 // per-request read of the model file.
 func TestGetModelReadsNoBlob(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	_, digest := createBinFile(t, gguftest.KV{
 		"general.architecture":  "bert",

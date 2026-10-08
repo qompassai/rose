@@ -7,11 +7,11 @@ Vision models accept images alongside text so the model can describe, classify, 
 ## Quick start
 
 ```shell
-ollama run gemma4 ./image.png what is in this image?
+rose run gemma4 ./image.png what is in this image?
 ```
 
 
-## Usage with Ollama's API
+## Usage with Rose's API
 Provide an `images` array. SDKs accept file paths, URLs or raw bytes while the REST API expects base64-encoded image data.
 
 
@@ -24,7 +24,7 @@ Provide an `images` array. SDKs accept file paths, URLs or raw bytes while the R
     # 2. Encode the image
     IMG=$(base64 < test.jpg | tr -d '\n')
 
-    # 3. Send it to Ollama
+    # 3. Send it to Rose
     curl -X POST http://localhost:11434/api/chat \
     -H "Content-Type: application/json" \
     -d '{
@@ -40,7 +40,7 @@ Provide an `images` array. SDKs accept file paths, URLs or raw bytes while the R
   </Tab>
   <Tab title="Python">
     ```python
-    from ollama import chat
+    from rose import chat
     # from pathlib import Path
 
     # Pass in the path to the image
@@ -67,10 +67,10 @@ Provide an `images` array. SDKs accept file paths, URLs or raw bytes while the R
   </Tab>
   <Tab title="JavaScript">
     ```javascript
-    import ollama from 'ollama'
+    import rose from 'rose'
 
     const imagePath = '/absolute/path/to/image.jpg'
-    const response = await ollama.chat({
+    const response = await rose.chat({
       model: 'gemma4',
       messages: [
         { role: 'user', content: 'What is in this image?', images: [imagePath] }

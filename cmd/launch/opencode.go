@@ -10,8 +10,8 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/ollama/ollama/cmd/internal/fileutil"
-	"github.com/ollama/ollama/envconfig"
+	"github.com/qompassai/rose/cmd/internal/fileutil"
+	"github.com/qompassai/rose/envconfig"
 )
 
 const openCodeInstallScript = "curl -fsSL https://opencode.ai/install | bash"
@@ -109,7 +109,7 @@ func checkOpenCodeInstallerDependencies() error {
 	switch openCodeGOOS {
 	case "windows":
 		if _, err := exec.LookPath("npm"); err != nil {
-			return fmt.Errorf("opencode is not installed and required dependencies are missing\n\nInstall the following first:\n  npm (Node.js): https://nodejs.org/\n\nThen re-run:\n  ollama launch opencode")
+			return fmt.Errorf("opencode is not installed and required dependencies are missing\n\nInstall the following first:\n  npm (Node.js): https://nodejs.org/\n\nThen re-run:\n  rose launch opencode")
 		}
 	default:
 		var missing []string
@@ -120,7 +120,7 @@ func checkOpenCodeInstallerDependencies() error {
 			missing = append(missing, "bash: https://www.gnu.org/software/bash/")
 		}
 		if len(missing) > 0 {
-			return fmt.Errorf("opencode is not installed and required dependencies are missing\n\nInstall the following first:\n  %s\n\nThen re-run:\n  ollama launch opencode", strings.Join(missing, "\n  "))
+			return fmt.Errorf("opencode is not installed and required dependencies are missing\n\nInstall the following first:\n  %s\n\nThen re-run:\n  rose launch opencode", strings.Join(missing, "\n  "))
 		}
 	}
 	return nil
@@ -250,10 +250,10 @@ func (o *OpenCode) Edit(models []LaunchModel) error {
 		modelSet[m] = true
 	}
 
-	// Filter out existing Ollama models we're about to re-add
+	// Filter out existing Rose models we're about to re-add
 	newRecent := slices.DeleteFunc(slices.Clone(recent), func(entry any) bool {
 		e, ok := entry.(map[string]any)
-		if !ok || e["providerID"] != "ollama" {
+		if !ok || e["providerID"] != "rose" {
 			return false
 		}
 		modelID, _ := e["modelID"].(string)
@@ -263,7 +263,7 @@ func (o *OpenCode) Edit(models []LaunchModel) error {
 	// Prepend models in reverse order so first model ends up first
 	for _, model := range slices.Backward(modelList) {
 		newRecent = slices.Insert(newRecent, 0, any(map[string]any{
-			"providerID": "ollama",
+			"providerID": "rose",
 			"modelID":    model,
 		}))
 	}
@@ -294,16 +294,16 @@ func buildInlineConfig(primary LaunchModel, models []LaunchModel) (string, error
 	config := map[string]any{
 		"$schema": "https://opencode.ai/config.json",
 		"provider": map[string]any{
-			"ollama": map[string]any{
+			"rose": map[string]any{
 				"npm":  "@ai-sdk/openai-compatible",
-				"name": "Ollama",
+				"name": "Rose",
 				"options": map[string]any{
 					"baseURL": envconfig.Host().String() + "/v1",
 				},
 				"models": buildModelEntries(models),
 			},
 		},
-		"model": "ollama/" + primary.Name,
+		"model": "rose/" + primary.Name,
 	}
 	data, err := json.Marshal(config)
 	if err != nil {
@@ -312,7 +312,7 @@ func buildInlineConfig(primary LaunchModel, models []LaunchModel) (string, error
 	return string(data), nil
 }
 
-// readModelJSONModels reads ollama model IDs from the opencode model.json state file
+// readModelJSONModels reads rose model IDs from the opencode model.json state file
 func readModelJSONModels() []string {
 	statePath, err := openCodeStatePath()
 	if err != nil {
@@ -333,7 +333,7 @@ func readModelJSONModels() []string {
 		if !ok {
 			continue
 		}
-		if e["providerID"] != "ollama" {
+		if e["providerID"] != "rose" {
 			continue
 		}
 		if id, ok := e["modelID"].(string); ok && id != "" {

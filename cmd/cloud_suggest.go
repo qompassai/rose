@@ -8,10 +8,10 @@ import (
 
 	"golang.org/x/term"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/cmd/launch"
-	"github.com/ollama/ollama/internal/modelref"
-	"github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/cmd/launch"
+	"github.com/qompassai/rose/internal/modelref"
+	"github.com/qompassai/rose/types/model"
 )
 
 // for testing
@@ -105,7 +105,7 @@ func pullWithCloudSuggestion(ctx context.Context, client *api.Client, name, runn
 	}
 
 	if !isInteractiveTerminal() {
-		return "", fmt.Errorf("%w\n\n%q is available as a cloud model. Try:\n  ollama %s %s", pullErr, cloudName, verb, cloudName)
+		return "", fmt.Errorf("%w\n\n%q is available as a cloud model. Try:\n  rose %s %s", pullErr, cloudName, verb, cloudName)
 	}
 
 	accepted, err := confirmCloudSuggestion(fmt.Sprintf("Did you mean %q?", cloudName))

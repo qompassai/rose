@@ -49,7 +49,7 @@ func installClaudeDesktopZip(archivePath string, destinations []string, verify f
 		return "", fmt.Errorf("Claude Desktop archive exceeds %d bytes", maxClaudeDesktopArchiveBytes)
 	}
 
-	workDir, err := os.MkdirTemp("", "ollama-claude-install-")
+	workDir, err := os.MkdirTemp("", "rose-claude-install-")
 	if err != nil {
 		return "", fmt.Errorf("create Claude Desktop installation directory: %w", err)
 	}

@@ -6,9 +6,9 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/ollama/ollama/llm"
-	"github.com/ollama/ollama/mlxrunner/model/qwen3_5"
-	"github.com/ollama/ollama/mlxrunner/tokenizer"
+	"github.com/qompassai/rose/llm"
+	"github.com/qompassai/rose/mlxrunner/model/qwen3_5"
+	"github.com/qompassai/rose/mlxrunner/tokenizer"
 )
 
 func TestPointerTokens(t *testing.T) {

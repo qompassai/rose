@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/types/model"
 )
 
 // ThinkingLookup identifies models whose generic renderer resolves named efforts.

@@ -6,7 +6,7 @@ import (
 	"image/png"
 	"testing"
 
-	"github.com/ollama/ollama/mlxrunner/model"
+	"github.com/qompassai/rose/mlxrunner/model"
 )
 
 func testVisionModel() *Model {

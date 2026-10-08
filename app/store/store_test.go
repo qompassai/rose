@@ -8,8 +8,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/ollama/ollama/cmd/config"
-	"github.com/ollama/ollama/internal/onboarding"
+	"github.com/qompassai/rose/cmd/config"
+	"github.com/qompassai/rose/internal/onboarding"
 )
 
 func TestStore(t *testing.T) {

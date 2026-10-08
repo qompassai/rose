@@ -11,7 +11,7 @@ import (
 
 const CurrentVersion = 1
 
-// State uses ~/.ollama by default. Dir isolates custom app stores and tests.
+// State uses ~/.rose by default. Dir isolates custom app stores and tests.
 type State struct {
 	Dir string
 }
@@ -23,7 +23,7 @@ func (s State) path() (string, error) {
 		if err != nil {
 			return "", err
 		}
-		dir = filepath.Join(home, ".ollama")
+		dir = filepath.Join(home, ".rose")
 	}
 	return filepath.Join(dir, fmt.Sprintf("onboarding-v%d.completed", CurrentVersion)), nil
 }

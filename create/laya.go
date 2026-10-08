@@ -8,7 +8,7 @@ import (
 )
 
 // Laya ships an encoder config and a decision config rather than a root HF
-// config. Keep both verbatim and add only the descriptor Ollama uses to dispatch.
+// config. Keep both verbatim and add only the descriptor Rose uses to dispatch.
 func readLayaConfig(dir string) (sourceModelConfig, json.RawMessage, error) {
 	var decision struct {
 		Encoder    string `json:"encoder"`

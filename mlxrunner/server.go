@@ -14,12 +14,12 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/envconfig"
-	"github.com/ollama/ollama/logutil"
-	"github.com/ollama/ollama/mlx"
-	"github.com/ollama/ollama/mlx/mlxthread"
-	"github.com/ollama/ollama/mlxrunner/sample"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/envconfig"
+	"github.com/qompassai/rose/logutil"
+	"github.com/qompassai/rose/mlx"
+	"github.com/qompassai/rose/mlx/mlxthread"
+	"github.com/qompassai/rose/mlxrunner/sample"
 )
 
 func Execute(args []string) error {

@@ -1,8 +1,8 @@
 package qwen3_5
 
 import (
-	"github.com/ollama/ollama/mlx"
-	"github.com/ollama/ollama/mlxrunner/nn"
+	"github.com/qompassai/rose/mlx"
+	"github.com/qompassai/rose/mlxrunner/nn"
 )
 
 // UnembedCandidates scores one hidden position. For dense heads, gather before

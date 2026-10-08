@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/llm"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/llm"
 )
 
 func TestCompileStrands(t *testing.T) {

@@ -15,8 +15,8 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/cmd/config"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/cmd/config"
 )
 
 type stubEditorRunner struct {
@@ -197,7 +197,7 @@ func TestIsIntegrationInstalled_UnknownIntegrationReturnsFalse(t *testing.T) {
 			t.Fatal("expected unknown integration to report not installed")
 		}
 	})
-	if !strings.Contains(stderr, `Ollama couldn't find integration "unknown-integration", so it'll show up as not installed.`) {
+	if !strings.Contains(stderr, `Rose couldn't find integration "unknown-integration", so it'll show up as not installed.`) {
 		t.Fatalf("expected unknown-integration warning, got stderr: %q", stderr)
 	}
 }
@@ -982,7 +982,7 @@ func TestShowOrPullWithPolicy_ModelNotFound_FailDoesNotPromptOrPull(t *testing.T
 	if err == nil {
 		t.Fatal("expected fail policy to return an error for missing model")
 	}
-	if !strings.Contains(err.Error(), "ollama pull missing-model") {
+	if !strings.Contains(err.Error(), "rose pull missing-model") {
 		t.Fatalf("expected actionable pull guidance, got: %v", err)
 	}
 	if pullCalled {
@@ -1674,7 +1674,7 @@ func TestStartAccountStatePrefetch_SkipsWhoamiWhenCloudDisabled(t *testing.T) {
 		}
 	}))
 	defer srv.Close()
-	t.Setenv("OLLAMA_HOST", srv.URL)
+	t.Setenv("ROSE_HOST", srv.URL)
 
 	prefetch := StartAccountStatePrefetch(context.Background())
 	select {

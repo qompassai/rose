@@ -9,34 +9,34 @@ title: DeepSeek Harness
 ## Setup
 
 ```shell
-ollama launch dsh
+rose launch dsh
 ```
 
-Ollama installs `@deepseek-ai/dsh` if needed. To choose a model:
+Rose installs `@deepseek-ai/dsh` if needed. To choose a model:
 
 ```shell
-ollama launch dsh --model qwen3.8
-ollama launch dsh --model deepseek-v4-flash:cloud
+rose launch dsh --model qwen3.8
+rose launch dsh --model deepseek-v4-flash:cloud
 ```
 
 To configure without starting:
 
 ```shell
-ollama launch dsh --config
+rose launch dsh --config
 ```
 
 ## Web search
 
-Web search is enabled automatically. It requires Ollama cloud access and a model that supports tools. Run `ollama signin` if needed.
+Web search is enabled automatically. It requires Rose cloud access and a model that supports tools. Run `rose signin` if needed.
 
 ## Configuration
 
-Ollama stores its settings in `~/.ollama/launch/dsh/settings.yaml`. These settings load last and set the model, provider, and web search connection. Repeated launches preserve other settings in this file. Ollama does not change `~/.dsh/settings.yaml`, profiles, sessions, or credentials.
+Rose stores its settings in `~/.rose/launch/dsh/settings.yaml`. These settings load last and set the model, provider, and web search connection. Repeated launches preserve other settings in this file. Rose does not change `~/.dsh/settings.yaml`, profiles, sessions, or credentials.
 
 Launch rejects additional `--patch` arguments. Pass other Harness arguments after `--`:
 
 ```shell
-ollama launch dsh -- --port 3081
+rose launch dsh -- --port 3081
 ```
 
 ## Manual install
@@ -47,4 +47,4 @@ DeepSeek Harness requires Node.js. To install it manually:
 npm install -g @deepseek-ai/dsh@latest
 ```
 
-Then run `ollama launch dsh`. On Windows, install Node.js for Windows.
+Then run `rose launch dsh`. On Windows, install Node.js for Windows.

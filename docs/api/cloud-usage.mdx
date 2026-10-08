@@ -8,7 +8,7 @@ openapi: /openapi.yaml GET /api/usage
 
 ```shell Request
 curl 'https://ollama.com/api/usage?range=24h' \
-  -H "Authorization: Bearer $OLLAMA_API_KEY"
+  -H "Authorization: Bearer $ROSE_API_KEY"
 ```
 
 </RequestExample>
@@ -68,7 +68,7 @@ New usage may take time to appear.
 
 For your remaining included and purchased credits, use [Balance](/api/balance).
 
-Unsupported or repeated query parameters return `400`. Errors follow Ollama's [JSON error format](/api/errors#error-messages).
+Unsupported or repeated query parameters return `400`. Errors follow Rose's [JSON error format](/api/errors#error-messages).
 
 ## Time ranges
 
@@ -110,7 +110,7 @@ Team admins can use `scope=team` to see usage for the whole team:
 
 ```shell
 curl 'https://ollama.com/api/usage?range=7d&scope=team' \
-  -H "Authorization: Bearer $OLLAMA_API_KEY"
+  -H "Authorization: Bearer $ROSE_API_KEY"
 ```
 
 ## Coming soon

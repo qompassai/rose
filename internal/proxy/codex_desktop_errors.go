@@ -11,10 +11,10 @@ import (
 
 const (
 	codexSubscriptionMessage = "This model requires a subscription or extra usage credits. Please upgrade at https://ollama.com/upgrade or add extra usage at https://ollama.com/settings to use this model."
-	codexSignInMessage       = "This model requires an Ollama account. Please sign in to Ollama to use this model."
+	codexSignInMessage       = "This model requires an Rose account. Please sign in to Rose to use this model."
 )
 
-// rewriteAccessErrors changes only Ollama access-error messages. Successful
+// rewriteAccessErrors changes only Rose access-error messages. Successful
 // events and unrelated errors retain their original bytes and status codes.
 func (h *CodexDesktop) rewriteAccessErrors(resp *http.Response) error {
 	if encoding := resp.Header.Get("Content-Encoding"); encoding != "" && encoding != "identity" {
@@ -102,7 +102,7 @@ func (h *CodexDesktop) rewriteAccessErrorJSON(body []byte, status int) ([]byte, 
 		default:
 			return body, false
 		}
-		h.logger.Debug("Codex Ollama access error", "status", status, "reason", reason)
+		h.logger.Debug("Codex Rose access error", "status", status, "reason", reason)
 		encoded, _ := json.Marshal(rewritten)
 		if stringError {
 			payload["error"] = encoded

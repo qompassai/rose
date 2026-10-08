@@ -9,8 +9,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/types/model"
 )
 
 // Test that a warning is printed when thinking is requested but not supported.
@@ -39,7 +39,7 @@ func TestWarnMissingThinking(t *testing.T) {
 		}))
 		defer srv.Close()
 
-		t.Setenv("OLLAMA_HOST", srv.URL)
+		t.Setenv("ROSE_HOST", srv.URL)
 		client, err := api.ClientFromEnvironment()
 		if err != nil {
 			t.Fatal(err)

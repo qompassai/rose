@@ -4,8 +4,8 @@ import (
 	"math"
 	"testing"
 
-	"github.com/ollama/ollama/mlx"
-	"github.com/ollama/ollama/mlx/mlxtest"
+	"github.com/qompassai/rose/mlx"
+	"github.com/qompassai/rose/mlx/mlxtest"
 )
 
 func approxEqual(a, b, tol float32) bool {

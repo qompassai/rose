@@ -8,8 +8,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/ollama/ollama/manifest"
-	"github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/manifest"
+	"github.com/qompassai/rose/types/model"
 )
 
 func TestBuildModelInfo(t *testing.T) {
@@ -400,9 +400,9 @@ func TestParseSafetensorsAllHeaders_Errors(t *testing.T) {
 }
 
 func TestGetTensorInfoFromManifest(t *testing.T) {
-	// Create a temp directory for blobs and set OLLAMA_MODELS
+	// Create a temp directory for blobs and set ROSE_MODELS
 	tempDir := t.TempDir()
-	t.Setenv("OLLAMA_MODELS", tempDir)
+	t.Setenv("ROSE_MODELS", tempDir)
 
 	blobDir := filepath.Join(tempDir, "blobs")
 	if err := os.MkdirAll(blobDir, 0o755); err != nil {
@@ -471,7 +471,7 @@ func TestGetTensorInfoFromManifest(t *testing.T) {
 
 	// Add a non-tensor layer (should be skipped)
 	layers = append(layers, manifest.Layer{
-		MediaType: "application/vnd.ollama.image.json",
+		MediaType: "application/vnd.rose.image.json",
 		Digest:    "sha256:0000000000000000000000000000000000000000000000000000000000000000",
 		Size:      100,
 		Name:      "config.json",
@@ -510,9 +510,9 @@ func TestGetTensorInfoFromManifest(t *testing.T) {
 }
 
 func TestGetTensorInfoFromManifest_Quantized(t *testing.T) {
-	// Create a temp directory for blobs and set OLLAMA_MODELS
+	// Create a temp directory for blobs and set ROSE_MODELS
 	tempDir := t.TempDir()
-	t.Setenv("OLLAMA_MODELS", tempDir)
+	t.Setenv("ROSE_MODELS", tempDir)
 
 	blobDir := filepath.Join(tempDir, "blobs")
 	if err := os.MkdirAll(blobDir, 0o755); err != nil {
@@ -636,7 +636,7 @@ func createSafetensorsManifestForRunner(t *testing.T, name, runner, tensorName s
 }
 
 func TestGetSafetensorsTensorInfoForRunnerSelectsChildManifest(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	mlxManifest := createSafetensorsManifestForRunner(t, "runner-mlx", manifest.RunnerMLX, "mlx.weight")
 	ggmlManifest := createSafetensorsManifestForRunner(t, "runner-ggml", manifest.RunnerGGML, "ggml.weight")
@@ -685,9 +685,9 @@ func TestGetSafetensorsTensorInfoForRunnerSelectsChildManifest(t *testing.T) {
 }
 
 func TestGetParameterCountFromManifest(t *testing.T) {
-	// Create a temp directory for blobs and set OLLAMA_MODELS
+	// Create a temp directory for blobs and set ROSE_MODELS
 	tempDir := t.TempDir()
-	t.Setenv("OLLAMA_MODELS", tempDir)
+	t.Setenv("ROSE_MODELS", tempDir)
 
 	blobDir := filepath.Join(tempDir, "blobs")
 	if err := os.MkdirAll(blobDir, 0o755); err != nil {
@@ -783,9 +783,9 @@ func TestGetParameterCountFromManifest(t *testing.T) {
 }
 
 func TestGetParameterCountFromManifest_MixedQuantizedPacked(t *testing.T) {
-	// Create a temp directory for blobs and set OLLAMA_MODELS
+	// Create a temp directory for blobs and set ROSE_MODELS
 	tempDir := t.TempDir()
-	t.Setenv("OLLAMA_MODELS", tempDir)
+	t.Setenv("ROSE_MODELS", tempDir)
 
 	blobDir := filepath.Join(tempDir, "blobs")
 	if err := os.MkdirAll(blobDir, 0o755); err != nil {
@@ -1072,9 +1072,9 @@ func TestParseSafetensorsAllHeaders(t *testing.T) {
 }
 
 func TestGetTensorInfoFromManifest_Packed(t *testing.T) {
-	// Create a temp directory for blobs and set OLLAMA_MODELS
+	// Create a temp directory for blobs and set ROSE_MODELS
 	tempDir := t.TempDir()
-	t.Setenv("OLLAMA_MODELS", tempDir)
+	t.Setenv("ROSE_MODELS", tempDir)
 
 	blobDir := filepath.Join(tempDir, "blobs")
 	if err := os.MkdirAll(blobDir, 0o755); err != nil {
@@ -1208,7 +1208,7 @@ func TestGetTensorInfoFromManifest_Packed(t *testing.T) {
 }
 
 func TestGetSafetensorsDtypeChoosesLowestPrecisionQuantizedBlob(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	writeSafetensorsLayer := func(t *testing.T, header map[string]any, name string) manifest.Layer {
 		t.Helper()

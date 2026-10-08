@@ -38,25 +38,25 @@ import (
 	"golang.org/x/sync/errgroup"
 	"golang.org/x/term"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/cmd/config"
-	"github.com/ollama/ollama/cmd/launch"
-	"github.com/ollama/ollama/cmd/tui"
-	"github.com/ollama/ollama/create"
-	"github.com/ollama/ollama/discover"
-	"github.com/ollama/ollama/envconfig"
-	"github.com/ollama/ollama/format"
-	"github.com/ollama/ollama/internal/modelref"
-	"github.com/ollama/ollama/logutil"
-	"github.com/ollama/ollama/manifest"
-	"github.com/ollama/ollama/mlxrunner"
-	"github.com/ollama/ollama/parser"
-	"github.com/ollama/ollama/progress"
-	"github.com/ollama/ollama/readline"
-	"github.com/ollama/ollama/server"
-	"github.com/ollama/ollama/types/model"
-	"github.com/ollama/ollama/types/syncmap"
-	"github.com/ollama/ollama/version"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/cmd/config"
+	"github.com/qompassai/rose/cmd/launch"
+	"github.com/qompassai/rose/cmd/tui"
+	"github.com/qompassai/rose/create"
+	"github.com/qompassai/rose/discover"
+	"github.com/qompassai/rose/envconfig"
+	"github.com/qompassai/rose/format"
+	"github.com/qompassai/rose/internal/modelref"
+	"github.com/qompassai/rose/logutil"
+	"github.com/qompassai/rose/manifest"
+	"github.com/qompassai/rose/mlxrunner"
+	"github.com/qompassai/rose/parser"
+	"github.com/qompassai/rose/progress"
+	"github.com/qompassai/rose/readline"
+	"github.com/qompassai/rose/server"
+	"github.com/qompassai/rose/types/model"
+	"github.com/qompassai/rose/types/syncmap"
+	"github.com/qompassai/rose/version"
 )
 
 func init() {
@@ -173,7 +173,7 @@ func getModelfileName(cmd *cobra.Command) (string, error) {
 	return absName, nil
 }
 
-// isLocalhost returns true if the configured Ollama host is a loopback or unspecified address.
+// isLocalhost returns true if the configured Rose host is a loopback or unspecified address.
 func isLocalhost() bool {
 	host := envconfig.Host()
 	h, _, _ := net.SplitHostPort(host.Host)
@@ -484,7 +484,7 @@ func CreateHandler(cmd *cobra.Command, args []string) error {
 
 	if err := client.Create(cmd.Context(), req, fn); err != nil {
 		if strings.Contains(err.Error(), "path or Modelfile are required") {
-			return fmt.Errorf("the ollama server must be updated to use `ollama create` with this client")
+			return fmt.Errorf("the rose server must be updated to use `rose create` with this client")
 		}
 		return err
 	}
@@ -555,7 +555,7 @@ func commonFileRoot(files map[string]string) (string, bool) {
 // models directory, in which case create can write blobs there directly
 // instead of streaming them over HTTP. A throwaway blob is written and the
 // server asked whether it can see it, so a server with a different
-// OLLAMA_MODELS (a systemd-managed install, for example) falls back to upload.
+// ROSE_MODELS (a systemd-managed install, for example) falls back to upload.
 func sharedBlobStore(ctx context.Context, client *api.Client) bool {
 	if envconfig.CreateRemote() || !isLocalhost() {
 		return false
@@ -768,7 +768,7 @@ func generateEmbedding(cmd *cobra.Command, modelName, input string, keepAlive *a
 func handleCloudAuthorizationError(err error) bool {
 	var authErr api.AuthorizationError
 	if errors.As(err, &authErr) && authErr.StatusCode == http.StatusUnauthorized {
-		fmt.Printf("You need to be signed in to Ollama to run Cloud models.\n\n")
+		fmt.Printf("You need to be signed in to Rose to run Cloud models.\n\n")
 		if authErr.SigninURL != "" {
 			fmt.Printf(ConnectInstructions, authErr.SigninURL)
 		}
@@ -778,7 +778,7 @@ func handleCloudAuthorizationError(err error) bool {
 	return false
 }
 
-// TEMP(drifkin): To match legacy `ollama run some-model:cloud` behavior, we
+// TEMP(drifkin): To match legacy `rose run some-model:cloud` behavior, we
 // best-effort pull cloud stub files for any explicit cloud source models.
 // Remove this once `/api/tags` is cloud-aware.
 func ensureCloudStub(ctx context.Context, client *api.Client, modelName string) {
@@ -996,7 +996,7 @@ func RunHandler(cmd *cobra.Command, args []string) error {
 	// If it's an embedding model, handle embedding generation
 	if isEmbeddingModel {
 		if opts.Prompt == "" {
-			return errors.New("embedding models require input text. Usage: ollama run " + name + " \"your text here\"")
+			return errors.New("embedding models require input text. Usage: rose run " + name + " \"your text here\"")
 		}
 
 		// Get embedding-specific flags
@@ -1021,7 +1021,7 @@ func RunHandler(cmd *cobra.Command, args []string) error {
 		if err := loadOrUnloadModel(cmd, &opts); err != nil {
 			var sErr api.AuthorizationError
 			if errors.As(err, &sErr) && sErr.StatusCode == http.StatusUnauthorized {
-				fmt.Printf("You need to be signed in to Ollama to run Cloud models.\n\n")
+				fmt.Printf("You need to be signed in to Rose to run Cloud models.\n\n")
 
 				if sErr.SigninURL != "" {
 					fmt.Printf(ConnectInstructions, sErr.SigninURL)
@@ -1064,7 +1064,7 @@ func SigninHandler(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		var aErr api.AuthorizationError
 		if errors.As(err, &aErr) && aErr.StatusCode == http.StatusUnauthorized {
-			fmt.Println("You need to be signed in to Ollama to run Cloud models.")
+			fmt.Println("You need to be signed in to Rose to run Cloud models.")
 			fmt.Println()
 
 			if aErr.SigninURL != "" {
@@ -2244,8 +2244,8 @@ func initializeKeypair() error {
 		return err
 	}
 
-	privKeyPath := filepath.Join(home, ".ollama", "id_ed25519")
-	pubKeyPath := filepath.Join(home, ".ollama", "id_ed25519.pub")
+	privKeyPath := filepath.Join(home, ".rose", "id_ed25519")
+	pubKeyPath := filepath.Join(home, ".rose", "id_ed25519.pub")
 
 	_, err = os.Stat(privKeyPath)
 	if os.IsNotExist(err) {
@@ -2308,11 +2308,11 @@ func versionHandler(cmd *cobra.Command, _ []string) {
 
 	serverVersion, err := client.Version(cmd.Context())
 	if err != nil {
-		fmt.Println("Warning: could not connect to a running Ollama instance")
+		fmt.Println("Warning: could not connect to a running Rose instance")
 	}
 
 	if serverVersion != "" {
-		fmt.Printf("ollama version is %s\n", serverVersion)
+		fmt.Printf("rose version is %s\n", serverVersion)
 	}
 
 	if serverVersion != version.Version {
@@ -2513,7 +2513,7 @@ func NewCLI() *cobra.Command {
 	}
 
 	rootCmd := &cobra.Command{
-		Use:           "ollama",
+		Use:           "rose",
 		Short:         "Large language model runner",
 		SilenceUsage:  true,
 		SilenceErrors: true,
@@ -2602,7 +2602,7 @@ func NewCLI() *cobra.Command {
 	serveCmd := &cobra.Command{
 		Use:     "serve",
 		Aliases: []string{"start"},
-		Short:   "Start Ollama",
+		Short:   "Start Rose",
 		Args:    cobra.ExactArgs(0),
 		RunE:    RunServer,
 	}
@@ -2713,11 +2713,11 @@ func NewCLI() *cobra.Command {
 			return discover.RunNativeProbeCommand(cmd.Context(), gpuDiscoverLibDirs, os.Stdout)
 		},
 	}
-	gpuDiscoverCmd.Flags().StringArrayVar(&gpuDiscoverLibDirs, "lib-dir", nil, "Ollama runtime library directory")
+	gpuDiscoverCmd.Flags().StringArrayVar(&gpuDiscoverLibDirs, "lib-dir", nil, "Rose runtime library directory")
 
 	envVars := envconfig.AsMap()
 
-	envs := []envconfig.EnvVar{envVars["OLLAMA_HOST"]}
+	envs := []envconfig.EnvVar{envVars["ROSE_HOST"]}
 
 	for _, cmd := range []*cobra.Command{
 		createCmd,
@@ -2734,30 +2734,30 @@ func NewCLI() *cobra.Command {
 	} {
 		switch cmd {
 		case runCmd:
-			appendEnvDocs(cmd, []envconfig.EnvVar{envVars["OLLAMA_EDITOR"], envVars["OLLAMA_HOST"], envVars["OLLAMA_NOHISTORY"]})
+			appendEnvDocs(cmd, []envconfig.EnvVar{envVars["ROSE_EDITOR"], envVars["ROSE_HOST"], envVars["ROSE_NOHISTORY"]})
 		case serveCmd:
 			appendEnvDocs(cmd, []envconfig.EnvVar{
-				envVars["OLLAMA_DEBUG"],
-				envVars["OLLAMA_HOST"],
-				envVars["OLLAMA_CONTEXT_LENGTH"],
-				envVars["OLLAMA_KEEP_ALIVE"],
-				envVars["OLLAMA_MAX_LOADED_MODELS"],
-				envVars["OLLAMA_MAX_TRANSFER_STREAMS"],
-				envVars["OLLAMA_MAX_QUEUE"],
-				envVars["OLLAMA_MODELS"],
-				envVars["OLLAMA_NUM_PARALLEL"],
-				envVars["OLLAMA_NO_CLOUD"],
-				envVars["OLLAMA_NOPRUNE"],
-				envVars["OLLAMA_ORIGINS"],
-				envVars["OLLAMA_SCHED_SPREAD"],
-				envVars["OLLAMA_FLASH_ATTENTION"],
-				envVars["OLLAMA_KV_CACHE_TYPE"],
-				envVars["OLLAMA_LLM_LIBRARY"],
-				envVars["OLLAMA_GPU_OVERHEAD"],
-				envVars["OLLAMA_IGPU_ENABLE"],
+				envVars["ROSE_DEBUG"],
+				envVars["ROSE_HOST"],
+				envVars["ROSE_CONTEXT_LENGTH"],
+				envVars["ROSE_KEEP_ALIVE"],
+				envVars["ROSE_MAX_LOADED_MODELS"],
+				envVars["ROSE_MAX_TRANSFER_STREAMS"],
+				envVars["ROSE_MAX_QUEUE"],
+				envVars["ROSE_MODELS"],
+				envVars["ROSE_NUM_PARALLEL"],
+				envVars["ROSE_NO_CLOUD"],
+				envVars["ROSE_NOPRUNE"],
+				envVars["ROSE_ORIGINS"],
+				envVars["ROSE_SCHED_SPREAD"],
+				envVars["ROSE_FLASH_ATTENTION"],
+				envVars["ROSE_KV_CACHE_TYPE"],
+				envVars["ROSE_LLM_LIBRARY"],
+				envVars["ROSE_GPU_OVERHEAD"],
+				envVars["ROSE_IGPU_ENABLE"],
 				envVars["LLAMA_ARG_FIT"],
 				envVars["LLAMA_ARG_FIT_TARGET"],
-				envVars["OLLAMA_LOAD_TIMEOUT"],
+				envVars["ROSE_LOAD_TIMEOUT"],
 			})
 		default:
 			appendEnvDocs(cmd, envs)

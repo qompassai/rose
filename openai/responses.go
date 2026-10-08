@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/types/model"
 )
 
 // ResponsesContent is a discriminated union for input content types.
@@ -56,7 +56,7 @@ type ResponsesFileContent struct {
 func (ResponsesFileContent) responsesContent() {}
 
 // ResponsesEncryptedContent is content a provider labeled as encrypted; for
-// Ollama-native conversations the value is plain text, which we accept as-is.
+// Rose-native conversations the value is plain text, which we accept as-is.
 type ResponsesEncryptedContent struct {
 	Type             string `json:"type"` // always "encrypted_content"
 	EncryptedContent string `json:"encrypted_content"`
@@ -526,7 +526,7 @@ type ResponsesRequest struct {
 
 	Reasoning ResponsesReasoning `json:"reasoning"`
 
-	// Think is an Ollama extension used when a model's native thinking control
+	// Think is an Rose extension used when a model's native thinking control
 	// cannot be represented exactly by OpenAI's string-valued reasoning effort.
 	Think *api.ThinkValue `json:"think,omitempty"`
 

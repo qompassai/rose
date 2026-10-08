@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/ollama/ollama/llm"
+	"github.com/qompassai/rose/llm"
 )
 
 func TestRequestGrammar(t *testing.T) {

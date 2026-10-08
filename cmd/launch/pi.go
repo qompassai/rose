@@ -14,9 +14,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/cmd/internal/fileutil"
-	"github.com/ollama/ollama/envconfig"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/cmd/internal/fileutil"
+	"github.com/qompassai/rose/envconfig"
 )
 
 // Pi implements Runner and Editor for Pi (Pi Coding Agent) integration
@@ -25,8 +25,8 @@ type Pi struct{}
 const (
 	piNpmPackage       = "@earendil-works/pi-coding-agent"
 	piLegacyNpmPackage = "@mariozechner/pi-coding-agent"
-	piWebSearchSource  = "npm:@ollama/pi-web-search"
-	piWebSearchPkg     = "@ollama/pi-web-search"
+	piWebSearchSource  = "npm:@rose/pi-web-search"
+	piWebSearchPkg     = "@rose/pi-web-search"
 )
 
 func (p *Pi) String() string { return "Pi" }
@@ -58,7 +58,7 @@ func (p *Pi) Run(_ string, _ []LaunchModel, args []string) error {
 
 func ensureNpmInstalled() error {
 	if _, err := exec.LookPath("npm"); err != nil {
-		return fmt.Errorf("npm (Node.js) is required to launch pi\n\nInstall it first:\n  https://nodejs.org/\n\nThen re-run:\n  ollama launch pi")
+		return fmt.Errorf("npm (Node.js) is required to launch pi\n\nInstall it first:\n  https://nodejs.org/\n\nThen re-run:\n  rose launch pi")
 	}
 	return nil
 }
@@ -85,7 +85,7 @@ func ensurePiInstalled() (string, error) {
 	}
 
 	if _, err := exec.LookPath("npm"); err != nil {
-		return "", fmt.Errorf("pi is not installed and required dependencies are missing\n\nInstall the following first:\n  npm (Node.js): https://nodejs.org/\n\nThen re-run:\n  ollama launch pi")
+		return "", fmt.Errorf("pi is not installed and required dependencies are missing\n\nInstall the following first:\n  npm (Node.js): https://nodejs.org/\n\nThen re-run:\n  rose launch pi")
 	}
 
 	install, pkgErr := installedPiPackageInfo()
@@ -559,21 +559,21 @@ func (p *Pi) Edit(models []LaunchModel) error {
 		providers = make(map[string]any)
 	}
 
-	ollama, ok := providers["ollama"].(map[string]any)
+	rose, ok := providers["rose"].(map[string]any)
 	if !ok {
-		ollama = map[string]any{}
+		rose = map[string]any{}
 	}
 
-	ollama["baseUrl"] = piBaseURL()
+	rose["baseUrl"] = piBaseURL()
 
-	if _, exists := ollama["api"]; !exists {
-		ollama["api"] = "openai-completions"
+	if _, exists := rose["api"]; !exists {
+		rose["api"] = "openai-completions"
 	}
-	if _, exists := ollama["apiKey"]; !exists {
-		ollama["apiKey"] = "ollama"
+	if _, exists := rose["apiKey"]; !exists {
+		rose["apiKey"] = "rose"
 	}
 
-	existingModels, ok := ollama["models"].([]any)
+	existingModels, ok := rose["models"].([]any)
 	if !ok {
 		existingModels = make([]any, 0)
 	}
@@ -586,9 +586,9 @@ func (p *Pi) Edit(models []LaunchModel) error {
 
 	// Build new models list:
 	// 1. Keep user-managed models (no _launch marker) - untouched
-	// 2. Keep ollama-managed models (_launch marker) that are still selected,
+	// 2. Keep rose-managed models (_launch marker) that are still selected,
 	//    except stale cloud entries that should be rebuilt below
-	// 3. Add new ollama-managed models
+	// 3. Add new rose-managed models
 	var newModels []any
 	for _, m := range existingModels {
 		if modelObj, ok := m.(map[string]any); ok {
@@ -618,8 +618,8 @@ func (p *Pi) Edit(models []LaunchModel) error {
 		}
 	}
 
-	ollama["models"] = newModels
-	providers["ollama"] = ollama
+	rose["models"] = newModels
+	providers["rose"] = rose
 	config["providers"] = providers
 
 	configData, err := json.MarshalIndent(config, "", "  ")
@@ -637,7 +637,7 @@ func (p *Pi) Edit(models []LaunchModel) error {
 		_ = json.Unmarshal(data, &settings)
 	}
 
-	settings["defaultProvider"] = "ollama"
+	settings["defaultProvider"] = "rose"
 	settings["defaultModel"] = models[0].Name
 
 	settingsData, err := json.MarshalIndent(settings, "", "  ")
@@ -660,16 +660,16 @@ func (p *Pi) Models() []string {
 	}
 
 	providers, _ := config["providers"].(map[string]any)
-	ollama, _ := providers["ollama"].(map[string]any)
+	rose, _ := providers["rose"].(map[string]any)
 
 	// Returning nil on host drift forces launchEditorIntegration to call Edit.
-	if configured, _ := ollama["baseUrl"].(string); configured != "" {
+	if configured, _ := rose["baseUrl"].(string); configured != "" {
 		if strings.TrimRight(configured, "/") != strings.TrimRight(piBaseURL(), "/") {
 			return nil
 		}
 	}
 
-	models, _ := ollama["models"].([]any)
+	models, _ := rose["models"].([]any)
 
 	var result []string
 	for _, m := range models {
@@ -683,7 +683,7 @@ func (p *Pi) Models() []string {
 	return result
 }
 
-// isPiOllamaModel reports whether a model config entry is managed by ollama launch
+// isPiOllamaModel reports whether a model config entry is managed by rose launch
 func isPiOllamaModel(cfg map[string]any) bool {
 	if v, ok := cfg["_launch"].(bool); ok && v {
 		return true

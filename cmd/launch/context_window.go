@@ -4,8 +4,8 @@ import (
 	"context"
 	"strings"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/internal/modelref"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/internal/modelref"
 )
 
 // LoadedContextWindow reports the context length model is currently running

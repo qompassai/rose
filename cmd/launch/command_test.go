@@ -11,7 +11,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/ollama/ollama/cmd/config"
+	"github.com/qompassai/rose/cmd/config"
 	"github.com/spf13/cobra"
 )
 
@@ -111,7 +111,7 @@ func TestLaunchCmdTUICallback(t *testing.T) {
 	t.Run("integration arg bypasses TUI", func(t *testing.T) {
 		srv := httptest.NewServer(http.NotFoundHandler())
 		defer srv.Close()
-		t.Setenv("OLLAMA_HOST", srv.URL)
+		t.Setenv("ROSE_HOST", srv.URL)
 
 		tuiCalled := false
 		mockTUI := func(cmd *cobra.Command) {
@@ -247,7 +247,7 @@ func TestLaunchCmdClaudeDesktopRequiresRestore(t *testing.T) {
 			t.Fatalf("expected %s launch to require --restore, got %v", name, err)
 		}
 		if heartbeatCalled {
-			t.Fatalf("expected %s to fail before checking the Ollama server heartbeat", name)
+			t.Fatalf("expected %s to fail before checking the Rose server heartbeat", name)
 		}
 	}
 }
@@ -271,7 +271,7 @@ func TestLaunchCmdClaudeDesktopRestoreRemainsAvailable(t *testing.T) {
 		t.Fatal("expected Claude Desktop restore command to run restore")
 	}
 	if heartbeatCalled {
-		t.Fatal("expected Claude Desktop restore to skip the Ollama server heartbeat")
+		t.Fatal("expected Claude Desktop restore to skip the Rose server heartbeat")
 	}
 }
 
@@ -310,7 +310,7 @@ func TestLaunchCmdModelFlagFiltersDisabledCloudFromSavedConfig(t *testing.T) {
 		}
 	}))
 	defer srv.Close()
-	t.Setenv("OLLAMA_HOST", srv.URL)
+	t.Setenv("ROSE_HOST", srv.URL)
 
 	stub := &launcherEditorRunner{}
 	restore := OverrideIntegration("stubeditor", stub)
@@ -356,7 +356,7 @@ func TestLaunchCmdModelFlagClearsDisabledCloudOverride(t *testing.T) {
 		}
 	}))
 	defer srv.Close()
-	t.Setenv("OLLAMA_HOST", srv.URL)
+	t.Setenv("ROSE_HOST", srv.URL)
 
 	stub := &launcherSingleRunner{}
 	restore := OverrideIntegration("stubapp", stub)
@@ -415,7 +415,7 @@ func TestLaunchCmdAutodiscoveryDefaultLaunchDoesNotForceConfigure(t *testing.T) 
 	restore := OverrideIntegration("stubauto", runner)
 	defer restore()
 
-	if err := config.SaveIntegration("stubauto", []string{"Ollama Cloud"}); err != nil {
+	if err := config.SaveIntegration("stubauto", []string{"Rose Cloud"}); err != nil {
 		t.Fatalf("failed to save managed integration config: %v", err)
 	}
 	if err := config.MarkIntegrationOnboarded("stubauto"); err != nil {
@@ -433,7 +433,7 @@ func TestLaunchCmdAutodiscoveryDefaultLaunchDoesNotForceConfigure(t *testing.T) 
 	if runner.autodiscoveryConfigures != 0 {
 		t.Fatalf("expected default autodiscovery launch to reuse existing config, got %d configures", runner.autodiscoveryConfigures)
 	}
-	if runner.ranModel != "Ollama Cloud" {
+	if runner.ranModel != "Rose Cloud" {
 		t.Fatalf("expected launch to run autodiscovery label, got %q", runner.ranModel)
 	}
 }
@@ -456,7 +456,7 @@ func TestLaunchCmdYes_AutoConfirmsLaunchPromptPath(t *testing.T) {
 		}
 	}))
 	defer srv.Close()
-	t.Setenv("OLLAMA_HOST", srv.URL)
+	t.Setenv("ROSE_HOST", srv.URL)
 
 	stub := &launcherEditorRunner{paths: []string{"/tmp/stubeditor.json"}}
 	restore := OverrideIntegration("stubeditor", stub)
@@ -502,7 +502,7 @@ func TestLaunchCmdHeadlessWithYes_AutoPullsMissingLocalModel(t *testing.T) {
 		}
 	}))
 	defer srv.Close()
-	t.Setenv("OLLAMA_HOST", srv.URL)
+	t.Setenv("ROSE_HOST", srv.URL)
 
 	stub := &launcherSingleRunner{}
 	restore := OverrideIntegration("stubapp", stub)
@@ -545,7 +545,7 @@ func TestLaunchCmdHeadlessWithoutYes_AllowsConfiguredLaunch(t *testing.T) {
 		}
 	}))
 	defer srv.Close()
-	t.Setenv("OLLAMA_HOST", srv.URL)
+	t.Setenv("ROSE_HOST", srv.URL)
 
 	stub := &launcherEditorRunner{paths: []string{"/tmp/stubeditor.json"}}
 	restore := OverrideIntegration("stubeditor", stub)
@@ -591,7 +591,7 @@ func TestLaunchCmdIntegrationArgPromptsForModelWithSavedSelection(t *testing.T) 
 		}
 	}))
 	defer srv.Close()
-	t.Setenv("OLLAMA_HOST", srv.URL)
+	t.Setenv("ROSE_HOST", srv.URL)
 
 	stub := &launcherSingleRunner{}
 	restore := OverrideIntegration("stubapp", stub)
@@ -647,7 +647,7 @@ func TestLaunchCmdHeadlessYes_IntegrationRequiresModelEvenWhenSaved(t *testing.T
 		}
 	}))
 	defer srv.Close()
-	t.Setenv("OLLAMA_HOST", srv.URL)
+	t.Setenv("ROSE_HOST", srv.URL)
 
 	stub := &launcherSingleRunner{}
 	restore := OverrideIntegration("stubapp", stub)
@@ -684,7 +684,7 @@ func TestLaunchCmdHeadlessYes_IntegrationWithoutSavedModelReturnsError(t *testin
 		w.WriteHeader(http.StatusNotFound)
 	}))
 	defer srv.Close()
-	t.Setenv("OLLAMA_HOST", srv.URL)
+	t.Setenv("ROSE_HOST", srv.URL)
 
 	stub := &launcherSingleRunner{}
 	restore := OverrideIntegration("stubapp", stub)

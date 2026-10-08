@@ -65,7 +65,7 @@ export const DisplayLogin = ({
 
   return (
     <Display
-      message={message || "Cloud models require an Ollama account"}
+      message={message || "Cloud models require an Rose account"}
       action={action}
       className={className}
       onDismiss={onDismiss}

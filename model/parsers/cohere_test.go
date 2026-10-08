@@ -3,7 +3,7 @@ package parsers
 import (
 	"testing"
 
-	"github.com/ollama/ollama/api"
+	"github.com/qompassai/rose/api"
 )
 
 // Model output begins inside <|START_THINKING|> when reasoning is on (the

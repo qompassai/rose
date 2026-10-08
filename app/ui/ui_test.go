@@ -15,11 +15,11 @@ import (
 	"sync/atomic"
 	"testing"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/app/store"
-	"github.com/ollama/ollama/app/ui/responses"
-	"github.com/ollama/ollama/app/updater"
-	"github.com/ollama/ollama/cmd/launch"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/app/store"
+	"github.com/qompassai/rose/app/ui/responses"
+	"github.com/qompassai/rose/app/updater"
+	"github.com/qompassai/rose/cmd/launch"
 )
 
 func TestHandlePostApiSettings(t *testing.T) {
@@ -180,7 +180,7 @@ func TestGetIntegrationStatuses(t *testing.T) {
 			t.Errorf("%s installed = %v, want %v", name, item.Installed, want)
 		}
 	}
-	if item, ok := byID["claude"]; !ok || item.Command != "ollama launch claude" {
+	if item, ok := byID["claude"]; !ok || item.Command != "rose launch claude" {
 		t.Fatal("Claude Code should follow Claude Desktop with its launch command")
 	}
 	if _, ok := byID["chatgpt"]; ok {
@@ -191,7 +191,7 @@ func TestGetIntegrationStatuses(t *testing.T) {
 		t.Fatalf("got %d integrations, want %d launcher entries", len(got), wantCount)
 	}
 	terminal := got[len(got)-1]
-	if terminal.ID != "terminal" || terminal.Installed != nil || terminal.Command != "ollama" {
+	if terminal.ID != "terminal" || terminal.Installed != nil || terminal.Command != "rose" {
 		t.Fatalf("last integration = %+v, want Terminal without install status", terminal)
 	}
 }
@@ -200,7 +200,7 @@ func TestHandlePostApiCloudSetting(t *testing.T) {
 	tmpHome := t.TempDir()
 	t.Setenv("HOME", tmpHome)
 	t.Setenv("USERPROFILE", tmpHome) // os.UserHomeDir uses USERPROFILE on Windows.
-	t.Setenv("OLLAMA_NO_CLOUD", "")
+	t.Setenv("ROSE_NO_CLOUD", "")
 
 	testStore := &store.Store{
 		DBPath: filepath.Join(t.TempDir(), "db.sqlite"),
@@ -262,7 +262,7 @@ func TestHandleGetApiCloudSetting(t *testing.T) {
 	tmpHome := t.TempDir()
 	t.Setenv("HOME", tmpHome)
 	t.Setenv("USERPROFILE", tmpHome) // os.UserHomeDir uses USERPROFILE on Windows.
-	t.Setenv("OLLAMA_NO_CLOUD", "")
+	t.Setenv("ROSE_NO_CLOUD", "")
 
 	testStore := &store.Store{
 		DBPath: filepath.Join(t.TempDir(), "db.sqlite"),
@@ -479,8 +479,8 @@ func TestUserAgent(t *testing.T) {
 	ua := userAgent()
 
 	// The userAgent function should return a string in the format:
-	// "ollama/version (arch os) app/version Go/goversion"
-	// Example: "ollama/v0.1.28 (amd64 darwin) Go/go1.21.0"
+	// "rose/version (arch os) app/version Go/goversion"
+	// Example: "rose/v0.1.28 (amd64 darwin) Go/go1.21.0"
 
 	if ua == "" {
 		t.Fatal("userAgent returned empty string")
@@ -544,8 +544,8 @@ func TestUserAgent(t *testing.T) {
 	}
 
 	info := clientInfoFromRequest(req)
-	if info.Product != "ollama" {
-		t.Errorf("Expected Product to be 'ollama', got '%s'", info.Product)
+	if info.Product != "rose" {
+		t.Errorf("Expected Product to be 'rose', got '%s'", info.Product)
 	}
 
 	if info.Version != "" && info.Version[0] != 'v' {
@@ -599,8 +599,8 @@ func TestUserAgentTransport(t *testing.T) {
 		t.Errorf("User-Agent mismatch\nExpected: %s\nReceived: %s", expectedUA, receivedUA)
 	}
 
-	if !strings.HasPrefix(receivedUA, "ollama/") {
-		t.Errorf("User-Agent should start with 'ollama/', got: %s", receivedUA)
+	if !strings.HasPrefix(receivedUA, "rose/") {
+		t.Errorf("User-Agent should start with 'rose/', got: %s", receivedUA)
 	}
 
 	t.Logf("User-Agent transport successfully set: %s", receivedUA)
@@ -609,7 +609,7 @@ func TestUserAgentTransport(t *testing.T) {
 func TestGetCloudModels(t *testing.T) {
 	t.Run("does not call ollama.com when cloud is disabled", func(t *testing.T) {
 		t.Setenv("HOME", t.TempDir())
-		t.Setenv("OLLAMA_NO_CLOUD", "1")
+		t.Setenv("ROSE_NO_CLOUD", "1")
 		testStore := &store.Store{DBPath: filepath.Join(t.TempDir(), "db.sqlite")}
 		defer testStore.Close()
 
@@ -637,7 +637,7 @@ func TestGetCloudModels(t *testing.T) {
 
 	t.Run("returns no cloud models when account is unauthorized", func(t *testing.T) {
 		t.Setenv("HOME", t.TempDir())
-		t.Setenv("OLLAMA_NO_CLOUD", "")
+		t.Setenv("ROSE_NO_CLOUD", "")
 		testStore := &store.Store{DBPath: filepath.Join(t.TempDir(), "db.sqlite")}
 		defer testStore.Close()
 
@@ -672,7 +672,7 @@ func TestInferenceClientUsesUserAgent(t *testing.T) {
 	}))
 	defer ts.Close()
 
-	t.Setenv("OLLAMA_HOST", ts.URL)
+	t.Setenv("ROSE_HOST", ts.URL)
 
 	server := &Server{}
 	client := server.inferenceClient()

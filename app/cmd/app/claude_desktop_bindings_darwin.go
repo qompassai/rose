@@ -5,8 +5,8 @@ package main
 import (
 	"errors"
 
-	"github.com/ollama/ollama/app/webview"
-	"github.com/ollama/ollama/cmd/launch"
+	"github.com/qompassai/rose/app/webview"
+	"github.com/qompassai/rose/cmd/launch"
 )
 
 func bindClaudeDesktop(wv webview.WebView) {

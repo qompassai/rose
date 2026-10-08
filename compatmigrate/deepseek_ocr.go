@@ -6,7 +6,7 @@ import (
 
 type deepseekOCRMigrator struct{}
 
-// Mirrors detect_ollama_deepseekocr in llama/compat/llama-ollama-compat.cpp; keep the two in sync.
+// Mirrors detect_ollama_deepseekocr in llama/compat/llama-rose-compat.cpp; keep the two in sync.
 func (deepseekOCRMigrator) NeedsMigration(src *SourceModel) bool {
 	return src.GGUF.KeyValue("general.architecture").String() == "deepseekocr"
 }

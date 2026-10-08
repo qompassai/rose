@@ -12,8 +12,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ollama/ollama/cmd/internal/fileutil"
-	"github.com/ollama/ollama/envconfig"
+	"github.com/qompassai/rose/cmd/internal/fileutil"
+	"github.com/qompassai/rose/envconfig"
 )
 
 const defaultGatewayPort = 18789
@@ -50,7 +50,7 @@ func (c *Openclaw) Run(model string, _ []LaunchModel, args []string) error {
 		}
 
 		// Ensure the latest version is installed before onboarding so we get
-		// the newest wizard flags (e.g. --auth-choice ollama).
+		// the newest wizard flags (e.g. --auth-choice rose).
 		if !openclawFreshInstall {
 			update := exec.Command(bin, "update")
 			update.Env = openclawInstallEnv()
@@ -59,14 +59,14 @@ func (c *Openclaw) Run(model string, _ []LaunchModel, args []string) error {
 			_ = update.Run() // best-effort; continue even if update fails
 		}
 
-		fmt.Fprintf(os.Stderr, "\n%sSetting up OpenClaw with Ollama...%s\n", ansiGreen, ansiReset)
+		fmt.Fprintf(os.Stderr, "\n%sSetting up OpenClaw with Rose...%s\n", ansiGreen, ansiReset)
 		fmt.Fprintf(os.Stderr, "%s  Model: %s%s\n\n", ansiGray, model, ansiReset)
 
 		onboardArgs := []string{
 			"onboard",
 			"--non-interactive",
 			"--accept-risk",
-			"--auth-choice", "ollama",
+			"--auth-choice", "rose",
 			"--custom-base-url", envconfig.Host().String(),
 			"--custom-model-id", model,
 			// Launch owns the first real gateway startup immediately after onboarding,
@@ -353,7 +353,7 @@ func printOpenclawReady(bin, token string, port int, firstLaunch bool) {
 }
 
 // openclawEnv returns the current environment with provider API keys cleared
-// so openclaw only uses the Ollama gateway, not keys from the user's shell.
+// so openclaw only uses the Rose gateway, not keys from the user's shell.
 func openclawEnv() []string {
 	clear := map[string]bool{
 		"ANTHROPIC_API_KEY":     true,
@@ -606,7 +606,7 @@ func ensureOpenclawInstalled() (string, error) {
 		if gitErr != nil {
 			missing = append(missing, "git: https://git-scm.com/")
 		}
-		return "", fmt.Errorf("OpenClaw is not installed and required dependencies are missing\n\nInstall the following first:\n  %s\n\nThen re-run:\n  ollama launch openclaw", strings.Join(missing, "\n  "))
+		return "", fmt.Errorf("OpenClaw is not installed and required dependencies are missing\n\nInstall the following first:\n  %s\n\nThen re-run:\n  rose launch openclaw", strings.Join(missing, "\n  "))
 	}
 
 	ok, err := ConfirmPrompt("OpenClaw is not installed. Install with npm?")
@@ -673,7 +673,7 @@ func (c *Openclaw) Edit(models []LaunchModel) error {
 		_ = json.Unmarshal(data, &config)
 	}
 
-	// Navigate/create: models.providers.ollama (preserving other providers)
+	// Navigate/create: models.providers.rose (preserving other providers)
 	modelsSection, _ := config["models"].(map[string]any)
 	if modelsSection == nil {
 		modelsSection = make(map[string]any)
@@ -682,18 +682,18 @@ func (c *Openclaw) Edit(models []LaunchModel) error {
 	if providers == nil {
 		providers = make(map[string]any)
 	}
-	ollama, _ := providers["ollama"].(map[string]any)
-	if ollama == nil {
-		ollama = make(map[string]any)
+	rose, _ := providers["rose"].(map[string]any)
+	if rose == nil {
+		rose = make(map[string]any)
 	}
 
-	ollama["baseUrl"] = envconfig.Host().String()
+	rose["baseUrl"] = envconfig.Host().String()
 	// needed to register provider
-	ollama["apiKey"] = "ollama-local"
-	ollama["api"] = "ollama"
+	rose["apiKey"] = "rose-local"
+	rose["api"] = "rose"
 
 	// Build map of existing models to preserve user customizations
-	existingModels, _ := ollama["models"].([]any)
+	existingModels, _ := rose["models"].([]any)
 	existingByID := make(map[string]map[string]any)
 	for _, m := range existingModels {
 		if entry, ok := m.(map[string]any); ok {
@@ -716,9 +716,9 @@ func (c *Openclaw) Edit(models []LaunchModel) error {
 		}
 		newModels = append(newModels, entry)
 	}
-	ollama["models"] = newModels
+	rose["models"] = newModels
 
-	providers["ollama"] = ollama
+	providers["rose"] = rose
 	modelsSection["providers"] = providers
 	config["models"] = modelsSection
 
@@ -735,7 +735,7 @@ func (c *Openclaw) Edit(models []LaunchModel) error {
 	if modelConfig == nil {
 		modelConfig = make(map[string]any)
 	}
-	modelConfig["primary"] = "ollama/" + models[0].Name
+	modelConfig["primary"] = "rose/" + models[0].Name
 	defaults["model"] = modelConfig
 	agents["defaults"] = defaults
 	config["agents"] = agents
@@ -792,10 +792,10 @@ func clearSessionModelOverride(primary string) {
 }
 
 // configureOllamaWebSearch keeps launch-managed OpenClaw installs on the
-// bundled Ollama web_search provider. Older launch builds installed an
+// bundled Rose web_search provider. Older launch builds installed an
 // external openclaw-web-search plugin that added custom ollama_web_search and
-// ollama_web_fetch tools. Current OpenClaw versions ship Ollama web_search as
-// the bundled "ollama" plugin instead, so we migrate stale config and ensure
+// ollama_web_fetch tools. Current OpenClaw versions ship Rose web_search as
+// the bundled "rose" plugin instead, so we migrate stale config and ensure
 // fresh installs select the bundled provider.
 func configureOllamaWebSearch() {
 	home, err := os.UserHomeDir()
@@ -863,12 +863,12 @@ func configureOllamaWebSearch() {
 		delete(entries, "openclaw-web-search")
 		stalePluginConfigured = true
 	}
-	ollamaEntry, _ := entries["ollama"].(map[string]any)
+	ollamaEntry, _ := entries["rose"].(map[string]any)
 	if ollamaEntry == nil {
 		ollamaEntry = make(map[string]any)
 	}
 	ollamaEntry["enabled"] = true
-	entries["ollama"] = ollamaEntry
+	entries["rose"] = ollamaEntry
 	plugins["entries"] = entries
 
 	if allow, ok := plugins["allow"].([]any); ok {
@@ -880,13 +880,13 @@ func configureOllamaWebSearch() {
 				stalePluginConfigured = true
 				continue
 			}
-			if ok && s == "ollama" {
+			if ok && s == "rose" {
 				hasOllama = true
 			}
 			nextAllow = append(nextAllow, v)
 		}
 		if !hasOllama {
-			nextAllow = append(nextAllow, "ollama")
+			nextAllow = append(nextAllow, "rose")
 		}
 		plugins["allow"] = nextAllow
 	}
@@ -904,7 +904,7 @@ func configureOllamaWebSearch() {
 	}
 
 	if stalePluginConfigured || search["provider"] == nil {
-		search["provider"] = "ollama"
+		search["provider"] = "rose"
 	}
 	if stalePluginConfigured {
 		fetch["enabled"] = true
@@ -976,8 +976,8 @@ func (c *Openclaw) Models() []string {
 
 	modelsSection, _ := config["models"].(map[string]any)
 	providers, _ := modelsSection["providers"].(map[string]any)
-	ollama, _ := providers["ollama"].(map[string]any)
-	modelList, _ := ollama["models"].([]any)
+	rose, _ := providers["rose"].(map[string]any)
+	modelList, _ := rose["models"].([]any)
 
 	var result []string
 	for _, m := range modelList {

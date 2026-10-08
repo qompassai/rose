@@ -5,8 +5,8 @@ import (
 	"sort"
 	"testing"
 
-	"github.com/ollama/ollama/mlx"
-	"github.com/ollama/ollama/mlx/mlxtest"
+	"github.com/qompassai/rose/mlx"
+	"github.com/qompassai/rose/mlx/mlxtest"
 )
 
 // logprobEntry is the (token id, logprob) pair returned by the sampler's

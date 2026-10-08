@@ -6,8 +6,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/ollama/ollama/api"
-	modelpkg "github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/api"
+	modelpkg "github.com/qompassai/rose/types/model"
 )
 
 // LaunchModel is the model metadata Launch passes to integration config

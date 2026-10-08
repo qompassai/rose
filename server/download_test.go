@@ -17,7 +17,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ollama/ollama/transfer"
+	"github.com/qompassai/rose/transfer"
 )
 
 func TestDownloadChunkRedirects(t *testing.T) {

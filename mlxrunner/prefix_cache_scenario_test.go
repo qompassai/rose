@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ollama/ollama/mlxrunner/cache"
+	"github.com/qompassai/rose/mlxrunner/cache"
 )
 
 // Scenario tests drive prefixCache through multi-request timelines on the

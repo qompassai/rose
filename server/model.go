@@ -9,11 +9,11 @@ import (
 	"log/slog"
 	"os"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/fs/gguf"
-	"github.com/ollama/ollama/manifest"
-	"github.com/ollama/ollama/template"
-	"github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/fs/gguf"
+	"github.com/qompassai/rose/manifest"
+	"github.com/qompassai/rose/template"
+	"github.com/qompassai/rose/types/model"
 )
 
 type modelLayer struct {
@@ -64,13 +64,13 @@ func parseFromModel(ctx context.Context, name model.Name, fn func(api.ProgressRe
 		}
 		layer.Name = srcLayer.Name
 
-		if layer.MediaType == "application/vnd.ollama.image.adapter" {
+		if layer.MediaType == "application/vnd.rose.image.adapter" {
 			slog.Warn("LoRA adapters are deprecated; the adapter layer is carried over but new adapters cannot be created", "model", name.DisplayShortest(), "digest", layer.Digest)
 		}
 		switch layer.MediaType {
-		case "application/vnd.ollama.image.model",
-			"application/vnd.ollama.image.projector",
-			"application/vnd.ollama.image.adapter",
+		case "application/vnd.rose.image.model",
+			"application/vnd.rose.image.projector",
+			"application/vnd.rose.image.adapter",
 			manifest.MediaTypeImageDraft:
 			blobpath, err := manifest.BlobsPath(layer.Digest)
 			if err != nil {
@@ -112,7 +112,7 @@ func detectChatTemplate(layers []*modelLayer) ([]*modelLayer, error) {
 			return layers, nil
 		}
 
-		templateLayer, err := manifest.NewLayer(t.Reader(), "application/vnd.ollama.image.template")
+		templateLayer, err := manifest.NewLayer(t.Reader(), "application/vnd.rose.image.template")
 		if err != nil {
 			return nil, err
 		}
@@ -125,7 +125,7 @@ func detectChatTemplate(layers []*modelLayer) ([]*modelLayer, error) {
 				return nil, err
 			}
 
-			paramsLayer, err := manifest.NewLayer(&b, "application/vnd.ollama.image.params")
+			paramsLayer, err := manifest.NewLayer(&b, "application/vnd.rose.image.params")
 			if err != nil {
 				return nil, err
 			}

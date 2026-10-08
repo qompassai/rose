@@ -14,7 +14,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ollama/ollama/api"
+	"github.com/qompassai/rose/api"
 )
 
 func testIntPtr(v int) *int {
@@ -224,7 +224,7 @@ func TestBenchmarkModel_Success(t *testing.T) {
 	})
 	defer server.Close()
 
-	t.Setenv("OLLAMA_HOST", server.URL)
+	t.Setenv("ROSE_HOST", server.URL)
 
 	output := captureOutput(func() {
 		err := BenchmarkModel(fOpt)
@@ -255,7 +255,7 @@ func TestBenchmarkModel_ServerError(t *testing.T) {
 	}))
 	defer server.Close()
 
-	t.Setenv("OLLAMA_HOST", server.URL)
+	t.Setenv("ROSE_HOST", server.URL)
 
 	output := captureOutput(func() {
 		err := BenchmarkModel(fOpt)
@@ -300,7 +300,7 @@ func TestBenchmarkModel_Timeout(t *testing.T) {
 	}))
 	defer server.Close()
 
-	t.Setenv("OLLAMA_HOST", server.URL)
+	t.Setenv("ROSE_HOST", server.URL)
 
 	output := captureOutput(func() {
 		err := BenchmarkModel(fOpt)
@@ -328,7 +328,7 @@ func TestBenchmarkModel_NoMetrics(t *testing.T) {
 	})
 	defer server.Close()
 
-	t.Setenv("OLLAMA_HOST", server.URL)
+	t.Setenv("ROSE_HOST", server.URL)
 
 	output := captureOutput(func() {
 		err := BenchmarkModel(fOpt)
@@ -356,7 +356,7 @@ func TestBenchmarkModel_MultipleModels(t *testing.T) {
 	})
 	defer server.Close()
 
-	t.Setenv("OLLAMA_HOST", server.URL)
+	t.Setenv("ROSE_HOST", server.URL)
 
 	output := captureOutput(func() {
 		err := BenchmarkModel(fOpt)
@@ -403,7 +403,7 @@ func TestBenchmarkModel_WithImage(t *testing.T) {
 	})
 	defer server.Close()
 
-	t.Setenv("OLLAMA_HOST", server.URL)
+	t.Setenv("ROSE_HOST", server.URL)
 
 	output := captureOutput(func() {
 		err := BenchmarkModel(fOpt)
@@ -510,7 +510,7 @@ func TestBenchmarkModel_Warmup(t *testing.T) {
 	})
 	defer server.Close()
 
-	t.Setenv("OLLAMA_HOST", server.URL)
+	t.Setenv("ROSE_HOST", server.URL)
 
 	output := captureOutput(func() {
 		err := BenchmarkModel(fOpt)
@@ -540,7 +540,7 @@ func TestBenchmarkModel_TTFT(t *testing.T) {
 	})
 	defer server.Close()
 
-	t.Setenv("OLLAMA_HOST", server.URL)
+	t.Setenv("ROSE_HOST", server.URL)
 
 	output := captureOutput(func() {
 		err := BenchmarkModel(fOpt)
@@ -569,7 +569,7 @@ func TestBenchmarkModel_ModelInfo(t *testing.T) {
 	})
 	defer server.Close()
 
-	t.Setenv("OLLAMA_HOST", server.URL)
+	t.Setenv("ROSE_HOST", server.URL)
 
 	output := captureOutput(func() {
 		err := BenchmarkModel(fOpt)
@@ -607,7 +607,7 @@ func TestBenchmarkModel_VRAM(t *testing.T) {
 	})
 	defer server.Close()
 
-	t.Setenv("OLLAMA_HOST", server.URL)
+	t.Setenv("ROSE_HOST", server.URL)
 
 	output := captureOutput(func() {
 		err := BenchmarkModel(fOpt)
@@ -639,7 +639,7 @@ func TestBenchmarkModel_PromptTokens(t *testing.T) {
 	})
 	defer server.Close()
 
-	t.Setenv("OLLAMA_HOST", server.URL)
+	t.Setenv("ROSE_HOST", server.URL)
 
 	captureOutput(func() {
 		err := BenchmarkModel(fOpt)
@@ -690,7 +690,7 @@ func TestBenchmarkModel_PromptTokensExact(t *testing.T) {
 			})
 			defer server.Close()
 
-			t.Setenv("OLLAMA_HOST", server.URL)
+			t.Setenv("ROSE_HOST", server.URL)
 
 			output := captureOutput(func() {
 				if err := BenchmarkModel(fOpt); err != nil {
@@ -740,7 +740,7 @@ func TestBenchmarkModel_PromptSizeDriftWarning(t *testing.T) {
 	})
 	defer server.Close()
 
-	t.Setenv("OLLAMA_HOST", server.URL)
+	t.Setenv("ROSE_HOST", server.URL)
 
 	output := captureOutput(func() {
 		if err := BenchmarkModel(fOpt); err != nil {
@@ -774,7 +774,7 @@ func TestBenchmarkModel_GeneratedPromptVariesByRequest(t *testing.T) {
 	})
 	defer server.Close()
 
-	t.Setenv("OLLAMA_HOST", server.URL)
+	t.Setenv("ROSE_HOST", server.URL)
 
 	captureOutput(func() {
 		if err := BenchmarkModel(fOpt); err != nil {
@@ -817,7 +817,7 @@ func TestBenchmarkModel_PromptCalibrationFailure(t *testing.T) {
 	}))
 	defer server.Close()
 
-	t.Setenv("OLLAMA_HOST", server.URL)
+	t.Setenv("ROSE_HOST", server.URL)
 
 	output := captureOutput(func() {
 		err := BenchmarkModel(fOpt)
@@ -841,7 +841,7 @@ func TestBenchmarkModel_PromptBelowMinimum(t *testing.T) {
 	})
 	defer server.Close()
 
-	t.Setenv("OLLAMA_HOST", server.URL)
+	t.Setenv("ROSE_HOST", server.URL)
 
 	output := captureOutput(func() {
 		err := BenchmarkModel(fOpt)
@@ -866,7 +866,7 @@ func TestBenchmarkModel_PromptAboveMaximum(t *testing.T) {
 	})
 	defer server.Close()
 
-	t.Setenv("OLLAMA_HOST", server.URL)
+	t.Setenv("ROSE_HOST", server.URL)
 
 	output := captureOutput(func() {
 		err := BenchmarkModel(fOpt)
@@ -895,7 +895,7 @@ func TestBenchmarkModel_ChatTransport(t *testing.T) {
 	})
 	defer server.Close()
 
-	t.Setenv("OLLAMA_HOST", server.URL)
+	t.Setenv("ROSE_HOST", server.URL)
 
 	captureOutput(func() {
 		err := BenchmarkModel(fOpt)
@@ -925,7 +925,7 @@ func TestBenchmarkModel_PromptUniquePerRequest(t *testing.T) {
 	})
 	defer server.Close()
 
-	t.Setenv("OLLAMA_HOST", server.URL)
+	t.Setenv("ROSE_HOST", server.URL)
 
 	captureOutput(func() {
 		err := BenchmarkModel(fOpt)
@@ -1002,7 +1002,7 @@ func TestBenchmarkModel_ShortResponseRetry(t *testing.T) {
 	}))
 	defer server.Close()
 
-	t.Setenv("OLLAMA_HOST", server.URL)
+	t.Setenv("ROSE_HOST", server.URL)
 
 	captureOutput(func() {
 		err := BenchmarkModel(fOpt)
@@ -1042,7 +1042,7 @@ func TestBenchmarkModel_ShortResponseWarning(t *testing.T) {
 	})
 	defer server.Close()
 
-	t.Setenv("OLLAMA_HOST", server.URL)
+	t.Setenv("ROSE_HOST", server.URL)
 
 	output := captureOutput(func() {
 		err := BenchmarkModel(fOpt)
@@ -1088,7 +1088,7 @@ func TestBenchmarkModel_NoRetryWhenMaxTokensZero(t *testing.T) {
 	})
 	defer server.Close()
 
-	t.Setenv("OLLAMA_HOST", server.URL)
+	t.Setenv("ROSE_HOST", server.URL)
 
 	captureOutput(func() {
 		err := BenchmarkModel(fOpt)
@@ -1113,7 +1113,7 @@ func TestBenchmarkModel_CSVFormat(t *testing.T) {
 	})
 	defer server.Close()
 
-	t.Setenv("OLLAMA_HOST", server.URL)
+	t.Setenv("ROSE_HOST", server.URL)
 
 	output := captureOutput(func() {
 		err := BenchmarkModel(fOpt)
@@ -1142,7 +1142,7 @@ func TestBenchmarkModel_PrefillExcludesCachedTokens(t *testing.T) {
 
 	server := createMockOllamaServer(t, mockServerOptions{chatResponses: responses})
 	defer server.Close()
-	t.Setenv("OLLAMA_HOST", server.URL)
+	t.Setenv("ROSE_HOST", server.URL)
 
 	output := captureOutput(func() {
 		if err := BenchmarkModel(fOpt); err != nil {
@@ -1681,7 +1681,7 @@ func TestFetchMemoryUsage_PrefixMatch(t *testing.T) {
 	}))
 	defer server.Close()
 
-	t.Setenv("OLLAMA_HOST", server.URL)
+	t.Setenv("ROSE_HOST", server.URL)
 
 	client, err := api.ClientFromEnvironment()
 	if err != nil {
@@ -1716,7 +1716,7 @@ func TestFetchMemoryUsage_CPUSpill(t *testing.T) {
 	}))
 	defer server.Close()
 
-	t.Setenv("OLLAMA_HOST", server.URL)
+	t.Setenv("ROSE_HOST", server.URL)
 
 	client, err := api.ClientFromEnvironment()
 	if err != nil {

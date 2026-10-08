@@ -14,8 +14,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/klauspost/compress/zstd"
 
-	"github.com/ollama/ollama/middleware"
-	"github.com/ollama/ollama/openai"
+	"github.com/qompassai/rose/middleware"
+	"github.com/qompassai/rose/openai"
 )
 
 // responsesCompactionMiddleware intercepts only Codex compaction control items.
@@ -52,7 +52,7 @@ func (s *Server) responsesCompactionMiddleware() gin.HandlerFunc {
 }
 
 // ResponsesCompactHandler implements POST /v1/responses/compact with an
-// Ollama-owned ordinary inference request rather than upstream passthrough.
+// Rose-owned ordinary inference request rather than upstream passthrough.
 func (s *Server) ResponsesCompactHandler(c *gin.Context) {
 	body, err := readResponsesCompactionBody(c)
 	if err != nil {

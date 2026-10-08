@@ -15,11 +15,11 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/cmd/internal/fileutil"
-	"github.com/ollama/ollama/internal/proxy"
-	"github.com/ollama/ollama/model/renderers"
-	"github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/cmd/internal/fileutil"
+	"github.com/qompassai/rose/internal/proxy"
+	"github.com/qompassai/rose/model/renderers"
+	"github.com/qompassai/rose/types/model"
 )
 
 func withCodexAppPlatform(t *testing.T, goos string) {
@@ -239,7 +239,7 @@ func TestCodexAppConfigureMarksOnlyOllamaModelsForNonChatGPTSessions(t *testing.
 		t.Fatal(err)
 	}
 	if got := catalogSlugs(catalog.Models); strings.Join(got, ",") != "llama3.2,qwen3:8b,gpt-5.6-sol" {
-		t.Fatalf("catalog slugs = %v, want Ollama and ChatGPT models", got)
+		t.Fatalf("catalog slugs = %v, want Rose and ChatGPT models", got)
 	}
 	var nonChatGPTSlugs []string
 	for _, entry := range catalog.Models {
@@ -249,7 +249,7 @@ func TestCodexAppConfigureMarksOnlyOllamaModelsForNonChatGPTSessions(t *testing.
 		}
 	}
 	if got := strings.Join(nonChatGPTSlugs, ","); got != "llama3.2,qwen3:8b" {
-		t.Fatalf("non-ChatGPT model slugs = %q, want only selected Ollama models", got)
+		t.Fatalf("non-ChatGPT model slugs = %q, want only selected Rose models", got)
 	}
 }
 
@@ -285,7 +285,7 @@ func TestCodexAppConfigureKeepsPickerOrderWhenPrimaryDiffers(t *testing.T) {
 				t.Fatal(err)
 			}
 			if len(catalog.Models) != len(want)+1 {
-				t.Fatalf("catalog = %#v, want five Ollama models and the native model", catalog)
+				t.Fatalf("catalog = %#v, want five Rose models and the native model", catalog)
 			}
 			for i, model := range catalog.Models {
 				if i < len(want) && model.Slug != want[i] {
@@ -309,7 +309,7 @@ func TestCodexAppRouterHealth(t *testing.T) {
 			_, _ = w.Write([]byte(`{"ok":true}`))
 		}))
 		defer server.Close()
-		t.Setenv("OLLAMA_HOST", server.URL)
+		t.Setenv("ROSE_HOST", server.URL)
 
 		if err := defaultCodexAppRouterHealth(); err != nil {
 			t.Fatal(err)
@@ -319,7 +319,7 @@ func TestCodexAppRouterHealth(t *testing.T) {
 	t.Run("old server", func(t *testing.T) {
 		server := httptest.NewServer(http.NotFoundHandler())
 		defer server.Close()
-		t.Setenv("OLLAMA_HOST", server.URL)
+		t.Setenv("ROSE_HOST", server.URL)
 
 		err := defaultCodexAppRouterHealth()
 		if err == nil || !strings.Contains(err.Error(), "does not include ChatGPT routing") {
@@ -513,7 +513,7 @@ func TestCodexAppDesktopUsesAndRestoresRegularProfile(t *testing.T) {
 	setTestHome(t, tmpDir)
 	withCodexAppPlatform(t, "darwin")
 	withCodexAppRouterHealth(t, func() error { return nil })
-	t.Setenv("OLLAMA_HOST", "http://127.0.0.1:11434")
+	t.Setenv("ROSE_HOST", "http://127.0.0.1:11434")
 
 	configPath := filepath.Join(tmpDir, ".codex", "config.toml")
 	if err := os.MkdirAll(filepath.Dir(configPath), 0o755); err != nil {
@@ -544,7 +544,7 @@ func TestCodexAppDesktopUsesAndRestoresRegularProfile(t *testing.T) {
 		t.Fatal(err)
 	}
 	if !app.OllamaConfigured() || app.CurrentModel() != "qwen3:8b" {
-		t.Fatalf("regular profile was not configured for Ollama")
+		t.Fatalf("regular profile was not configured for Rose")
 	}
 	if got, err := os.ReadFile(authPath); err != nil || string(got) != string(auth) {
 		t.Fatalf("shared auth changed: %q, %v", got, err)
@@ -573,7 +573,7 @@ func TestCodexAppDesktopUpdatesStoppedProfileWithoutOpening(t *testing.T) {
 	setTestHome(t, tmpDir)
 	withCodexAppPlatform(t, "darwin")
 	withCodexAppRouterHealth(t, func() error { return nil })
-	t.Setenv("OLLAMA_HOST", "http://127.0.0.1:11434")
+	t.Setenv("ROSE_HOST", "http://127.0.0.1:11434")
 
 	configPath := filepath.Join(tmpDir, ".codex", "config.toml")
 	if err := os.MkdirAll(filepath.Dir(configPath), 0o755); err != nil {
@@ -598,7 +598,7 @@ func TestCodexAppDesktopUpdatesStoppedProfileWithoutOpening(t *testing.T) {
 		t.Fatal(err)
 	}
 	if !app.OllamaConfigured() || app.CurrentModel() != "qwen3:8b" {
-		t.Fatal("stopped regular profile was not updated for Ollama")
+		t.Fatal("stopped regular profile was not updated for Rose")
 	}
 	if openCalls != 0 {
 		t.Fatalf("open calls = %d, want 0", openCalls)
@@ -609,7 +609,7 @@ func TestCodexAppManagedAuthLifecycle(t *testing.T) {
 	t.Run("signed out user gets local auth that restore removes", func(t *testing.T) {
 		tmpDir := t.TempDir()
 		setTestHome(t, tmpDir)
-		t.Setenv("OLLAMA_HOST", "http://127.0.0.1:11434")
+		t.Setenv("ROSE_HOST", "http://127.0.0.1:11434")
 
 		app := &CodexApp{}
 		if err := app.ConfigureWithModels("qwen3:8b", testLaunchModels("qwen3:8b")); err != nil {
@@ -647,7 +647,7 @@ func TestCodexAppManagedAuthLifecycle(t *testing.T) {
 	t.Run("existing auth is preserved", func(t *testing.T) {
 		tmpDir := t.TempDir()
 		setTestHome(t, tmpDir)
-		t.Setenv("OLLAMA_HOST", "http://127.0.0.1:11434")
+		t.Setenv("ROSE_HOST", "http://127.0.0.1:11434")
 		authPath := filepath.Join(tmpDir, ".codex", "auth.json")
 		if err := os.MkdirAll(filepath.Dir(authPath), 0o700); err != nil {
 			t.Fatal(err)
@@ -675,7 +675,7 @@ func TestCodexAppManagedAuthLifecycle(t *testing.T) {
 	t.Run("real login that replaces local auth is preserved", func(t *testing.T) {
 		tmpDir := t.TempDir()
 		setTestHome(t, tmpDir)
-		t.Setenv("OLLAMA_HOST", "http://127.0.0.1:11434")
+		t.Setenv("ROSE_HOST", "http://127.0.0.1:11434")
 
 		app := &CodexApp{}
 		if err := app.ConfigureWithModels("qwen3:8b", testLaunchModels("qwen3:8b")); err != nil {
@@ -701,7 +701,7 @@ func TestCodexAppDesktopAppliesProfileAfterRunningAppExits(t *testing.T) {
 	setTestHome(t, tmpDir)
 	withCodexAppPlatform(t, "darwin")
 	withCodexAppRouterHealth(t, func() error { return nil })
-	t.Setenv("OLLAMA_HOST", "http://127.0.0.1:11434")
+	t.Setenv("ROSE_HOST", "http://127.0.0.1:11434")
 
 	configPath := filepath.Join(tmpDir, ".codex", "config.toml")
 	if err := os.MkdirAll(filepath.Dir(configPath), 0o755); err != nil {
@@ -760,7 +760,7 @@ func TestCodexAppDesktopRestartRepairsCatalogWithoutLiveInventory(t *testing.T) 
 	tmpDir := t.TempDir()
 	setTestHome(t, tmpDir)
 	withCodexAppPlatform(t, "darwin")
-	t.Setenv("OLLAMA_HOST", "http://127.0.0.1:11434")
+	t.Setenv("ROSE_HOST", "http://127.0.0.1:11434")
 
 	app := &CodexApp{}
 	if err := app.ConfigureWithModels("qwen3:8b", testLaunchModels("qwen3:8b")); err != nil {
@@ -855,7 +855,7 @@ func TestCodexAppDesktopRestartRepairsCatalogWithoutLiveInventory(t *testing.T) 
 		if model["slug"] == "qwen3:8b" {
 			foundOllama = true
 			if model["supported_in_api"] != true {
-				t.Fatalf("Ollama model supported_in_api = %v, want true", model["supported_in_api"])
+				t.Fatalf("Rose model supported_in_api = %v, want true", model["supported_in_api"])
 			}
 		}
 		if model["slug"] != "gpt-5.6-sol" {
@@ -870,7 +870,7 @@ func TestCodexAppDesktopRestartRepairsCatalogWithoutLiveInventory(t *testing.T) 
 		t.Fatal("repaired catalog has no native model")
 	}
 	if !foundOllama {
-		t.Fatal("repaired catalog has no Ollama model")
+		t.Fatal("repaired catalog has no Rose model")
 	}
 }
 
@@ -943,7 +943,7 @@ func TestCodexAppCountsOnlyOllamaRequestsInRegularProfile(t *testing.T) {
 		t.Fatal(err)
 	}
 	if got := codexAppRegularProfileRequestCount(); got != 2 {
-		t.Fatalf("regular profile Ollama request count = %d, want 2", got)
+		t.Fatalf("regular profile Rose request count = %d, want 2", got)
 	}
 
 	file, err := os.OpenFile(regularSessionPath, os.O_APPEND|os.O_WRONLY, 0o600)
@@ -975,7 +975,7 @@ func TestCodexAppCountsOnlyOllamaRequestsInRegularProfile(t *testing.T) {
 		t.Fatal(err)
 	}
 	if got := codexAppRegularProfileRequestCount(); got != 3 {
-		t.Fatalf("incremental regular profile Ollama request count = %d, want 3", got)
+		t.Fatalf("incremental regular profile Rose request count = %d, want 3", got)
 	}
 }
 
@@ -1100,7 +1100,7 @@ func TestChatGPTMissingAppGivesDownloadRecovery(t *testing.T) {
 func TestCodexAppConfigureAddsOllamaModelsToBuiltInProvider(t *testing.T) {
 	tmpDir := t.TempDir()
 	setTestHome(t, tmpDir)
-	t.Setenv("OLLAMA_HOST", "http://127.0.0.1:9999")
+	t.Setenv("ROSE_HOST", "http://127.0.0.1:9999")
 
 	configPath := filepath.Join(tmpDir, ".codex", "config.toml")
 	if err := os.MkdirAll(filepath.Dir(configPath), 0o755); err != nil {
@@ -1174,7 +1174,7 @@ func TestCodexAppConfigureAddsOllamaModelsToBuiltInProvider(t *testing.T) {
 		t.Fatalf("catalog should be valid JSON: %v", err)
 	}
 	if got := catalogSlugs(catalog.Models); strings.Join(got, ",") != "llama3.2,qwen3:8b,gpt-5.6-sol" {
-		t.Fatalf("catalog slugs = %v, want Ollama models followed by native models", got)
+		t.Fatalf("catalog slugs = %v, want Rose models followed by native models", got)
 	}
 	ollamaEntry := catalog.Models[0]
 	for key, want := range map[string]any{
@@ -1186,15 +1186,15 @@ func TestCodexAppConfigureAddsOllamaModelsToBuiltInProvider(t *testing.T) {
 		"supports_reasoning_summary_parameter": false,
 	} {
 		if got := ollamaEntry[key]; got != want {
-			t.Fatalf("Ollama catalog %s = %#v, want %#v", key, got, want)
+			t.Fatalf("Rose catalog %s = %#v, want %#v", key, got, want)
 		}
 	}
 	truncationPolicy, ok := ollamaEntry["truncation_policy"].(map[string]any)
 	if !ok || truncationPolicy["mode"] != "tokens" {
-		t.Fatalf("Ollama truncation policy = %#v, want token mode", ollamaEntry["truncation_policy"])
+		t.Fatalf("Rose truncation policy = %#v, want token mode", ollamaEntry["truncation_policy"])
 	}
 	if _, ok := ollamaEntry["tool_mode"]; ok {
-		t.Fatalf("Ollama catalog must not opt into a native-only code tool mode: %#v", ollamaEntry)
+		t.Fatalf("Rose catalog must not opt into a native-only code tool mode: %#v", ollamaEntry)
 	}
 }
 
@@ -1269,7 +1269,7 @@ func TestCodexAppReasoningEffortsExposeOffAndMaxWithoutDroppingUserChoices(t *te
 func TestCodexAppConfigureUsesAppSpecificProfileWithoutTouchingCLIProfile(t *testing.T) {
 	tmpDir := t.TempDir()
 	setTestHome(t, tmpDir)
-	t.Setenv("OLLAMA_HOST", "http://127.0.0.1:9999")
+	t.Setenv("ROSE_HOST", "http://127.0.0.1:9999")
 
 	configPath := filepath.Join(tmpDir, ".codex", "config.toml")
 	if err := os.MkdirAll(filepath.Dir(configPath), 0o755); err != nil {
@@ -1277,12 +1277,12 @@ func TestCodexAppConfigureUsesAppSpecificProfileWithoutTouchingCLIProfile(t *tes
 	}
 	existing := "" +
 		`profile = "default"` + "\n\n" +
-		"[profiles.ollama-launch]\n" +
+		"[profiles.rose-launch]\n" +
 		`model = "cli-model"` + "\n" +
 		`openai_base_url = "http://cli.invalid/v1/"` + "\n" +
-		`model_provider = "ollama-launch"` + "\n\n" +
-		"[model_providers.ollama-launch]\n" +
-		`name = "CLI Ollama"` + "\n" +
+		`model_provider = "rose-launch"` + "\n\n" +
+		"[model_providers.rose-launch]\n" +
+		`name = "CLI Rose"` + "\n" +
 		`base_url = "http://cli.invalid/v1/"` + "\n" +
 		`wire_api = "responses"` + "\n\n" +
 		"[profiles.default]\n" +
@@ -1306,7 +1306,7 @@ func TestCodexAppConfigureUsesAppSpecificProfileWithoutTouchingCLIProfile(t *tes
 	if got := codexSectionStringValue(content, codexProfileHeader(), "openai_base_url"); got != "http://cli.invalid/v1/" {
 		t.Fatalf("CLI profile base URL = %q, want preserved CLI URL in:\n%s", got, content)
 	}
-	if got := codexSectionStringValue(content, codexProviderHeader(), "name"); got != "CLI Ollama" {
+	if got := codexSectionStringValue(content, codexProviderHeader(), "name"); got != "CLI Rose" {
 		t.Fatalf("CLI provider name = %q, want preserved CLI provider in:\n%s", got, content)
 	}
 	if strings.Contains(content, codexProfileHeaderFor(codexAppProfileName)) {
@@ -1330,7 +1330,7 @@ func TestCodexAppConfigureUsesAppSpecificProfileWithoutTouchingCLIProfile(t *tes
 func TestCodexAppConfigureIsIdempotentAndPreservesUnrelatedProvider(t *testing.T) {
 	tmpDir := t.TempDir()
 	setTestHome(t, tmpDir)
-	t.Setenv("OLLAMA_HOST", "http://127.0.0.1:9999")
+	t.Setenv("ROSE_HOST", "http://127.0.0.1:9999")
 
 	configPath := filepath.Join(tmpDir, ".codex", "config.toml")
 	if err := os.MkdirAll(filepath.Dir(configPath), 0o755); err != nil {
@@ -1372,7 +1372,7 @@ func TestCodexAppConfigureIsIdempotentAndPreservesUnrelatedProvider(t *testing.T
 		t.Fatalf("custom provider env_key = %q, want preserved value", got)
 	}
 	if parsed.Exists("model_providers", codexAppProfileName, "env_key") {
-		t.Fatalf("managed local Ollama provider should not require an API key:\n%s", second)
+		t.Fatalf("managed local Rose provider should not require an API key:\n%s", second)
 	}
 	if got := app.CurrentModel(); got != "llama3.2" {
 		t.Fatalf("CurrentModel = %q, want llama3.2", got)
@@ -1390,7 +1390,7 @@ func TestCodexAppConfigurePersistsAutoReviewModel(t *testing.T) {
 		{name: "native explicit", configured: "native"},
 		{name: "chatgpt explicit", configured: "chatgpt"},
 		{name: "selected cloud model", configured: "selected", want: "selected", wantFallback: "glm-5.3:cloud"},
-		{name: "ollama alias", configured: "ollama", want: "glm-5.3:cloud"},
+		{name: "rose alias", configured: "rose", want: "glm-5.3:cloud"},
 		{name: "explicit configured model", configured: "qwen3:8b", want: "qwen3:8b"},
 		{name: "explicit configured cloud model", configured: "deepseek-v4-flash:cloud", want: "deepseek-v4-flash:cloud"},
 	} {
@@ -1441,7 +1441,7 @@ func TestCodexAppConfigureRejectsUnknownAutoReviewModelBeforeWriting(t *testing.
 func TestCodexCLIConfigRefreshLeavesCodexAppConfigActive(t *testing.T) {
 	tmpDir := t.TempDir()
 	setTestHome(t, tmpDir)
-	t.Setenv("OLLAMA_HOST", "http://127.0.0.1:9999")
+	t.Setenv("ROSE_HOST", "http://127.0.0.1:9999")
 
 	appModels := testLaunchModels("llama3.2", "gemma4")
 	if err := (&CodexApp{}).ConfigureWithModels("llama3.2", appModels); err != nil {
@@ -1485,7 +1485,7 @@ func TestCodexCLIConfigRefreshLeavesCodexAppConfigActive(t *testing.T) {
 		t.Fatalf("CLI provider should be isolated from app root config, got:\n%s", content)
 	}
 
-	cliProfilePath := filepath.Join(tmpDir, ".codex", "ollama-launch.config.toml")
+	cliProfilePath := filepath.Join(tmpDir, ".codex", "rose-launch.config.toml")
 	cliProfileData, err := os.ReadFile(cliProfilePath)
 	if err != nil {
 		t.Fatalf("CLI profile config not created: %v", err)
@@ -1515,7 +1515,7 @@ func TestCodexCLIConfigRefreshLeavesCodexAppConfigActive(t *testing.T) {
 		t.Fatalf("app catalog should be valid JSON: %v", err)
 	}
 	if got := catalogSlugs(appCatalog.Models); strings.Join(got, ",") != "llama3.2,gemma4,gpt-5.6-sol" {
-		t.Fatalf("app catalog slugs = %v, want Ollama models followed by the native catalog", got)
+		t.Fatalf("app catalog slugs = %v, want Rose models followed by the native catalog", got)
 	}
 	routingCatalogData, err := os.ReadFile(codexAppRoutingCatalogPathForConfig(configPath))
 	if err != nil {
@@ -1528,7 +1528,7 @@ func TestCodexCLIConfigRefreshLeavesCodexAppConfigActive(t *testing.T) {
 		t.Fatalf("routing catalog should be valid JSON: %v", err)
 	}
 	if got := catalogSlugs(routingCatalog.Models); strings.Join(got, ",") != "llama3.2,gemma4" {
-		t.Fatalf("routing catalog slugs = %v, want only the selected Ollama models", got)
+		t.Fatalf("routing catalog slugs = %v, want only the selected Rose models", got)
 	}
 
 	cliCatalogData, err := os.ReadFile(cliCatalogPath)
@@ -1549,7 +1549,7 @@ func TestCodexCLIConfigRefreshLeavesCodexAppConfigActive(t *testing.T) {
 func TestCodexAppConfigureUsesConnectableHostForUnspecifiedBindAddress(t *testing.T) {
 	tmpDir := t.TempDir()
 	setTestHome(t, tmpDir)
-	t.Setenv("OLLAMA_HOST", "http://0.0.0.0:11434")
+	t.Setenv("ROSE_HOST", "http://0.0.0.0:11434")
 
 	if err := (&CodexApp{}).ConfigureWithModels("llama3.2", testLaunchModels("llama3.2")); err != nil {
 		t.Fatalf("ConfigureWithModels returned error: %v", err)
@@ -1579,9 +1579,9 @@ func TestCodexAppHostChangePreservesRestoreState(t *testing.T) {
 	for _, host := range []string{
 		"http://127.0.0.1:11434",
 		"http://localhost:11434",
-		"http://localhost:11434/ollama",
-		"http://127.0.0.1:11434/ollama",
-		"http://[::1]:11434/ollama",
+		"http://localhost:11434/rose",
+		"http://127.0.0.1:11434/rose",
+		"http://[::1]:11434/rose",
 	} {
 		t.Run(host, func(t *testing.T) {
 			t.Run("restore", func(t *testing.T) {
@@ -1612,7 +1612,7 @@ func testCodexAppHostChangePreservesRestoreState(t *testing.T, host string, reco
 		t.Fatal(err)
 	}
 
-	t.Setenv("OLLAMA_HOST", host)
+	t.Setenv("ROSE_HOST", host)
 	app := &CodexApp{}
 	if err := app.ConfigureWithModels("llama3.2", testLaunchModels("llama3.2")); err != nil {
 		t.Fatalf("initial ConfigureWithModels returned error: %v", err)
@@ -1625,8 +1625,8 @@ func testCodexAppHostChangePreservesRestoreState(t *testing.T, host string, reco
 	}
 
 	// A changed server address must not make the off-switch disappear or cause
-	// the next update to save Ollama's managed root as the user's restore target.
-	t.Setenv("OLLAMA_HOST", "http://127.0.0.1:22434")
+	// the next update to save Rose's managed root as the user's restore target.
+	t.Setenv("ROSE_HOST", "http://127.0.0.1:22434")
 	if !app.OllamaConfigured() {
 		t.Fatal("OllamaConfigured = false after host change, want managed config to remain detectable")
 	}
@@ -1737,7 +1737,7 @@ func TestCodexAppConfigureRejectsMalformedTomlEvenWithExistingRestoreState(t *te
 	if err := os.MkdirAll(filepath.Dir(configPath), 0o755); err != nil {
 		t.Fatal(err)
 	}
-	existing := "[profiles.ollama-launch\nmodel = \"llama3.2\"\n"
+	existing := "[profiles.rose-launch\nmodel = \"llama3.2\"\n"
 	if err := os.WriteFile(configPath, []byte(existing), 0o644); err != nil {
 		t.Fatal(err)
 	}
@@ -1772,7 +1772,7 @@ func TestCodexAppConfigureRejectsMalformedTomlEvenWithExistingRestoreState(t *te
 func TestCodexAppCurrentModelRequiresManagedActiveProfile(t *testing.T) {
 	tmpDir := t.TempDir()
 	setTestHome(t, tmpDir)
-	t.Setenv("OLLAMA_HOST", "http://127.0.0.1:11434")
+	t.Setenv("ROSE_HOST", "http://127.0.0.1:11434")
 
 	configPath := filepath.Join(tmpDir, ".codex", "config.toml")
 	if err := os.MkdirAll(filepath.Dir(configPath), 0o755); err != nil {
@@ -1807,7 +1807,7 @@ func TestCodexAppCurrentModelRecognizesManagedRootProviderForms(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tmpDir := t.TempDir()
 			setTestHome(t, tmpDir)
-			t.Setenv("OLLAMA_HOST", "http://127.0.0.1:11434")
+			t.Setenv("ROSE_HOST", "http://127.0.0.1:11434")
 
 			configPath := filepath.Join(tmpDir, ".codex", "config.toml")
 			if err := os.MkdirAll(filepath.Dir(configPath), 0o755); err != nil {
@@ -1832,7 +1832,7 @@ func TestCodexAppCurrentModelRecognizesManagedRootProviderForms(t *testing.T) {
 func TestCodexAppOllamaConfiguredKeepsOffSwitchWhenCatalogIsMissing(t *testing.T) {
 	tmpDir := t.TempDir()
 	setTestHome(t, tmpDir)
-	t.Setenv("OLLAMA_HOST", "http://127.0.0.1:11434")
+	t.Setenv("ROSE_HOST", "http://127.0.0.1:11434")
 
 	configPath := filepath.Join(tmpDir, ".codex", "config.toml")
 	if err := os.MkdirAll(filepath.Dir(configPath), 0o755); err != nil {
@@ -1902,7 +1902,7 @@ func TestCodexAppCurrentModelRequiresHealthyCatalog(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tmpDir := t.TempDir()
 			setTestHome(t, tmpDir)
-			t.Setenv("OLLAMA_HOST", "http://127.0.0.1:11434")
+			t.Setenv("ROSE_HOST", "http://127.0.0.1:11434")
 
 			configPath := filepath.Join(tmpDir, ".codex", "config.toml")
 			if err := os.MkdirAll(filepath.Dir(configPath), 0o755); err != nil {
@@ -1944,7 +1944,7 @@ func TestCodexAppCurrentModelRequiresHealthyCatalog(t *testing.T) {
 func TestCodexAppCurrentModelDetectsDriftedModel(t *testing.T) {
 	tmpDir := t.TempDir()
 	setTestHome(t, tmpDir)
-	t.Setenv("OLLAMA_HOST", "http://127.0.0.1:11434")
+	t.Setenv("ROSE_HOST", "http://127.0.0.1:11434")
 
 	catalogPath := mustWriteCodexAppTestCatalog(t, "llama3.2")
 	configPath := filepath.Join(tmpDir, ".codex", "config.toml")
@@ -1956,7 +1956,7 @@ func TestCodexAppCurrentModelDetectsDriftedModel(t *testing.T) {
 		fmt.Sprintf(`model_provider = %q`, codexAppProfileName) + "\n\n" +
 		fmt.Sprintf(`model_catalog_json = %q`, catalogPath) + "\n\n" +
 		codexProviderHeaderFor(codexAppProfileName) + "\n" +
-		`name = "Ollama"` + "\n" +
+		`name = "Rose"` + "\n" +
 		`base_url = "http://127.0.0.1:11434/v1/"` + "\n" +
 		`wire_api = "responses"` + "\n"
 	if err := os.WriteFile(configPath, []byte(content), 0o644); err != nil {
@@ -1964,14 +1964,14 @@ func TestCodexAppCurrentModelDetectsDriftedModel(t *testing.T) {
 	}
 
 	if got := (&CodexApp{}).CurrentModel(); got != "" {
-		t.Fatalf("CurrentModel = %q, want empty when model has drifted from the Ollama catalog", got)
+		t.Fatalf("CurrentModel = %q, want empty when model has drifted from the Rose catalog", got)
 	}
 }
 
 func TestCodexAppCurrentModelAcceptsLatestSuffixDrift(t *testing.T) {
 	tmpDir := t.TempDir()
 	setTestHome(t, tmpDir)
-	t.Setenv("OLLAMA_HOST", "http://127.0.0.1:11434")
+	t.Setenv("ROSE_HOST", "http://127.0.0.1:11434")
 
 	catalogPath := mustWriteCodexAppTestCatalog(t, "llama3.2")
 	configPath := filepath.Join(tmpDir, ".codex", "config.toml")
@@ -2020,7 +2020,7 @@ func TestCodexAppConfigurePopulatesCatalogFromEnrichedModels(t *testing.T) {
 	}
 
 	if got := catalogSlugs(catalog.Models); strings.Join(got, ",") != "gemma4,qwen3:8b,llama3.2,gpt-5.6-sol" {
-		t.Fatalf("catalog slugs = %v, want enriched Ollama models plus native models", got)
+		t.Fatalf("catalog slugs = %v, want enriched Rose models plus native models", got)
 	}
 	for _, model := range catalog.Models[:3] {
 		slug, _ := model["slug"].(string)
@@ -2108,7 +2108,7 @@ func TestCodexAppConfigurePopulatesCatalogFromEnrichedModels(t *testing.T) {
 		t.Fatalf("routing catalog should be valid JSON: %v", err)
 	}
 	if len(routingCatalog.Models) != 3 {
-		t.Fatalf("routing catalog models = %#v, want 3 selected Ollama models", routingCatalog.Models)
+		t.Fatalf("routing catalog models = %#v, want 3 selected Rose models", routingCatalog.Models)
 	}
 	gemmaThinking := routingCatalog.Models[0].Thinking
 	if routingCatalog.Models[0].Slug != "gemma4" || !gemmaThinking.Supported || !slices.Equal(gemmaThinking.Levels, []string{"none", "high"}) {
@@ -2264,7 +2264,7 @@ func TestCodexAppConfigureWritesRecommendationThinkingContract(t *testing.T) {
 		t.Fatalf("catalog models = %#v, want selected model first", catalog.Models)
 	}
 	if got := catalog.Models[0].DefaultReasoningLevel; got != "high" {
-		t.Fatalf("default reasoning level = %q, want high for Ollama true", got)
+		t.Fatalf("default reasoning level = %q, want high for Rose true", got)
 	}
 	var levels []string
 	for _, level := range catalog.Models[0].SupportedReasoningLevels {
@@ -2372,7 +2372,7 @@ func TestCodexAppConfigureCatalogIncludesExactSelectedModel(t *testing.T) {
 func TestCodexAppConfigureUpgradesLegacyRestoreState(t *testing.T) {
 	tmpDir := t.TempDir()
 	setTestHome(t, tmpDir)
-	t.Setenv("OLLAMA_HOST", "http://127.0.0.1:9999")
+	t.Setenv("ROSE_HOST", "http://127.0.0.1:9999")
 
 	configPath := filepath.Join(tmpDir, ".codex", "config.toml")
 	if err := os.MkdirAll(filepath.Dir(configPath), 0o755); err != nil {
@@ -2415,7 +2415,7 @@ func TestCodexAppConfigureUpgradesLegacyRestoreState(t *testing.T) {
 func TestCodexAppConfigureMigratesLegacyManagedConfigWithoutPollutingRestoreState(t *testing.T) {
 	tmpDir := t.TempDir()
 	setTestHome(t, tmpDir)
-	t.Setenv("OLLAMA_HOST", "http://127.0.0.1:9999")
+	t.Setenv("ROSE_HOST", "http://127.0.0.1:9999")
 	withCodexAppPlatform(t, "darwin")
 
 	var openCalls int
@@ -2443,7 +2443,7 @@ func TestCodexAppConfigureMigratesLegacyManagedConfigWithoutPollutingRestoreStat
 		fmt.Sprintf(`model_provider = %q`, codexAppProfileName) + "\n" +
 		fmt.Sprintf(`model_catalog_json = %q`, catalogPath) + "\n\n" +
 		codexProviderHeaderFor(codexAppProfileName) + "\n" +
-		`name = "Ollama"` + "\n" +
+		`name = "Rose"` + "\n" +
 		`base_url = "http://127.0.0.1:9999/v1/"` + "\n" +
 		`wire_api = "responses"` + "\n\n" +
 		"[profiles.default]\n" +
@@ -2610,7 +2610,7 @@ func TestCodexAppRestoreRestoresDesktopReasoningEffortsExactly(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tmpDir := t.TempDir()
 			setTestHome(t, tmpDir)
-			t.Setenv("OLLAMA_HOST", "http://127.0.0.1:11434")
+			t.Setenv("ROSE_HOST", "http://127.0.0.1:11434")
 			withCodexAppPlatform(t, "darwin")
 			withCodexAppProcessHooks(t, func() bool { return false }, func() error { return nil }, func() error { return nil })
 
@@ -2681,7 +2681,7 @@ func TestCodexAppRestoreRestoresDesktopReasoningEffortsExactly(t *testing.T) {
 func TestCodexAppRestorePreservesNativeModelSelectedWhileConnected(t *testing.T) {
 	tmpDir := t.TempDir()
 	setTestHome(t, tmpDir)
-	t.Setenv("OLLAMA_HOST", "http://127.0.0.1:9999")
+	t.Setenv("ROSE_HOST", "http://127.0.0.1:9999")
 
 	configPath, err := codexConfigPath()
 	if err != nil {
@@ -2708,7 +2708,7 @@ func TestCodexAppRestorePreservesNativeModelSelectedWhileConnected(t *testing.T)
 		wantModel string
 	}{
 		{name: "native selection", current: "gpt-5.6-sol", routing: `{"models":[{"slug":"glm-5.3-flash:cloud"}]}`, wantModel: "gpt-5.6-sol"},
-		{name: "Ollama selection", current: "glm-5.3-flash:cloud", routing: `{"models":[{"slug":"glm-5.3-flash:cloud"}]}`, wantModel: "gpt-5.5"},
+		{name: "Rose selection", current: "glm-5.3-flash:cloud", routing: `{"models":[{"slug":"glm-5.3-flash:cloud"}]}`, wantModel: "gpt-5.5"},
 		{name: "damaged routing catalog", current: "glm-5.3-flash:cloud", routing: `{`, wantModel: "gpt-5.5"},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
@@ -2769,7 +2769,7 @@ func TestCodexAppRestoreMissingConfigRemovesRestoreState(t *testing.T) {
 func TestCodexAppConfigureMissingConfigReplacesStaleRestoreState(t *testing.T) {
 	tmpDir := t.TempDir()
 	setTestHome(t, tmpDir)
-	t.Setenv("OLLAMA_HOST", "http://127.0.0.1:9999")
+	t.Setenv("ROSE_HOST", "http://127.0.0.1:9999")
 
 	if err := os.MkdirAll(filepath.Dir(codexAppRestoreStatePath()), 0o755); err != nil {
 		t.Fatal(err)
@@ -2795,7 +2795,7 @@ func TestCodexAppConfigureMissingConfigReplacesStaleRestoreState(t *testing.T) {
 func TestCodexAppConfigureRefreshesRestoreStateAfterManualProfileSwitch(t *testing.T) {
 	tmpDir := t.TempDir()
 	setTestHome(t, tmpDir)
-	t.Setenv("OLLAMA_HOST", "http://127.0.0.1:9999")
+	t.Setenv("ROSE_HOST", "http://127.0.0.1:9999")
 	withCodexAppPlatform(t, "darwin")
 
 	var openCalls int
@@ -3077,15 +3077,15 @@ func TestCodexAppRestoreDoesNotTreatCLIProfileAsOwned(t *testing.T) {
 		t.Fatal(err)
 	}
 	existing := "" +
-		`profile = "ollama-launch"` + "\n" +
+		`profile = "rose-launch"` + "\n" +
 		`model = "cli-model"` + "\n" +
-		`model_provider = "ollama-launch"` + "\n\n" +
-		"[profiles.ollama-launch]\n" +
+		`model_provider = "rose-launch"` + "\n\n" +
+		"[profiles.rose-launch]\n" +
 		`model = "cli-model"` + "\n" +
 		`openai_base_url = "http://cli.invalid/v1/"` + "\n" +
-		`model_provider = "ollama-launch"` + "\n\n" +
-		"[model_providers.ollama-launch]\n" +
-		`name = "CLI Ollama"` + "\n" +
+		`model_provider = "rose-launch"` + "\n\n" +
+		"[model_providers.rose-launch]\n" +
+		`name = "CLI Rose"` + "\n" +
 		`base_url = "http://cli.invalid/v1/"` + "\n" +
 		`wire_api = "responses"` + "\n"
 	if err := os.WriteFile(configPath, []byte(existing), 0o644); err != nil {
@@ -3117,7 +3117,7 @@ func TestCodexAppDarwinOpenArgs(t *testing.T) {
 		t.Run(path, func(t *testing.T) {
 			setTestHome(t, t.TempDir())
 			withCodexAppPlatform(t, "darwin")
-			t.Setenv("OLLAMA_HOST", "http://127.0.0.1:11434")
+			t.Setenv("ROSE_HOST", "http://127.0.0.1:11434")
 
 			usualArgs := []string{"-b", codexAppBundleID}
 			ollamaArgs := []string{"-b", codexAppBundleID, "codex://threads/new?mode=codex"}
@@ -3134,7 +3134,7 @@ func TestCodexAppDarwinOpenArgs(t *testing.T) {
 				t.Fatal(err)
 			}
 			if got := codexAppDarwinOpenArgs(path); !slices.Equal(got, ollamaArgs) {
-				t.Fatalf("Ollama open args = %q, want %q", got, ollamaArgs)
+				t.Fatalf("Rose open args = %q, want %q", got, ollamaArgs)
 			}
 
 			if err := restoreCodexAppProfile(); err != nil {
@@ -3151,7 +3151,7 @@ func TestCodexAppDesktopLaunchMode(t *testing.T) {
 	setTestHome(t, t.TempDir())
 	withCodexAppPlatform(t, "darwin")
 	withCodexAppRouterHealth(t, func() error { return nil })
-	t.Setenv("OLLAMA_HOST", "http://127.0.0.1:11434")
+	t.Setenv("ROSE_HOST", "http://127.0.0.1:11434")
 
 	running := false
 	var openedArgs [][]string
@@ -3449,7 +3449,7 @@ func TestDefaultCodexAppIsRunningProcesses(t *testing.T) {
 		want          bool
 	}{
 		{name: "no processes", goos: "darwin"},
-		{name: "apps stopped or absent", goos: "darwin", output: "1 /sbin/launchd\n100 /Applications/Ollama.app/Contents/MacOS/Ollama\n"},
+		{name: "apps stopped or absent", goos: "darwin", output: "1 /sbin/launchd\n100 /Applications/Rose.app/Contents/MacOS/Rose\n"},
 		{name: "ChatGPT main", goos: "darwin", output: fmt.Sprintf("%d /Applications/ChatGPT.app/Contents/MacOS/ChatGPT\n", otherPID), want: true},
 		{name: "Codex main", goos: "darwin", output: fmt.Sprintf("%d /Applications/Codex.app/Contents/MacOS/Codex\n", otherPID), want: true},
 		{name: "renamed ChatGPT bundle", goos: "darwin", output: fmt.Sprintf("%d /Applications/ChatGPT Preview.app/Contents/MacOS/ChatGPT\n", otherPID), nameMatchExit: "0", want: true},
@@ -3476,16 +3476,16 @@ func TestDefaultCodexAppIsRunningProcesses(t *testing.T) {
 				command = "powershell.exe"
 			}
 			commands := map[string]string{
-				command: "printf '%s' \"$OLLAMA_TEST_CODEX_APP_PROCESSES\"\nexit \"${OLLAMA_TEST_CODEX_APP_EXIT_CODE:-0}\"\n",
+				command: "printf '%s' \"$ROSE_TEST_CODEX_APP_PROCESSES\"\nexit \"${ROSE_TEST_CODEX_APP_EXIT_CODE:-0}\"\n",
 			}
 			if tt.goos == "darwin" {
-				// Exact names exclude helpers; -a includes the app if it launched Ollama.
-				commands["pgrep"] = "[ \"$*\" = '-a -x ChatGPT|Codex' ] || exit 2\nexit \"${OLLAMA_TEST_CODEX_APP_NAME_EXIT_CODE:-1}\"\n"
+				// Exact names exclude helpers; -a includes the app if it launched Rose.
+				commands["pgrep"] = "[ \"$*\" = '-a -x ChatGPT|Codex' ] || exit 2\nexit \"${ROSE_TEST_CODEX_APP_NAME_EXIT_CODE:-1}\"\n"
 			}
 			stubCodexAppProcessCommands(t, commands)
-			t.Setenv("OLLAMA_TEST_CODEX_APP_PROCESSES", tt.output)
-			t.Setenv("OLLAMA_TEST_CODEX_APP_EXIT_CODE", tt.exitCode)
-			t.Setenv("OLLAMA_TEST_CODEX_APP_NAME_EXIT_CODE", tt.nameMatchExit)
+			t.Setenv("ROSE_TEST_CODEX_APP_PROCESSES", tt.output)
+			t.Setenv("ROSE_TEST_CODEX_APP_EXIT_CODE", tt.exitCode)
+			t.Setenv("ROSE_TEST_CODEX_APP_NAME_EXIT_CODE", tt.nameMatchExit)
 
 			if got := defaultCodexAppIsRunning(); got != tt.want {
 				t.Fatalf("defaultCodexAppIsRunning() = %v, want %v", got, tt.want)
@@ -3497,11 +3497,11 @@ func TestDefaultCodexAppIsRunningProcesses(t *testing.T) {
 func TestDefaultCodexAppIsRunningDoesNotCallAppleScript(t *testing.T) {
 	withCodexAppPlatform(t, "darwin")
 	marker := filepath.Join(t.TempDir(), "osascript-called")
-	t.Setenv("OLLAMA_TEST_CODEX_APP_OSASCRIPT_MARKER", marker)
+	t.Setenv("ROSE_TEST_CODEX_APP_OSASCRIPT_MARKER", marker)
 	stubCodexAppProcessCommands(t, map[string]string{
 		"ps": "exit 0\n",
 		// Simulate slow System Events without contacting the real application.
-		"osascript": "printf called > \"$OLLAMA_TEST_CODEX_APP_OSASCRIPT_MARKER\"\nexec /bin/sleep 1\n",
+		"osascript": "printf called > \"$ROSE_TEST_CODEX_APP_OSASCRIPT_MARKER\"\nexec /bin/sleep 1\n",
 	})
 
 	if defaultCodexAppIsRunning() {

@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ollama/ollama/cmd/config"
+	"github.com/qompassai/rose/cmd/config"
 )
 
 var (

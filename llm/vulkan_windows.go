@@ -40,7 +40,7 @@ func adjustWindowsVulkanLibraryPaths(paths, gpuLibs []string) []string {
 }
 
 // Use the host Vulkan loader supplied by the installed Vulkan runtime or GPU
-// driver. Ollama no longer packages the loader; exclude backend library
+// driver. Rose no longer packages the loader; exclude backend library
 // directories from PATH probing so stale app-local copies from older installs
 // cannot shadow the host runtime.
 func windowsVulkanRuntimeDLLPath(

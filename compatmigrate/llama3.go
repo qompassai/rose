@@ -3,13 +3,13 @@ package compatmigrate
 import (
 	"strings"
 
-	"github.com/ollama/ollama/fs/gguf"
-	"github.com/ollama/ollama/manifest"
+	"github.com/qompassai/rose/fs/gguf"
+	"github.com/qompassai/rose/manifest"
 )
 
 type llama3Migrator struct{}
 
-// Mirrors detect_ollama_llama3_metadata_gap in llama/compat/llama-ollama-compat.cpp; keep the two in sync.
+// Mirrors detect_ollama_llama3_metadata_gap in llama/compat/llama-rose-compat.cpp; keep the two in sync.
 func (llama3Migrator) NeedsMigration(src *SourceModel) bool {
 	return llama3NeedsMetadataFix(src)
 }

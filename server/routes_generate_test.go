@@ -17,14 +17,14 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/go-cmp/cmp"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/fs/gguf"
-	gguftest "github.com/ollama/ollama/internal/testutil/gguf"
-	"github.com/ollama/ollama/llm"
-	"github.com/ollama/ollama/manifest"
-	"github.com/ollama/ollama/ml"
-	ollamatemplate "github.com/ollama/ollama/template"
-	"github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/fs/gguf"
+	gguftest "github.com/qompassai/rose/internal/testutil/gguf"
+	"github.com/qompassai/rose/llm"
+	"github.com/qompassai/rose/manifest"
+	"github.com/qompassai/rose/ml"
+	ollamatemplate "github.com/qompassai/rose/template"
+	"github.com/qompassai/rose/types/model"
 )
 
 // testPropsMap creates a ToolPropertiesMap from a map (convenience function for tests)
@@ -192,7 +192,7 @@ func newServerWithMockRunner(t *testing.T, mock *mockRunner) *Server {
 
 func TestEmbeddingHandlersUseRunnerSelection(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	writeShowManifestVariant(t, "embed-ggml", manifest.RunnerGGML, manifest.FormatGGUF, model.ConfigV2{
 		ModelFormat:  manifest.FormatGGUF,
@@ -310,32 +310,32 @@ func createMinimalGGUFModel(t *testing.T, s *Server, name string, kv gguftest.KV
 }
 
 func TestChatModeForModel(t *testing.T) {
-	t.Setenv("OLLAMA_GO_TEMPLATE", "")
+	t.Setenv("ROSE_GO_TEMPLATE", "")
 	if got := chatModeForModel(&Model{HasChatTemplate: true, HasGoTemplate: true}); got != chatExecutionModeRendered {
 		t.Fatalf("chatModeForModel with default go template env = %v, want rendered", got)
 	}
 
-	t.Setenv("OLLAMA_GO_TEMPLATE", "0")
+	t.Setenv("ROSE_GO_TEMPLATE", "0")
 	if got := chatModeForModel(&Model{HasChatTemplate: true, HasGoTemplate: true}); got != chatExecutionModeNative {
 		t.Fatalf("chatModeForModel with go template env disabled = %v, want chat_template route", got)
 	}
 
-	t.Setenv("OLLAMA_GO_TEMPLATE", "1")
+	t.Setenv("ROSE_GO_TEMPLATE", "1")
 	if got := chatModeForModel(&Model{HasChatTemplate: true, HasGoTemplate: true}); got != chatExecutionModeRendered {
 		t.Fatalf("chatModeForModel with go template env enabled = %v, want rendered", got)
 	}
 
-	t.Setenv("OLLAMA_GO_TEMPLATE", "1")
+	t.Setenv("ROSE_GO_TEMPLATE", "1")
 	if got := chatModeForModel(&Model{HasChatTemplate: true, HasGoTemplate: true, PreferChatTemplate: true}); got != chatExecutionModeRendered {
 		t.Fatalf("chatModeForModel with explicit go template env and chat_template preference = %v, want rendered", got)
 	}
 
-	t.Setenv("OLLAMA_GO_TEMPLATE", "")
+	t.Setenv("ROSE_GO_TEMPLATE", "")
 	if got := chatModeForModel(&Model{HasChatTemplate: true, HasGoTemplate: true, PreferChatTemplate: true}); got != chatExecutionModeNative {
 		t.Fatalf("chatModeForModel with default go template env and chat_template preference = %v, want chat_template route", got)
 	}
 
-	t.Setenv("OLLAMA_GO_TEMPLATE", "0")
+	t.Setenv("ROSE_GO_TEMPLATE", "0")
 	parserModel := &Model{Config: model.ConfigV2{Parser: "gemma4"}, HasChatTemplate: true}
 	if got := chatModeForModel(parserModel); got != chatExecutionModeRendered {
 		t.Fatalf("chatModeForModel with parser = %v, want rendered", got)
@@ -364,7 +364,7 @@ func TestChatModeForModel(t *testing.T) {
 		t.Fatalf("chatModeForModel with harmony = %v, want rendered", got)
 	}
 
-	t.Setenv("OLLAMA_GO_TEMPLATE", "")
+	t.Setenv("ROSE_GO_TEMPLATE", "")
 	if got := chatModeForModel(&Model{Config: model.ConfigV2{ModelFamily: "unknown"}, HasChatTemplate: true}); got != chatExecutionModeNative {
 		t.Fatalf("chatModeForModel without Go TEMPLATE = %v, want chat_template route", got)
 	}
@@ -382,8 +382,8 @@ func TestChatModeForModel(t *testing.T) {
 }
 
 func TestChatHandlerChatTemplateRoute(t *testing.T) {
-	t.Setenv("OLLAMA_CONTEXT_LENGTH", "4096")
-	t.Setenv("OLLAMA_GO_TEMPLATE", "")
+	t.Setenv("ROSE_CONTEXT_LENGTH", "4096")
+	t.Setenv("ROSE_GO_TEMPLATE", "")
 	gin.SetMode(gin.TestMode)
 
 	mock := mockRunner{
@@ -437,8 +437,8 @@ func TestChatHandlerChatTemplateRoute(t *testing.T) {
 }
 
 func TestChatHandlerChatTemplateRouteTruncatesMessages(t *testing.T) {
-	t.Setenv("OLLAMA_CONTEXT_LENGTH", "4096")
-	t.Setenv("OLLAMA_GO_TEMPLATE", "")
+	t.Setenv("ROSE_CONTEXT_LENGTH", "4096")
+	t.Setenv("ROSE_GO_TEMPLATE", "")
 	gin.SetMode(gin.TestMode)
 
 	mock := mockRunner{
@@ -497,8 +497,8 @@ func TestChatHandlerChatTemplateRouteTruncatesMessages(t *testing.T) {
 }
 
 func TestChatHandlerTemplateEnvUsesRenderedRoute(t *testing.T) {
-	t.Setenv("OLLAMA_CONTEXT_LENGTH", "4096")
-	t.Setenv("OLLAMA_GO_TEMPLATE", "1")
+	t.Setenv("ROSE_CONTEXT_LENGTH", "4096")
+	t.Setenv("ROSE_GO_TEMPLATE", "1")
 	gin.SetMode(gin.TestMode)
 
 	mock := mockRunner{
@@ -533,8 +533,8 @@ func TestChatHandlerTemplateEnvUsesRenderedRoute(t *testing.T) {
 }
 
 func TestChatHandlerHarmonyPreservesStructuralTokens(t *testing.T) {
-	t.Setenv("OLLAMA_CONTEXT_LENGTH", "4096")
-	t.Setenv("OLLAMA_GO_TEMPLATE", "")
+	t.Setenv("ROSE_CONTEXT_LENGTH", "4096")
+	t.Setenv("ROSE_GO_TEMPLATE", "")
 	gin.SetMode(gin.TestMode)
 
 	mock := mockRunner{
@@ -587,8 +587,8 @@ func TestChatHandlerHarmonyPreservesStructuralTokens(t *testing.T) {
 }
 
 func TestGenerateHandlerChatTemplateRoute(t *testing.T) {
-	t.Setenv("OLLAMA_CONTEXT_LENGTH", "4096")
-	t.Setenv("OLLAMA_GO_TEMPLATE", "")
+	t.Setenv("ROSE_CONTEXT_LENGTH", "4096")
+	t.Setenv("ROSE_GO_TEMPLATE", "")
 	gin.SetMode(gin.TestMode)
 
 	t.Run("uses GGUF chat_template when no Go TEMPLATE exists", func(t *testing.T) {
@@ -809,7 +809,7 @@ func TestGenerateChatRemote(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	t.Setenv("OLLAMA_REMOTES", p.Hostname())
+	t.Setenv("ROSE_REMOTES", p.Hostname())
 	s := Server{}
 	w := createRequest(t, s.CreateHandler, api.CreateRequest{
 		Model:      "test-cloud",
@@ -861,8 +861,8 @@ func TestGenerateChatRemote(t *testing.T) {
 }
 
 func TestGenerateChat(t *testing.T) {
-	t.Setenv("OLLAMA_CONTEXT_LENGTH", "4096")
-	t.Setenv("OLLAMA_GO_TEMPLATE", "1")
+	t.Setenv("ROSE_CONTEXT_LENGTH", "4096")
+	t.Setenv("ROSE_GO_TEMPLATE", "1")
 	gin.SetMode(gin.TestMode)
 
 	mock := mockRunner{
@@ -1583,7 +1583,7 @@ func TestGenerateChat(t *testing.T) {
 }
 
 func TestGenerate(t *testing.T) {
-	t.Setenv("OLLAMA_CONTEXT_LENGTH", "4096")
+	t.Setenv("ROSE_CONTEXT_LENGTH", "4096")
 	gin.SetMode(gin.TestMode)
 
 	mock := mockRunner{
@@ -2348,7 +2348,7 @@ func TestChatLogprobs(t *testing.T) {
 	})
 
 	t.Run("returns logprob bytes when requested", func(t *testing.T) {
-		t.Setenv("OLLAMA_GO_TEMPLATE", "1")
+		t.Setenv("ROSE_GO_TEMPLATE", "1")
 		gin.SetMode(gin.TestMode)
 
 		mock := &mockRunner{}
@@ -2486,7 +2486,7 @@ func TestChatLogprobs(t *testing.T) {
 }
 
 func TestChatWithPromptEndingInThinkTag(t *testing.T) {
-	t.Setenv("OLLAMA_GO_TEMPLATE", "1")
+	t.Setenv("ROSE_GO_TEMPLATE", "1")
 	gin.SetMode(gin.TestMode)
 
 	// Helper to create a standard thinking test setup
@@ -2715,8 +2715,8 @@ func TestChatWithPromptEndingInThinkTag(t *testing.T) {
 // completion call. Previously, format was deferred for all thinking-capable
 // parsers and only re-applied after an end-of-thinking transition -- a
 // transition that never fires when thinking is off. See
-// https://github.com/ollama/ollama/issues/15260 and
-// https://github.com/ollama/ollama/issues/14645.
+// https://github.com/qompassai/rose/issues/15260 and
+// https://github.com/qompassai/rose/issues/14645.
 func TestChatFormatWithThinkFalse(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
@@ -3085,11 +3085,11 @@ func TestGenerateWithImages(t *testing.T) {
 }
 
 func TestImageGenerateUnsupported(t *testing.T) {
-	t.Setenv("OLLAMA_CONTEXT_LENGTH", "4096")
+	t.Setenv("ROSE_CONTEXT_LENGTH", "4096")
 	gin.SetMode(gin.TestMode)
 
 	p := t.TempDir()
-	t.Setenv("OLLAMA_MODELS", p)
+	t.Setenv("ROSE_MODELS", p)
 
 	n := model.ParseName("test-image")
 	cfg := model.ConfigV2{Capabilities: []string{"image"}}

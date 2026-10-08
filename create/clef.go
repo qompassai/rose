@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"slices"
 
-	"github.com/ollama/ollama/fs/safetensors"
+	"github.com/qompassai/rose/fs/safetensors"
 )
 
 // Clef's config and shard index describe only its backbone. RENDERER clef adds

@@ -7,7 +7,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/ollama/ollama/ml"
+	"github.com/qompassai/rose/ml"
 )
 
 type llamaCppBinarySearch struct {
@@ -79,23 +79,23 @@ func llamaCppBinaryCandidates(name string, search llamaCppBinarySearch) []string
 		}
 		switch goos {
 		case "darwin":
-			// macOS tarballs and apps colocate llama.cpp helpers with ollama.
+			// macOS tarballs and apps colocate llama.cpp helpers with rose.
 			add(base)
-			// Per-architecture local dist output keeps helpers under lib/ollama.
-			add(filepath.Join(base, "lib", "ollama"))
-			// Standard CMake installs put ollama in bin/ and helpers in ../lib/ollama/.
-			add(filepath.Join(base, "..", "lib", "ollama"))
+			// Per-architecture local dist output keeps helpers under lib/rose.
+			add(filepath.Join(base, "lib", "rose"))
+			// Standard CMake installs put rose in bin/ and helpers in ../lib/rose/.
+			add(filepath.Join(base, "..", "lib", "rose"))
 		case "linux":
-			// Linux packages install ollama in bin/ and helpers in ../lib/ollama/.
-			add(filepath.Join(base, "..", "lib", "ollama"))
+			// Linux packages install rose in bin/ and helpers in ../lib/rose/.
+			add(filepath.Join(base, "..", "lib", "rose"))
 		case "windows":
-			// Windows packages keep ollama.exe at top level with lib/ as a peer.
-			add(filepath.Join(base, "lib", "ollama"))
-			// Standard CMake installs put ollama.exe in bin/ and helpers in ../lib/ollama/.
-			add(filepath.Join(base, "..", "lib", "ollama"))
+			// Windows packages keep rose.exe at top level with lib/ as a peer.
+			add(filepath.Join(base, "lib", "rose"))
+			// Standard CMake installs put rose.exe in bin/ and helpers in ../lib/rose/.
+			add(filepath.Join(base, "..", "lib", "rose"))
 		default:
-			add(filepath.Join(base, "lib", "ollama"))
-			add(filepath.Join(base, "..", "lib", "ollama"))
+			add(filepath.Join(base, "lib", "rose"))
+			add(filepath.Join(base, "..", "lib", "rose"))
 		}
 	}
 
@@ -103,10 +103,10 @@ func llamaCppBinaryCandidates(name string, search llamaCppBinarySearch) []string
 		if base == "" {
 			return
 		}
-		add(filepath.Join(base, "build", "lib", "ollama"))
-		add(filepath.Join(base, "dist", goos+"-"+goarch, "lib", "ollama"))
+		add(filepath.Join(base, "build", "lib", "rose"))
+		add(filepath.Join(base, "dist", goos+"-"+goarch, "lib", "rose"))
 		if goos+"_"+goarch != goos+"-"+goarch {
-			add(filepath.Join(base, "dist", goos+"_"+goarch, "lib", "ollama"))
+			add(filepath.Join(base, "dist", goos+"_"+goarch, "lib", "rose"))
 		}
 		if goos == "darwin" {
 			add(filepath.Join(base, "dist", "darwin"))

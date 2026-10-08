@@ -16,7 +16,7 @@ export function CodexConnectedIntro({ onDone }: { onDone: () => void }) {
         <DialogPanel className="claude-connected-dialog relative max-h-full w-full max-w-md overflow-y-auto rounded-2xl bg-white font-sans shadow-2xl ring-1 ring-black/10 dark:bg-neutral-800 dark:ring-white/10">
           <img
             src="/chatgpt-connected.png"
-            alt="Ollama models alongside OpenAI models in the ChatGPT Codex model picker"
+            alt="Rose models alongside OpenAI models in the ChatGPT Codex model picker"
             width={1172}
             height={1084}
             className="h-auto w-full object-contain"
@@ -24,10 +24,10 @@ export function CodexConnectedIntro({ onDone }: { onDone: () => void }) {
           />
           <div className="p-6">
             <DialogTitle className="font-rounded text-lg font-medium leading-6 text-neutral-950 dark:text-neutral-100">
-              Use Ollama models in ChatGPT
+              Use Rose models in ChatGPT
             </DialogTitle>
             <Description className="mt-2 text-[13px] leading-5 text-neutral-500 dark:text-neutral-400">
-              Click Continue to open ChatGPT. In Codex mode, choose an Ollama
+              Click Continue to open ChatGPT. In Codex mode, choose an Rose
               model from the model picker for your task.
             </Description>
             <div className="mt-5 flex justify-end">

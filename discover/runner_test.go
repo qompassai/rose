@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ollama/ollama/llm"
-	"github.com/ollama/ollama/ml"
+	"github.com/qompassai/rose/llm"
+	"github.com/qompassai/rose/ml"
 )
 
 func TestFilterOverlapByLibrary(t *testing.T) {
@@ -143,7 +143,7 @@ func TestFilterIntegratedGPUs(t *testing.T) {
 	}
 
 	if runtime.GOOS == "darwin" && runtime.GOARCH == "arm64" {
-		t.Setenv("OLLAMA_IGPU_ENABLE", "false")
+		t.Setenv("ROSE_IGPU_ENABLE", "false")
 		got := filterIntegratedGPUs(append([]ml.DeviceInfo{}, devices...))
 		want := []ml.DeviceID{
 			{Library: "CUDA", ID: "0"},
@@ -168,7 +168,7 @@ func TestFilterIntegratedGPUs(t *testing.T) {
 	})
 
 	t.Run("explicit true admits all integrated GPUs", func(t *testing.T) {
-		t.Setenv("OLLAMA_IGPU_ENABLE", "true")
+		t.Setenv("ROSE_IGPU_ENABLE", "true")
 		got := filterIntegratedGPUs(append([]ml.DeviceInfo{}, devices...))
 		want := []ml.DeviceID{
 			{Library: "CUDA", ID: "0"},
@@ -182,7 +182,7 @@ func TestFilterIntegratedGPUs(t *testing.T) {
 	})
 
 	t.Run("explicit false drops integrated GPUs", func(t *testing.T) {
-		t.Setenv("OLLAMA_IGPU_ENABLE", "false")
+		t.Setenv("ROSE_IGPU_ENABLE", "false")
 		got := filterIntegratedGPUs(append([]ml.DeviceInfo{}, devices...))
 		want := []ml.DeviceID{{Library: "Vulkan", ID: "1"}}
 		assertDeviceIDs(t, got, want)
@@ -327,7 +327,7 @@ func TestNormalizeROCmDiscoveryEnv(t *testing.T) {
 				t.Setenv(key, value)
 			}
 
-			got := normalizeDiscoveryEnvForGOOS("linux", []string{"/lib/ollama", "/lib/ollama/rocm_v7_2"}, tt.extra)
+			got := normalizeDiscoveryEnvForGOOS("linux", []string{"/lib/rose", "/lib/rose/rocm_v7_2"}, tt.extra)
 
 			if tt.wantSame {
 				if got != nil && got["ROCR_VISIBLE_DEVICES"] != "" {
@@ -349,7 +349,7 @@ func TestBootstrapDevicesWithStatusWatchdogReturnsResult(t *testing.T) {
 	want := []ml.DeviceInfo{{DeviceID: ml.DeviceID{Library: "CUDA", ID: "0"}}}
 	devices, _, err := runBootstrapDevicesWithStatusWatchdog(
 		t.Context(),
-		[]string{"/lib/ollama", "/lib/ollama/cuda_v12"},
+		[]string{"/lib/rose", "/lib/rose/cuda_v12"},
 		nil,
 		func(context.Context, []string, map[string]string) ([]ml.DeviceInfo, *llm.StatusWriter, error) {
 			return want, nil, nil
@@ -373,7 +373,7 @@ func TestBootstrapDevicesWithStatusWatchdogReturnsOnDeadline(t *testing.T) {
 
 	_, _, err := runBootstrapDevicesWithStatusWatchdog(
 		ctx,
-		[]string{"/lib/ollama", "/lib/ollama/rocm_v7_2"},
+		[]string{"/lib/rose", "/lib/rose/rocm_v7_2"},
 		nil,
 		func(context.Context, []string, map[string]string) ([]ml.DeviceInfo, *llm.StatusWriter, error) {
 			close(started)

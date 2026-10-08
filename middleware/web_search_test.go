@@ -8,7 +8,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/ollama/ollama/api"
+	"github.com/qompassai/rose/api"
 )
 
 func TestStreamFollowUpChat(t *testing.T) {
@@ -35,7 +35,7 @@ func TestStreamFollowUpChat(t *testing.T) {
 		}
 	}))
 	defer server.Close()
-	t.Setenv("OLLAMA_HOST", server.URL)
+	t.Setenv("ROSE_HOST", server.URL)
 
 	var chunks []string
 	base := api.ChatRequest{Model: "test-model", Format: json.RawMessage(`{"type":"object"}`), Think: &api.ThinkValue{Value: "high"}}
@@ -140,7 +140,7 @@ func TestDoFollowUpChatPreservesHTTPErrorTypes(t *testing.T) {
 				_, _ = w.Write([]byte(test.body))
 			}))
 			defer server.Close()
-			t.Setenv("OLLAMA_HOST", server.URL)
+			t.Setenv("ROSE_HOST", server.URL)
 
 			_, err := doFollowUpChat(context.Background(), api.ChatRequest{Model: "test-model"}, nil, nil)
 			if err == nil {

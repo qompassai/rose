@@ -68,8 +68,8 @@ func codexAppRegularProfileRequestCount() uint64 {
 	if err != nil {
 		return 0
 	}
-	// The regular profile contains native Codex and Ollama turns. Filter its
-	// user-prompt count by the Ollama-only routing catalog; the proxy's raw API
+	// The regular profile contains native Codex and Rose turns. Filter its
+	// user-prompt count by the Rose-only routing catalog; the proxy's raw API
 	// counter would overcount prompts that need multiple tool-loop requests.
 	return codexAppRequests.scan(
 		filepath.Join(filepath.Dir(configPath), "sessions"),
@@ -83,7 +83,7 @@ func codexAppRegularProfileSessionStartPath() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return filepath.Join(home, ".ollama", "launch", "chatgpt-session-start"), nil
+	return filepath.Join(home, ".rose", "launch", "chatgpt-session-start"), nil
 }
 
 func codexAppRegularProfileRoutingModels(configPath string) map[string]struct{} {

@@ -14,7 +14,7 @@ import (
 	"syscall"
 	"unsafe"
 
-	"github.com/ollama/ollama/app/assets"
+	"github.com/qompassai/rose/app/assets"
 	"golang.org/x/sys/windows"
 )
 
@@ -457,7 +457,7 @@ func (t *winTray) setIcon(src string) error {
 	defer t.muNID.Unlock()
 	t.nid.Icon = h
 	t.nid.Flags |= NIF_ICON | NIF_TIP
-	if toolTipUTF16, err := syscall.UTF16FromString("Ollama"); err == nil {
+	if toolTipUTF16, err := syscall.UTF16FromString("Rose"); err == nil {
 		copy(t.nid.Tip[:], toolTipUTF16)
 	} else {
 		return err

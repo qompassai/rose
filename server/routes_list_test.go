@@ -14,16 +14,16 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/manifest"
-	"github.com/ollama/ollama/openai"
-	"github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/manifest"
+	"github.com/qompassai/rose/openai"
+	"github.com/qompassai/rose/types/model"
 )
 
 func TestList(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	expectNames := []string{
 		"mistral:7b-instruct-q4_0",
@@ -238,16 +238,16 @@ func writeManifestListFixture(t *testing.T, name string, children ...manifestLis
 func TestListIncludesManifestListChildrenAsSeparateRows(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	ggufConfig := makeManifestListConfig(t, manifest.FormatGGUF)
 	mlxConfig := makeManifestListConfig(t, manifest.FormatSafetensors)
 
-	sharedBlob, err := manifest.NewLayer(bytes.NewReader([]byte("shared-weights")), "application/vnd.ollama.image.model")
+	sharedBlob, err := manifest.NewLayer(bytes.NewReader([]byte("shared-weights")), "application/vnd.rose.image.model")
 	if err != nil {
 		t.Fatal(err)
 	}
-	ggufBlob, err := manifest.NewLayer(bytes.NewReader([]byte("gguf-weights")), "application/vnd.ollama.image.model")
+	ggufBlob, err := manifest.NewLayer(bytes.NewReader([]byte("gguf-weights")), "application/vnd.rose.image.model")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -343,10 +343,10 @@ func TestListIncludesManifestListChildrenAsSeparateRows(t *testing.T) {
 }
 
 func TestBuildModelListSummaryRejectsInvalidRunner(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	cfg := makeManifestListConfig(t, manifest.FormatGGUF)
-	layer, err := manifest.NewLayer(bytes.NewReader([]byte("weights")), "application/vnd.ollama.image.model")
+	layer, err := manifest.NewLayer(bytes.NewReader([]byte("weights")), "application/vnd.rose.image.model")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -367,12 +367,12 @@ func TestBuildModelListSummaryRejectsInvalidRunner(t *testing.T) {
 func TestCopyManifestListByNameAndChildDigest(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	ggufConfig := makeManifestListConfig(t, manifest.FormatGGUF)
 	mlxConfig := makeManifestListConfig(t, manifest.FormatSafetensors)
 
-	ggufBlob, err := manifest.NewLayer(bytes.NewReader([]byte("gguf-weights")), "application/vnd.ollama.image.model")
+	ggufBlob, err := manifest.NewLayer(bytes.NewReader([]byte("gguf-weights")), "application/vnd.rose.image.model")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -436,7 +436,7 @@ func TestCopyManifestListByNameAndChildDigest(t *testing.T) {
 
 func TestCopyRejectsExplicitCloudSource(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	createShowCacheModel(t, "copy-cloud", map[string]any{"test.context_length": uint32(1024)})
 

@@ -18,13 +18,13 @@ import (
 
 	"github.com/x448/float16"
 
-	"github.com/ollama/ollama/fs/gguf"
-	"github.com/ollama/ollama/manifest"
-	"github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/fs/gguf"
+	"github.com/qompassai/rose/manifest"
+	"github.com/qompassai/rose/types/model"
 )
 
 func TestEnsureLocalCompatibilityMigrationAppendsToExistingManifestList(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 	registerTestCompatMigrator(t)
 
 	source := model.ParseName("registry.ollama.ai/library/testcompat:latest")
@@ -90,7 +90,7 @@ func TestEnsureLocalCompatibilityMigrationAppendsToExistingManifestList(t *testi
 }
 
 func TestEnsureLocalCompatibilityMigrationUnsupportedFamilyNoop(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	source := model.ParseName("registry.ollama.ai/library/notcompat:latest")
 	writeSourceManifest(t, source, sourceManifestInput{
@@ -129,7 +129,7 @@ func TestEnsureLocalCompatibilityMigrationUnsupportedFamilyNoop(t *testing.T) {
 }
 
 func TestEnsureLocalCompatibilityMigrationSkipsAdapterModels(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 	registerTestCompatMigrator(t)
 
 	source := model.ParseName("registry.ollama.ai/library/testcompat:adapter")
@@ -169,7 +169,7 @@ func TestEnsureLocalCompatibilityMigrationSkipsAdapterModels(t *testing.T) {
 }
 
 func TestEnsureLocalCompatibilityMigrationPreservesPromptMetadata(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 	registerTestCompatMigrator(t)
 
 	source := model.ParseName("registry.ollama.ai/library/testcompat:latest")
@@ -236,7 +236,7 @@ func TestEnsureLocalCompatibilityMigrationPreservesPromptMetadata(t *testing.T) 
 }
 
 func TestEnsureLocalCompatibilityMigrationGemma4(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	source := model.ParseName("registry.ollama.ai/library/gemma4:e4b")
 	writeSourceManifest(t, source, sourceManifestInput{
@@ -384,7 +384,7 @@ func TestEnsureLocalCompatibilityMigrationGemma4(t *testing.T) {
 }
 
 func TestEnsureLocalCompatibilityMigrationGemma4CompatibleCopyNoop(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	source := model.ParseName("registry.ollama.ai/library/gemma4:e4b-llamacpp")
 	writeSourceManifest(t, source, sourceManifestInput{
@@ -466,7 +466,7 @@ func TestDeepseekOCRProjectorTensorName(t *testing.T) {
 }
 
 func TestEnsureLocalCompatibilityMigrationLaguna(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	source := model.ParseName("registry.ollama.ai/library/laguna-xs.2:q4_K_M")
 	writeSourceManifest(t, source, sourceManifestInput{
@@ -553,7 +553,7 @@ func TestEnsureLocalCompatibilityMigrationLaguna(t *testing.T) {
 }
 
 func TestEnsureLocalCompatibilityMigrationSerializesConcurrentCalls(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	source := model.ParseName("registry.ollama.ai/library/testcompat:latest")
 	writeSourceManifest(t, source, sourceManifestInput{
@@ -609,7 +609,7 @@ func TestEnsureLocalCompatibilityMigrationSerializesConcurrentCalls(t *testing.T
 }
 
 func TestEnsureLocalCompatibilityMigrationSkipsWhenDiskIsTooFull(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 	registerTestCompatMigrator(t)
 
 	source := model.ParseName("registry.ollama.ai/library/testcompat:latest")
@@ -1250,18 +1250,18 @@ func writeSourceManifest(t *testing.T, name model.Name, input sourceManifestInpu
 	layers := []manifest.Layer{modelLayer}
 	if len(input.projectorTensors) > 0 {
 		projectorLayer := writeFixtureGGUFLayer(t, input.projectorKV, input.projectorTensors)
-		projectorLayer.MediaType = "application/vnd.ollama.image.projector"
+		projectorLayer.MediaType = "application/vnd.rose.image.projector"
 		layers = append(layers, projectorLayer)
 	}
 	if input.template != "" {
-		layer, err := manifest.NewLayer(strings.NewReader(input.template), "application/vnd.ollama.image.template")
+		layer, err := manifest.NewLayer(strings.NewReader(input.template), "application/vnd.rose.image.template")
 		if err != nil {
 			t.Fatalf("manifest.NewLayer(template) error = %v", err)
 		}
 		layers = append(layers, layer)
 	}
 	if input.adapter != "" {
-		layer, err := manifest.NewLayer(strings.NewReader(input.adapter), "application/vnd.ollama.image.adapter")
+		layer, err := manifest.NewLayer(strings.NewReader(input.adapter), "application/vnd.rose.image.adapter")
 		if err != nil {
 			t.Fatalf("manifest.NewLayer(adapter) error = %v", err)
 		}
@@ -1294,7 +1294,7 @@ func writeFixtureGGUFLayer(t *testing.T, kv outKV, tensors []*outTensor) manifes
 		t.Fatalf("Seek() error = %v", err)
 	}
 
-	layer, err := manifest.NewLayer(f, "application/vnd.ollama.image.model")
+	layer, err := manifest.NewLayer(f, "application/vnd.rose.image.model")
 	if err != nil {
 		t.Fatalf("manifest.NewLayer(model) error = %v", err)
 	}
@@ -1377,7 +1377,7 @@ func putF16(b []byte, v float32) {
 }
 
 func TestEnsureLocalCompatibilityMigrationRepairsDanglingV2Entry(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 	registerTestCompatMigrator(t)
 
 	source := model.ParseName("registry.ollama.ai/library/testcompat:latest")

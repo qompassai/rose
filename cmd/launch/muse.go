@@ -12,9 +12,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/cmd/internal/fileutil"
-	"github.com/ollama/ollama/envconfig"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/cmd/internal/fileutil"
+	"github.com/qompassai/rose/envconfig"
 )
 
 // Muse implements Runner and Editor for Meta's Muse Code CLI.
@@ -30,7 +30,7 @@ import (
 // global provider switch rather than an additive model list — writing it into
 // ~/.config/muse/settings.json would repoint the user's whole muse install. So
 // launch keeps its own config root and passes it to muse as XDG_CONFIG_HOME,
-// leaving a Meta-backed muse and `ollama launch muse` free to coexist.
+// leaving a Meta-backed muse and `rose launch muse` free to coexist.
 type Muse struct{}
 
 const (
@@ -50,7 +50,7 @@ const (
 	// the inventory value rather than blocking the launch.
 	museLoadTimeout = 5 * time.Minute
 
-	museRowDescription = "Served by Ollama"
+	museRowDescription = "Served by Rose"
 )
 
 var museGOOS = runtime.GOOS
@@ -215,7 +215,7 @@ func museConfigHome() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return filepath.Join(home, ".ollama", "launch", "muse-config"), nil
+	return filepath.Join(home, ".rose", "launch", "muse-config"), nil
 }
 
 func museSettingsPath() (string, error) {
@@ -294,7 +294,7 @@ func writeMuseSettingsFile(models []LaunchModel, backup bool) error {
 	settings["model"] = models[0].Name
 	settings["endpoint_transport"] = map[string]any{
 		"base_url": envconfig.ConnectableHost().String() + "/v1",
-		// Ollama wants no credential, and muse refuses to start on the default
+		// Rose wants no credential, and muse refuses to start on the default
 		// "bearer" unless one is configured.
 		"auth": "none",
 	}
@@ -361,7 +361,7 @@ var museLoadedContextLength = loadedContextLength
 
 // loadedContextLength loads model and reads the running instance's context
 // length from the process list — the size the scheduler actually allocated.
-// An empty generate request is ollama's load-only call: it returns once the
+// An empty generate request is rose's load-only call: it returns once the
 // model is resident without generating tokens, and the launch pays a load the
 // first muse request would otherwise pay. Returns 0 when anything fails, and
 // the caller keeps the inventory value.

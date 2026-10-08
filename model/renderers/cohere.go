@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/types/model"
 )
 
 // CohereRenderer renders the Cohere North / Command A 2026 chat template
@@ -228,7 +228,7 @@ func (r *CohereRenderer) Render(messages []api.Message, tools []api.Tool, think 
 }
 
 // toolCallID returns the tool call's id when the client supplied one. The
-// api.ToolCall ID field may be empty for calls synthesized by ollama.
+// api.ToolCall ID field may be empty for calls synthesized by rose.
 func toolCallID(tc api.ToolCall) string {
 	return tc.ID
 }

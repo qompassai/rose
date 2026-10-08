@@ -8,11 +8,11 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/ollama/ollama/cmd/internal/fileutil"
-	"github.com/ollama/ollama/envconfig"
-	"github.com/ollama/ollama/model/renderers"
-	"github.com/ollama/ollama/openai"
-	"github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/cmd/internal/fileutil"
+	"github.com/qompassai/rose/envconfig"
+	"github.com/qompassai/rose/model/renderers"
+	"github.com/qompassai/rose/openai"
+	"github.com/qompassai/rose/types/model"
 	"github.com/pelletier/go-toml/v2"
 	"golang.org/x/mod/semver"
 )
@@ -23,8 +23,8 @@ type Codex struct{}
 func (c *Codex) String() string { return "Codex CLI" }
 
 const (
-	codexProfileName           = "ollama-launch"
-	codexProviderName          = "Ollama"
+	codexProfileName           = "rose-launch"
+	codexProviderName          = "Rose"
 	codexFallbackContextWindow = 128_000
 	codexRestoreSuccess        = "Codex launch configuration removed."
 
@@ -75,7 +75,7 @@ func (c *Codex) Run(model string, models []LaunchModel, args []string) error {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Env = append(os.Environ(),
-		"OPENAI_API_KEY=ollama",
+		"OPENAI_API_KEY=rose",
 	)
 	return cmd.Run()
 }
@@ -150,24 +150,24 @@ func codexValidateExtraArgs(args []string) error {
 	for i, arg := range args {
 		switch {
 		case arg == "-p", strings.HasPrefix(arg, "-p"):
-			return fmt.Errorf("conflicting extra argument %q: ollama launch codex manages --profile", arg)
+			return fmt.Errorf("conflicting extra argument %q: rose launch codex manages --profile", arg)
 		case arg == "--profile", strings.HasPrefix(arg, "--profile="):
-			return fmt.Errorf("conflicting extra argument %q: ollama launch codex manages --profile", arg)
+			return fmt.Errorf("conflicting extra argument %q: rose launch codex manages --profile", arg)
 		case arg == "-m", strings.HasPrefix(arg, "-m"):
-			return fmt.Errorf("conflicting extra argument %q: ollama launch codex manages --model", arg)
+			return fmt.Errorf("conflicting extra argument %q: rose launch codex manages --model", arg)
 		case arg == "--model", strings.HasPrefix(arg, "--model="):
-			return fmt.Errorf("conflicting extra argument %q: ollama launch codex manages --model", arg)
+			return fmt.Errorf("conflicting extra argument %q: rose launch codex manages --model", arg)
 		case arg == "-c", arg == "--config":
 			if i+1 < len(args) && codexConfigOverrideConflicts(args[i+1]) {
-				return fmt.Errorf("conflicting extra config %q: ollama launch codex manages provider and model catalog config", args[i+1])
+				return fmt.Errorf("conflicting extra config %q: rose launch codex manages provider and model catalog config", args[i+1])
 			}
 		case strings.HasPrefix(arg, "-c") && len(arg) > len("-c"):
 			if codexConfigOverrideConflicts(strings.TrimPrefix(arg, "-c")) {
-				return fmt.Errorf("conflicting extra config %q: ollama launch codex manages provider and model catalog config", arg)
+				return fmt.Errorf("conflicting extra config %q: rose launch codex manages provider and model catalog config", arg)
 			}
 		case strings.HasPrefix(arg, "--config="):
 			if codexConfigOverrideConflicts(strings.TrimPrefix(arg, "--config=")) {
-				return fmt.Errorf("conflicting extra config %q: ollama launch codex manages provider and model catalog config", arg)
+				return fmt.Errorf("conflicting extra config %q: rose launch codex manages provider and model catalog config", arg)
 			}
 		}
 	}
@@ -207,7 +207,7 @@ func codexConfigOverrideConflicts(value string) bool {
 }
 
 // ensureCodexConfig writes a Codex profile file and model catalog so Codex uses
-// the local Ollama server without changing app-visible root config.
+// the local Rose server without changing app-visible root config.
 func ensureCodexConfig(modelName string, models []LaunchModel) error {
 	configPath, err := codexConfigPath()
 	if err != nil {
@@ -297,8 +297,8 @@ func cleanupCodexLegacyProfileConfig(configPath string) error {
 	return fileutil.WriteWithBackup(configPath, []byte(updated), "")
 }
 
-// writeCodexProfileConfig ensures ~/.codex/ollama-launch.config.toml selects
-// the Ollama provider and catalog for CLI launches without changing root config.
+// writeCodexProfileConfig ensures ~/.codex/rose-launch.config.toml selects
+// the Rose provider and catalog for CLI launches without changing root config.
 func writeCodexProfileConfig(profilePath, model, modelCatalogPath string) error {
 	return writeCodexNamedProfileConfig(profilePath, codexProfileName, model, modelCatalogPath, "")
 }

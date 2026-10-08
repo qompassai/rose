@@ -3,8 +3,8 @@ package server
 import (
 	"testing"
 
-	"github.com/ollama/ollama/llm"
-	"github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/llm"
+	"github.com/qompassai/rose/types/model"
 )
 
 func TestModelOptionsNumCtxPriority(t *testing.T) {
@@ -94,7 +94,7 @@ func TestModelOptionsNumCtxPriority(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// Set or clear environment variable
 			if tt.envContextLen != "" {
-				t.Setenv("OLLAMA_CONTEXT_LENGTH", tt.envContextLen)
+				t.Setenv("ROSE_CONTEXT_LENGTH", tt.envContextLen)
 			}
 
 			// Create server with VRAM-based default

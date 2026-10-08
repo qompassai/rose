@@ -15,7 +15,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ollama/ollama/api"
+	"github.com/qompassai/rose/api"
 )
 
 const (
@@ -55,7 +55,7 @@ func downloadHFModel(t *testing.T, repo, revision, destDir string, extraArgs ...
 	if err != nil {
 		t.Fatal(err)
 	}
-	markerPath := filepath.Join(destDir, ".ollama-test-source")
+	markerPath := filepath.Join(destDir, ".rose-test-source")
 	if cached, err := os.ReadFile(markerPath); err == nil && string(cached) == string(sourceData) {
 		entries, err := os.ReadDir(destDir)
 		if err == nil && len(entries) > 1 {
@@ -90,44 +90,44 @@ func downloadHFModel(t *testing.T, repo, revision, destDir string, extraArgs ...
 	}
 }
 
-// ollamaBin returns the path to the ollama binary to use for tests.
-// Prefers OLLAMA_BIN env, then falls back to the built binary at ../ollama
+// ollamaBin returns the path to the rose binary to use for tests.
+// Prefers ROSE_BIN env, then falls back to the built binary at ../rose
 // (same binary the integration test server uses).
 func ollamaBin() string {
-	if bin := os.Getenv("OLLAMA_BIN"); bin != "" {
+	if bin := os.Getenv("ROSE_BIN"); bin != "" {
 		return bin
 	}
-	if abs, err := filepath.Abs("../ollama"); err == nil {
+	if abs, err := filepath.Abs("../rose"); err == nil {
 		if _, err := os.Stat(abs); err == nil {
 			return abs
 		}
 	}
-	return "ollama"
+	return "rose"
 }
 
-// ensureMLXLibraryPath sets OLLAMA_LIBRARY_PATH so the MLX dynamic library
+// ensureMLXLibraryPath sets ROSE_LIBRARY_PATH so the MLX dynamic library
 // is discoverable. Integration tests run from integration/ dir, so the
 // default CWD-based search won't find the library at the repo root.
 func ensureMLXLibraryPath(t *testing.T) {
 	t.Helper()
-	if libPath, err := filepath.Abs("../build/lib/ollama"); err == nil {
+	if libPath, err := filepath.Abs("../build/lib/rose"); err == nil {
 		if _, err := os.Stat(libPath); err == nil {
-			if existing := os.Getenv("OLLAMA_LIBRARY_PATH"); existing != "" {
-				t.Setenv("OLLAMA_LIBRARY_PATH", existing+string(filepath.ListSeparator)+libPath)
+			if existing := os.Getenv("ROSE_LIBRARY_PATH"); existing != "" {
+				t.Setenv("ROSE_LIBRARY_PATH", existing+string(filepath.ListSeparator)+libPath)
 			} else {
-				t.Setenv("OLLAMA_LIBRARY_PATH", libPath)
+				t.Setenv("ROSE_LIBRARY_PATH", libPath)
 			}
 		}
 	}
 }
 
-// runOllamaCreate runs "ollama create" as a subprocess.
+// runOllamaCreate runs "rose create" as a subprocess.
 func runOllamaCreate(ctx context.Context, t *testing.T, args ...string) {
 	t.Helper()
 	runOllamaCreateWithEnv(ctx, t, nil, args...)
 }
 
-// runOllamaCreateWithEnv runs "ollama create" as a subprocess with extra
+// runOllamaCreateWithEnv runs "rose create" as a subprocess with extra
 // environment variables layered over the test process environment.
 func runOllamaCreateWithEnv(ctx context.Context, t *testing.T, env []string, args ...string) {
 	t.Helper()
@@ -136,7 +136,7 @@ func runOllamaCreateWithEnv(ctx context.Context, t *testing.T, env []string, arg
 	createCmd.Stdout = os.Stdout
 	createCmd.Stderr = os.Stderr
 	if err := createCmd.Run(); err != nil {
-		t.Fatalf("ollama create failed: %v", err)
+		t.Fatalf("rose create failed: %v", err)
 	}
 }
 
@@ -156,8 +156,8 @@ func fileDigest(t *testing.T, path string) string {
 
 func isolateCreateModelStore(t *testing.T) {
 	t.Helper()
-	if os.Getenv("OLLAMA_TEST_EXISTING") == "" {
-		t.Setenv("OLLAMA_MODELS", t.TempDir())
+	if os.Getenv("ROSE_TEST_EXISTING") == "" {
+		t.Setenv("ROSE_MODELS", t.TempDir())
 	}
 }
 
@@ -172,7 +172,7 @@ func tinyLlamaModelfile(t *testing.T, modelDir string) string {
 		t.Fatalf("Failed to get absolute path: %v", err)
 	}
 
-	// Include an Ollama template because the importer does not convert a Hugging
+	// Include an Rose template because the importer does not convert a Hugging
 	// Face chat template into a Modelfile template.
 	contents := "FROM " + absModelDir + "\n" +
 		"TEMPLATE \"{{ if .System }}<|system|>\n{{ .System }}</s>\n{{ end }}" +
@@ -233,7 +233,7 @@ func runCreateSafetensorsLLM(t *testing.T) {
 	downloadHFModel(t, tinyLlamaRepo, tinyLlamaRevision, modelDir)
 
 	ensureMLXLibraryPath(t)
-	t.Setenv("OLLAMA_CREATE_REMOTE", "1")
+	t.Setenv("ROSE_CREATE_REMOTE", "1")
 
 	ctx, cancel := context.WithTimeout(t.Context(), 10*time.Minute)
 	defer cancel()
@@ -320,16 +320,16 @@ func runCreateGGUF(t *testing.T) {
 	assertCoherentOutput(t, text)
 }
 
-// runCreateGGUFBlobTransfer checks how "ollama create" gets a local GGUF into
+// runCreateGGUFBlobTransfer checks how "rose create" gets a local GGUF into
 // the server's blob store: written directly when the CLI and server share a
 // models directory, uploaded over HTTP when they do not or when
-// OLLAMA_CREATE_REMOTE is set. The harness-started server's request log is
+// ROSE_CREATE_REMOTE is set. The harness-started server's request log is
 // the evidence, so an external server cannot be used.
 func runCreateGGUFBlobTransfer(t *testing.T) {
 	if testModel != "" {
 		t.Skip("exercises create pipeline with a fixed source model, not applicable with model override")
 	}
-	if os.Getenv("OLLAMA_TEST_EXISTING") != "" {
+	if os.Getenv("ROSE_TEST_EXISTING") != "" {
 		t.Skip("inspects the harness-started server's request log")
 	}
 	modelDir := filepath.Join(testdataModelsDir, "Llama-3.2-1B-GGUF")
@@ -352,7 +352,7 @@ func runCreateGGUFBlobTransfer(t *testing.T) {
 		wantUpload    bool
 	}{
 		{name: "shared store writes directly"},
-		{name: "OLLAMA_CREATE_REMOTE forces upload", env: []string{"OLLAMA_CREATE_REMOTE=1"}, wantUpload: true},
+		{name: "ROSE_CREATE_REMOTE forces upload", env: []string{"ROSE_CREATE_REMOTE=1"}, wantUpload: true},
 		{name: "separate store falls back to upload", separateStore: true, wantUpload: true},
 	}
 	for _, tc := range cases {
@@ -375,7 +375,7 @@ func runCreateGGUFBlobTransfer(t *testing.T) {
 			var cliModels string
 			if tc.separateStore {
 				cliModels = t.TempDir()
-				env = append(env, "OLLAMA_MODELS="+cliModels)
+				env = append(env, "ROSE_MODELS="+cliModels)
 			}
 
 			modelName := createIntegrationModelName("test-gguf-blob-transfer")

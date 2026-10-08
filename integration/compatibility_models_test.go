@@ -10,12 +10,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/types/model"
 )
 
 func TestPublishedCompatibilityModels(t *testing.T) {
-	if os.Getenv("OLLAMA_TEST_EXISTING") != "" {
+	if os.Getenv("ROSE_TEST_EXISTING") != "" {
 		t.Skip("published compatibility validation requires a harness-managed server")
 	}
 	skipIfRemote(t)
@@ -25,9 +25,9 @@ func TestPublishedCompatibilityModels(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), hardTimeout)
 	defer cancel()
 
-	// OLLAMA_TEST_COMPAT_NAMESPACE points the published-artifact matrix at a
+	// ROSE_TEST_COMPAT_NAMESPACE points the published-artifact matrix at a
 	// staging namespace until the compatible artifacts land in the library.
-	prefix := os.Getenv("OLLAMA_TEST_COMPAT_NAMESPACE")
+	prefix := os.Getenv("ROSE_TEST_COMPAT_NAMESPACE")
 
 	if testModel != "" {
 		runPublishedCompatibilityModelCase(ctx, t, testModel, false)
@@ -55,12 +55,12 @@ func runPublishedCompatibilityModelCase(ctx context.Context, t *testing.T, name 
 
 	if isolatedModelStore {
 		modelsDir := t.TempDir()
-		t.Setenv("OLLAMA_MODELS", modelsDir)
+		t.Setenv("ROSE_MODELS", modelsDir)
 		t.Logf("%s: using published compatibility model store %s", name, modelsDir)
 	} else {
-		t.Logf("%s: using configured model store %s", name, os.Getenv("OLLAMA_MODELS"))
+		t.Logf("%s: using configured model store %s", name, os.Getenv("ROSE_MODELS"))
 	}
-	t.Setenv("OLLAMA_DEBUG", "2")
+	t.Setenv("ROSE_DEBUG", "2")
 
 	t.Logf("%s: starting server with %s=0", name, migrationCompatEnv)
 	t.Setenv(migrationCompatEnv, "0")

@@ -6,8 +6,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/ollama/ollama/envconfig"
-	"github.com/ollama/ollama/internal/proxy"
+	"github.com/qompassai/rose/envconfig"
+	"github.com/qompassai/rose/internal/proxy"
 )
 
 const (
@@ -28,7 +28,7 @@ func newCodexDesktopProxy() (http.Handler, error) {
 		ChatGPTURL:         codexDesktopChatGPTURL,
 		OpenAIURL:          codexDesktopOpenAIURL,
 		RoutingCatalogPath: filepath.Join(home, ".codex", proxy.CodexDesktopRoutingCatalogFilename),
-		ActivityLogPath:    filepath.Join(home, ".ollama", "logs", codexDesktopLogFilename),
+		ActivityLogPath:    filepath.Join(home, ".rose", "logs", codexDesktopLogFilename),
 		Logger:             slog.Default(),
 	})
 }

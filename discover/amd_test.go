@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/ollama/ollama/ml"
+	"github.com/qompassai/rose/ml"
 )
 
 func TestApplyLinuxROCmRefinement(t *testing.T) {

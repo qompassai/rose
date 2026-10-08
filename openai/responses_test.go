@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ollama/ollama/api"
+	"github.com/qompassai/rose/api"
 )
 
 func TestResponsesInputMessage_UnmarshalJSON(t *testing.T) {
@@ -388,7 +388,7 @@ func TestFromResponsesRequestIgnoresReplayedWebSearchCall(t *testing.T) {
 		Input: ResponsesInput{Items: []ResponsesInputItem{
 			ResponsesInputMessage{Type: "message", Role: "user", Content: []ResponsesContent{ResponsesTextContent{Type: "input_text", Text: "Who is Parth Sareen?"}}},
 			ResponsesWebSearchCall{ID: "ws_123", Type: "web_search_call", Status: "completed", Action: &ResponsesWebSearchAction{Type: "search", Query: "Parth Sareen"}},
-			ResponsesInputMessage{Type: "message", Role: "assistant", Content: []ResponsesContent{ResponsesOutputTextContent{Type: "output_text", Text: "He works at Ollama."}}},
+			ResponsesInputMessage{Type: "message", Role: "assistant", Content: []ResponsesContent{ResponsesOutputTextContent{Type: "output_text", Text: "He works at Rose."}}},
 			ResponsesInputMessage{Type: "message", Role: "user", Content: []ResponsesContent{ResponsesTextContent{Type: "input_text", Text: "What do you think of him?"}}},
 		}},
 	}
@@ -400,7 +400,7 @@ func TestFromResponsesRequestIgnoresReplayedWebSearchCall(t *testing.T) {
 	if len(chat.Messages) != 3 {
 		t.Fatalf("messages = %#v", chat.Messages)
 	}
-	if chat.Messages[0].Role != "user" || chat.Messages[1].Role != "assistant" || chat.Messages[1].Content != "He works at Ollama." || chat.Messages[2].Role != "user" {
+	if chat.Messages[0].Role != "user" || chat.Messages[1].Role != "assistant" || chat.Messages[1].Content != "He works at Rose." || chat.Messages[2].Role != "user" {
 		t.Fatalf("messages = %#v", chat.Messages)
 	}
 }
@@ -410,10 +410,10 @@ func TestFromResponsesRequestMergesMessageAfterFunctionCall(t *testing.T) {
 	err := json.Unmarshal([]byte(`{
 		"model": "kimi-k3:cloud",
 		"input": [
-			{"role": "user", "content": "Find Ollama and inspect the current directory."},
-			{"type": "web_search_call", "id": "ws_test", "status": "completed", "action": {"type": "search", "query": "Ollama"}},
+			{"role": "user", "content": "Find Rose and inspect the current directory."},
+			{"type": "web_search_call", "id": "ws_test", "status": "completed", "action": {"type": "search", "query": "Rose"}},
 			{"type": "function_call", "call_id": "call_test", "name": "exec_command", "arguments": "{\"cmd\":\"pwd\"}"},
-			{"type": "message", "role": "assistant", "content": [{"type": "output_text", "text": "I found Ollama and will inspect the directory."}]},
+			{"type": "message", "role": "assistant", "content": [{"type": "output_text", "text": "I found Rose and will inspect the directory."}]},
 			{"type": "function_call_output", "call_id": "call_test", "output": "/tmp"}
 		]
 	}`), &req)
@@ -430,7 +430,7 @@ func TestFromResponsesRequestMergesMessageAfterFunctionCall(t *testing.T) {
 	}
 
 	assistant := chat.Messages[1]
-	if assistant.Role != "assistant" || assistant.Content != "I found Ollama and will inspect the directory." || len(assistant.ToolCalls) != 1 {
+	if assistant.Role != "assistant" || assistant.Content != "I found Rose and will inspect the directory." || len(assistant.ToolCalls) != 1 {
 		t.Fatalf("assistant message = %#v", assistant)
 	}
 	if assistant.ToolCalls[0].ID != "call_test" || assistant.ToolCalls[0].Function.Name != "exec_command" {
@@ -1286,19 +1286,19 @@ func TestFromResponsesRequest_ReasoningEffort(t *testing.T) {
 			wantThink: false,
 		},
 		{
-			name:        "Ollama boolean override takes precedence",
+			name:        "Rose boolean override takes precedence",
 			effort:      "medium",
 			directThink: &api.ThinkValue{Value: true},
 			wantThink:   true,
 		},
 		{
-			name:        "Ollama string override stays exact",
+			name:        "Rose string override stays exact",
 			effort:      "high",
 			directThink: &api.ThinkValue{Value: "max"},
 			wantThink:   "max",
 		},
 		{
-			name:        "invalid Ollama override",
+			name:        "invalid Rose override",
 			directThink: &api.ThinkValue{Value: 3},
 			wantErr:     true,
 		},
@@ -2996,7 +2996,7 @@ func TestResponsesStreamConverter_WebSearchCall(t *testing.T) {
 		Status: "completed",
 		Action: &ResponsesWebSearchAction{
 			Type:  "search",
-			Query: "Ollama news",
+			Query: "Rose news",
 		},
 	}
 	outputIndex, events := converter.StartWebSearchCall(call)
@@ -3021,7 +3021,7 @@ func TestResponsesStreamConverter_WebSearchCall(t *testing.T) {
 	}
 	done := events[len(events)-1].Data.(map[string]any)["item"].(map[string]any)
 	action := done["action"].(map[string]any)
-	if action["query"] != "Ollama news" {
+	if action["query"] != "Rose news" {
 		t.Errorf("done query = %q", action["query"])
 	}
 }

@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ollama/ollama/envconfig"
+	"github.com/qompassai/rose/envconfig"
 )
 
 func TestClaudeIntegration(t *testing.T) {
@@ -351,7 +351,7 @@ func TestClaudeEnvVars(t *testing.T) {
 	for key, want := range map[string]string{
 		"ANTHROPIC_BASE_URL":                  envconfig.Host().String(),
 		"ANTHROPIC_API_KEY":                   "",
-		"ANTHROPIC_AUTH_TOKEN":                "ollama",
+		"ANTHROPIC_AUTH_TOKEN":                "rose",
 		"CLAUDE_CODE_ATTRIBUTION_HEADER":      "0",
 		"CLAUDE_CODE_TOTAL_TOKENS_REMINDER":   "off",
 		"DISABLE_ERROR_REPORTING":             "1",
@@ -370,7 +370,7 @@ func TestClaudeEnvVars(t *testing.T) {
 	// Both variables disable Claude Code feature-flag evaluation, which keeps Channels unavailable.
 	for _, key := range []string{"CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC", "DISABLE_TELEMETRY"} {
 		if _, ok := got[key]; ok {
-			t.Errorf("%s must not be set by Ollama", key)
+			t.Errorf("%s must not be set by Rose", key)
 		}
 	}
 }

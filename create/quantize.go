@@ -9,8 +9,8 @@ import (
 	"slices"
 	"strconv"
 
-	"github.com/ollama/ollama/mlx"
-	"github.com/ollama/ollama/mlx/quant"
+	"github.com/qompassai/rose/mlx"
+	"github.com/qompassai/rose/mlx/quant"
 )
 
 // quantizeItem is one tensor going into a (possibly multi-tensor) quantized
@@ -42,7 +42,7 @@ func quantizeBlobLocked(items []quantizeItem) ([]byte, error) {
 	held := mlx.NewScope()
 	defer held.Close()
 
-	tmpDir, err := os.MkdirTemp("", "ollama-quantize-*")
+	tmpDir, err := os.MkdirTemp("", "rose-quantize-*")
 	if err != nil {
 		return nil, fmt.Errorf("failed to create temp dir: %w", err)
 	}

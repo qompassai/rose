@@ -7,11 +7,11 @@ import (
 	"os"
 	"testing"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/fs/gguf"
-	gguftest "github.com/ollama/ollama/internal/testutil/gguf"
-	"github.com/ollama/ollama/manifest"
-	"github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/fs/gguf"
+	gguftest "github.com/qompassai/rose/internal/testutil/gguf"
+	"github.com/qompassai/rose/manifest"
+	"github.com/qompassai/rose/types/model"
 )
 
 const maxCreateGGUFFuzzBytes = 1 << 16
@@ -48,7 +48,7 @@ func FuzzConvertModelFromFiles(f *testing.F) {
 		if len(first) > maxCreateGGUFFuzzBytes || len(second) > maxCreateGGUFFuzzBytes {
 			t.Skip("bounded fuzz input")
 		}
-		t.Setenv("OLLAMA_MODELS", t.TempDir())
+		t.Setenv("ROSE_MODELS", t.TempDir())
 
 		files := fuzzCreateFiles(t, mode, first, second)
 		if err := validateCreateFiles(files); err != nil {

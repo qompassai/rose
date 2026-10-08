@@ -12,8 +12,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ollama/ollama/cmd/internal/fileutil"
-	"github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/cmd/internal/fileutil"
+	"github.com/qompassai/rose/types/model"
 )
 
 func TestPiIntegration(t *testing.T) {
@@ -271,7 +271,7 @@ exit 0
 			http.NotFound(w, r)
 		}))
 		t.Cleanup(srv.Close)
-		t.Setenv("OLLAMA_HOST", srv.URL)
+		t.Setenv("ROSE_HOST", srv.URL)
 	}
 
 	setNpmRegistryVersion := func(t *testing.T, version string) {
@@ -293,7 +293,7 @@ exit 0
 
 	seedPiWebSearchPackage := func(t *testing.T, dir, version string) {
 		t.Helper()
-		packagePath := filepath.Join(dir, ".npm-global", "lib", "node_modules", "@ollama", "pi-web-search")
+		packagePath := filepath.Join(dir, ".npm-global", "lib", "node_modules", "@rose", "pi-web-search")
 		if err := os.MkdirAll(packagePath, 0o755); err != nil {
 			t.Fatal(err)
 		}
@@ -913,7 +913,7 @@ func TestPiPaths(t *testing.T) {
 }
 
 func TestPiEdit(t *testing.T) {
-	// Mock Ollama server for createConfig calls during Edit
+	// Mock Rose server for createConfig calls during Edit
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/api/show" {
 			fmt.Fprintf(w, `{"capabilities":[],"model_info":{}}`)
@@ -922,7 +922,7 @@ func TestPiEdit(t *testing.T) {
 		w.WriteHeader(http.StatusNotFound)
 	}))
 	defer srv.Close()
-	t.Setenv("OLLAMA_HOST", srv.URL)
+	t.Setenv("ROSE_HOST", srv.URL)
 
 	pi := &Pi{}
 	tmpDir := t.TempDir()
@@ -963,24 +963,24 @@ func TestPiEdit(t *testing.T) {
 			t.Error("Config missing providers")
 		}
 
-		ollama, ok := providers["ollama"].(map[string]any)
+		rose, ok := providers["rose"].(map[string]any)
 		if !ok {
-			t.Error("Providers missing ollama")
+			t.Error("Providers missing rose")
 		}
 
-		modelsArray, ok := ollama["models"].([]any)
+		modelsArray, ok := rose["models"].([]any)
 		if !ok || len(modelsArray) != 2 {
 			t.Errorf("Expected 2 models, got %v", modelsArray)
 		}
 
-		if ollama["baseUrl"] == nil {
+		if rose["baseUrl"] == nil {
 			t.Error("Missing baseUrl")
 		}
-		if ollama["api"] != "openai-completions" {
-			t.Errorf("Expected api=openai-completions, got %v", ollama["api"])
+		if rose["api"] != "openai-completions" {
+			t.Errorf("Expected api=openai-completions, got %v", rose["api"])
 		}
-		if ollama["apiKey"] != "ollama" {
-			t.Errorf("Expected apiKey=ollama, got %v", ollama["apiKey"])
+		if rose["apiKey"] != "rose" {
+			t.Errorf("Expected apiKey=rose, got %v", rose["apiKey"])
 		}
 	})
 
@@ -990,7 +990,7 @@ func TestPiEdit(t *testing.T) {
 
 		existingConfig := `{
 			"providers": {
-				"ollama": {
+				"rose": {
 					"baseUrl": "http://custom:8080/v1",
 					"api": "custom-api",
 					"apiKey": "custom-key",
@@ -1011,22 +1011,22 @@ func TestPiEdit(t *testing.T) {
 
 		cfg := readConfig()
 		providers := cfg["providers"].(map[string]any)
-		ollama := providers["ollama"].(map[string]any)
+		rose := providers["rose"].(map[string]any)
 
-		// baseUrl must be overwritten to match OLLAMA_HOST (the test server)
+		// baseUrl must be overwritten to match ROSE_HOST (the test server)
 		expectedBaseURL := strings.TrimRight(srv.URL, "/") + "/v1"
-		if ollama["baseUrl"] != expectedBaseURL {
-			t.Errorf("baseUrl = %v, want %v", ollama["baseUrl"], expectedBaseURL)
+		if rose["baseUrl"] != expectedBaseURL {
+			t.Errorf("baseUrl = %v, want %v", rose["baseUrl"], expectedBaseURL)
 		}
 		// User-customized api and apiKey are preserved
-		if ollama["api"] != "custom-api" {
-			t.Errorf("Custom api not preserved, got %v", ollama["api"])
+		if rose["api"] != "custom-api" {
+			t.Errorf("Custom api not preserved, got %v", rose["api"])
 		}
-		if ollama["apiKey"] != "custom-key" {
-			t.Errorf("Custom apiKey not preserved, got %v", ollama["apiKey"])
+		if rose["apiKey"] != "custom-key" {
+			t.Errorf("Custom apiKey not preserved, got %v", rose["apiKey"])
 		}
 
-		modelsArray := ollama["models"].([]any)
+		modelsArray := rose["models"].([]any)
 		if len(modelsArray) != 1 {
 			t.Errorf("Expected 1 model after update, got %d", len(modelsArray))
 		} else {
@@ -1047,10 +1047,10 @@ func TestPiEdit(t *testing.T) {
 
 		existingConfig := `{
 			"providers": {
-				"ollama": {
+				"rose": {
 					"baseUrl": "http://localhost:11434/v1",
 					"api": "openai-completions",
-					"apiKey": "ollama",
+					"apiKey": "rose",
 					"models": [
 						{"id": "glm-5:cloud", "_launch": true, "legacyField": "stale"}
 					]
@@ -1067,8 +1067,8 @@ func TestPiEdit(t *testing.T) {
 
 		cfg := readConfig()
 		providers := cfg["providers"].(map[string]any)
-		ollama := providers["ollama"].(map[string]any)
-		modelsArray := ollama["models"].([]any)
+		rose := providers["rose"].(map[string]any)
+		modelsArray := rose["models"].([]any)
 		modelEntry := modelsArray[0].(map[string]any)
 
 		if modelEntry["contextWindow"] != float64(202_752) {
@@ -1090,10 +1090,10 @@ func TestPiEdit(t *testing.T) {
 		// Old models must have _launch marker to be managed by us
 		existingConfig := `{
 			"providers": {
-				"ollama": {
+				"rose": {
 					"baseUrl": "http://localhost:11434/v1",
 					"api": "openai-completions",
-					"apiKey": "ollama",
+					"apiKey": "rose",
 					"models": [
 						{"id": "old-model-1", "_launch": true},
 						{"id": "old-model-2", "_launch": true}
@@ -1112,8 +1112,8 @@ func TestPiEdit(t *testing.T) {
 
 		cfg := readConfig()
 		providers := cfg["providers"].(map[string]any)
-		ollama := providers["ollama"].(map[string]any)
-		modelsArray := ollama["models"].([]any)
+		rose := providers["rose"].(map[string]any)
+		modelsArray := rose["models"].([]any)
 
 		if len(modelsArray) != 2 {
 			t.Errorf("Expected 2 models, got %d", len(modelsArray))
@@ -1141,10 +1141,10 @@ func TestPiEdit(t *testing.T) {
 		// Models must have _launch marker to be managed
 		existingConfig := `{
 			"providers": {
-				"ollama": {
+				"rose": {
 					"baseUrl": "http://localhost:11434/v1",
 					"api": "openai-completions",
-					"apiKey": "ollama",
+					"apiKey": "rose",
 					"models": [
 						{"id": "keep-model", "_launch": true},
 						{"id": "remove-model", "_launch": true}
@@ -1163,8 +1163,8 @@ func TestPiEdit(t *testing.T) {
 
 		cfg := readConfig()
 		providers := cfg["providers"].(map[string]any)
-		ollama := providers["ollama"].(map[string]any)
-		modelsArray := ollama["models"].([]any)
+		rose := providers["rose"].(map[string]any)
+		modelsArray := rose["models"].([]any)
 
 		if len(modelsArray) != 2 {
 			t.Errorf("Expected 2 models, got %d", len(modelsArray))
@@ -1209,8 +1209,8 @@ func TestPiEdit(t *testing.T) {
 		}
 
 		providers := cfg["providers"].(map[string]any)
-		ollama := providers["ollama"].(map[string]any)
-		modelsArray := ollama["models"].([]any)
+		rose := providers["rose"].(map[string]any)
+		modelsArray := rose["models"].([]any)
 
 		if len(modelsArray) != 1 {
 			t.Errorf("Expected 1 model, got %d", len(modelsArray))
@@ -1222,17 +1222,17 @@ func TestPiEdit(t *testing.T) {
 		cleanup()
 		os.MkdirAll(configDir, 0o755)
 
-		// User has manually configured models in ollama provider (no _launch marker)
+		// User has manually configured models in rose provider (no _launch marker)
 		existingConfig := `{
 			"providers": {
-				"ollama": {
+				"rose": {
 					"baseUrl": "http://localhost:11434/v1",
 					"api": "openai-completions",
-					"apiKey": "ollama",
+					"apiKey": "rose",
 					"models": [
 						{"id": "user-model-1"},
 						{"id": "user-model-2", "customField": "preserved"},
-						{"id": "ollama-managed", "_launch": true}
+						{"id": "rose-managed", "_launch": true}
 					]
 				}
 			}
@@ -1241,18 +1241,18 @@ func TestPiEdit(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		// Add a new ollama-managed model
-		newModels := []string{"new-ollama-model"}
+		// Add a new rose-managed model
+		newModels := []string{"new-rose-model"}
 		if err := pi.Edit(launchModelsFromNames(newModels)); err != nil {
 			t.Fatalf("Edit() error = %v", err)
 		}
 
 		cfg := readConfig()
 		providers := cfg["providers"].(map[string]any)
-		ollama := providers["ollama"].(map[string]any)
-		modelsArray := ollama["models"].([]any)
+		rose := providers["rose"].(map[string]any)
+		modelsArray := rose["models"].([]any)
 
-		// Should have: new-ollama-model (managed) + 2 user models (preserved)
+		// Should have: new-rose-model (managed) + 2 user models (preserved)
 		if len(modelsArray) != 3 {
 			t.Errorf("Expected 3 models (1 new managed + 2 preserved user models), got %d", len(modelsArray))
 		}
@@ -1265,10 +1265,10 @@ func TestPiEdit(t *testing.T) {
 		}
 
 		// Verify new model has _launch marker
-		if m, ok := modelIDs["new-ollama-model"]; !ok {
-			t.Errorf("new-ollama-model should be present")
+		if m, ok := modelIDs["new-rose-model"]; !ok {
+			t.Errorf("new-rose-model should be present")
 		} else if m["_launch"] != true {
-			t.Errorf("new-ollama-model should have _launch marker")
+			t.Errorf("new-rose-model should have _launch marker")
 		}
 
 		// Verify user models are preserved
@@ -1281,9 +1281,9 @@ func TestPiEdit(t *testing.T) {
 			t.Errorf("user-model-2 customField should be preserved")
 		}
 
-		// Verify old ollama-managed model is removed (not in new list)
-		if _, ok := modelIDs["ollama-managed"]; ok {
-			t.Errorf("ollama-managed should be removed (old ollama model not in new selection)")
+		// Verify old rose-managed model is removed (not in new list)
+		if _, ok := modelIDs["rose-managed"]; ok {
+			t.Errorf("rose-managed should be removed (old rose model not in new selection)")
 		}
 	})
 
@@ -1318,9 +1318,9 @@ func TestPiEdit(t *testing.T) {
 			t.Fatalf("Failed to parse settings: %v", err)
 		}
 
-		// Verify defaultProvider is set to ollama
-		if settings["defaultProvider"] != "ollama" {
-			t.Errorf("defaultProvider = %v, want ollama", settings["defaultProvider"])
+		// Verify defaultProvider is set to rose
+		if settings["defaultProvider"] != "rose" {
+			t.Errorf("defaultProvider = %v, want rose", settings["defaultProvider"])
 		}
 
 		// Verify defaultModel is set to first model
@@ -1357,8 +1357,8 @@ func TestPiEdit(t *testing.T) {
 			t.Fatalf("Failed to parse settings: %v", err)
 		}
 
-		if settings["defaultProvider"] != "ollama" {
-			t.Errorf("defaultProvider = %v, want ollama", settings["defaultProvider"])
+		if settings["defaultProvider"] != "rose" {
+			t.Errorf("defaultProvider = %v, want rose", settings["defaultProvider"])
 		}
 		if settings["defaultModel"] != "qwen3:8b" {
 			t.Errorf("defaultModel = %v, want qwen3:8b", settings["defaultModel"])
@@ -1390,8 +1390,8 @@ func TestPiEdit(t *testing.T) {
 			t.Fatalf("settings.json should be valid after Edit, got parse error: %v", err)
 		}
 
-		if settings["defaultProvider"] != "ollama" {
-			t.Errorf("defaultProvider = %v, want ollama", settings["defaultProvider"])
+		if settings["defaultProvider"] != "rose" {
+			t.Errorf("defaultProvider = %v, want rose", settings["defaultProvider"])
 		}
 		if settings["defaultModel"] != "test-model" {
 			t.Errorf("defaultModel = %v, want test-model", settings["defaultModel"])
@@ -1408,7 +1408,7 @@ func TestPiEdit_CreatesDistinctBackupsForEachManagedFile(t *testing.T) {
 		w.WriteHeader(http.StatusNotFound)
 	}))
 	defer srv.Close()
-	t.Setenv("OLLAMA_HOST", srv.URL)
+	t.Setenv("ROSE_HOST", srv.URL)
 
 	pi := &Pi{}
 	tmpDir := t.TempDir()
@@ -1423,7 +1423,7 @@ func TestPiEdit_CreatesDistinctBackupsForEachManagedFile(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	modelsOriginal := fmt.Sprintf(`{"marker":"models-%d","providers":{"ollama":{"models":[]}}}`, os.Getpid())
+	modelsOriginal := fmt.Sprintf(`{"marker":"models-%d","providers":{"rose":{"models":[]}}}`, os.Getpid())
 	settingsOriginal := fmt.Sprintf(`{"marker":"settings-%d","defaultProvider":"other","defaultModel":"old"}`, os.Getpid())
 	if err := os.WriteFile(modelsPath, []byte(modelsOriginal), 0o644); err != nil {
 		t.Fatal(err)
@@ -1478,7 +1478,7 @@ func TestPiModels(t *testing.T) {
 		}
 		config := `{
 			"providers": {
-				"ollama": {
+				"rose": {
 					"models": [
 						{"id": "llama3.2"},
 						{"id": "qwen3:8b"}
@@ -1510,7 +1510,7 @@ func TestPiModels(t *testing.T) {
 		}
 		config := `{
 			"providers": {
-				"ollama": {
+				"rose": {
 					"models": [
 						{"id": "z-model"},
 						{"id": "a-model"},
@@ -1540,7 +1540,7 @@ func TestPiModels(t *testing.T) {
 		}
 		config := `{
 			"providers": {
-				"ollama": {}
+				"rose": {}
 			}
 		}`
 		configPath := filepath.Join(configDir, "models.json")
@@ -1573,7 +1573,7 @@ func TestPiModels(t *testing.T) {
 		}
 	})
 
-	t.Run("returns nil when baseUrl does not match OLLAMA_HOST", func(t *testing.T) {
+	t.Run("returns nil when baseUrl does not match ROSE_HOST", func(t *testing.T) {
 		tmpDir := t.TempDir()
 		setTestHome(t, tmpDir)
 
@@ -1583,7 +1583,7 @@ func TestPiModels(t *testing.T) {
 		}
 		config := `{
 			"providers": {
-				"ollama": {
+				"rose": {
 					"baseUrl": "http://remote-host:9999/v1",
 					"models": [
 						{"id": "llama3.2"},
@@ -1597,7 +1597,7 @@ func TestPiModels(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		// OLLAMA_HOST defaults to 127.0.0.1:11434, which differs from the
+		// ROSE_HOST defaults to 127.0.0.1:11434, which differs from the
 		// baseUrl in the config, so Models() should return nil.
 		models := pi.Models()
 		if models != nil {
@@ -1605,12 +1605,12 @@ func TestPiModels(t *testing.T) {
 		}
 	})
 
-	t.Run("returns models when baseUrl matches OLLAMA_HOST", func(t *testing.T) {
+	t.Run("returns models when baseUrl matches ROSE_HOST", func(t *testing.T) {
 		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 		}))
 		defer srv.Close()
-		t.Setenv("OLLAMA_HOST", srv.URL)
+		t.Setenv("ROSE_HOST", srv.URL)
 
 		tmpDir := t.TempDir()
 		setTestHome(t, tmpDir)
@@ -1622,7 +1622,7 @@ func TestPiModels(t *testing.T) {
 		expectedBaseURL := strings.TrimRight(srv.URL, "/") + "/v1"
 		config := fmt.Sprintf(`{
 			"providers": {
-				"ollama": {
+				"rose": {
 					"baseUrl": "%s",
 					"models": [
 						{"id": "llama3.2"},

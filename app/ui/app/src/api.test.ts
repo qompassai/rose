@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 const { listModels } = vi.hoisted(() => ({ listModels: vi.fn() }));
-vi.mock("./lib/ollama-client", () => ({
+vi.mock("./lib/rose-client", () => ({
   ollamaClient: { list: listModels },
 }));
 
@@ -85,14 +85,14 @@ describe("getIntegrationStatuses", () => {
           {
             id: "claude-desktop",
             name: "Claude",
-            description: "Use Ollama models in Claude Desktop",
+            description: "Use Rose models in Claude Desktop",
             installed: true,
           },
           {
             id: "opencode",
             name: "OpenCode",
             description: "Open-source coding agent",
-            command: "ollama launch opencode",
+            command: "rose launch opencode",
           },
         ]),
         { status: 200 },
@@ -104,14 +104,14 @@ describe("getIntegrationStatuses", () => {
       {
         id: "claude-desktop",
         name: "Claude",
-        description: "Use Ollama models in Claude Desktop",
+        description: "Use Rose models in Claude Desktop",
         installed: true,
       },
       {
         id: "opencode",
         name: "OpenCode",
         description: "Open-source coding agent",
-        command: "ollama launch opencode",
+        command: "rose launch opencode",
       },
     ]);
     expect(fetch).toHaveBeenCalledWith(

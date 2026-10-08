@@ -3,9 +3,9 @@ package qwen4_exp
 import (
 	"fmt"
 
-	"github.com/ollama/ollama/mlx"
-	"github.com/ollama/ollama/mlxrunner/batch"
-	"github.com/ollama/ollama/mlxrunner/cache"
+	"github.com/qompassai/rose/mlx"
+	"github.com/qompassai/rose/mlxrunner/batch"
+	"github.com/qompassai/rose/mlxrunner/cache"
 )
 
 // engramCache keeps the two raw token IDs and nine normalized

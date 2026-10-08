@@ -18,13 +18,13 @@ Embeddings turn text into numeric vectors you can store in a vector database, se
     Generate embeddings directly from the command line:
 
     ```shell
-    ollama run embeddinggemma "Hello world"
+    rose run embeddinggemma "Hello world"
     ```
 
     You can also pipe text to generate embeddings:
 
     ```shell
-    echo "Hello world" | ollama run embeddinggemma
+    echo "Hello world" | rose run embeddinggemma
     ```
 
     Output is a JSON array.
@@ -42,9 +42,9 @@ Embeddings turn text into numeric vectors you can store in a vector database, se
   </Tab>
   <Tab title="Python">
     ```python
-    import ollama
+    import rose
 
-    single = ollama.embed(
+    single = rose.embed(
       model='embeddinggemma',
       input='The quick brown fox jumps over the lazy dog.'
     )
@@ -53,9 +53,9 @@ Embeddings turn text into numeric vectors you can store in a vector database, se
   </Tab>
   <Tab title="JavaScript">
     ```javascript
-    import ollama from 'ollama'
+    import rose from 'rose'
 
-    const single = await ollama.embed({
+    const single = await rose.embed({
       model: 'embeddinggemma',
       input: 'The quick brown fox jumps over the lazy dog.',
     })
@@ -89,9 +89,9 @@ Pass an array of strings to `input`.
   </Tab>
   <Tab title="Python">
     ```python
-    import ollama
+    import rose
 
-    batch = ollama.embed(
+    batch = rose.embed(
       model='embeddinggemma',
       input=[
         'The quick brown fox jumps over the lazy dog.',
@@ -104,9 +104,9 @@ Pass an array of strings to `input`.
   </Tab>
   <Tab title="JavaScript">
     ```javascript
-    import ollama from 'ollama'
+    import rose from 'rose'
 
-    const batch = await ollama.embed({
+    const batch = await rose.embed({
       model: 'embeddinggemma',
       input: [
         'The quick brown fox jumps over the lazy dog.',

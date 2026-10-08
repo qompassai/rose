@@ -3,7 +3,7 @@ package nn
 import (
 	"testing"
 
-	"github.com/ollama/ollama/mlx"
+	"github.com/qompassai/rose/mlx"
 )
 
 func TestQuantizedEmbeddingAsLinearPreservesGlobalScale(t *testing.T) {

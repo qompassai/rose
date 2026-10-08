@@ -6,11 +6,11 @@ import (
 	"context"
 	"errors"
 
-	"github.com/ollama/ollama/api"
-	internalcloud "github.com/ollama/ollama/internal/cloud"
+	"github.com/qompassai/rose/api"
+	internalcloud "github.com/qompassai/rose/internal/cloud"
 )
 
-// ensureCloudEnabledForTool checks cloud policy from the connected Ollama server.
+// ensureCloudEnabledForTool checks cloud policy from the connected Rose server.
 // If policy cannot be determined, this fails closed and blocks the operation.
 func ensureCloudEnabledForTool(ctx context.Context, operation string) error {
 	// Reuse shared message formatting; policy evaluation is still done via

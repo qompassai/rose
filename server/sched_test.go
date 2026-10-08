@@ -12,18 +12,18 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/compatmigrate"
-	"github.com/ollama/ollama/format"
-	"github.com/ollama/ollama/fs/gguf"
-	gguftest "github.com/ollama/ollama/internal/testutil/gguf"
-	"github.com/ollama/ollama/llm"
-	"github.com/ollama/ollama/ml"
-	"github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/compatmigrate"
+	"github.com/qompassai/rose/format"
+	"github.com/qompassai/rose/fs/gguf"
+	gguftest "github.com/qompassai/rose/internal/testutil/gguf"
+	"github.com/qompassai/rose/llm"
+	"github.com/qompassai/rose/ml"
+	"github.com/qompassai/rose/types/model"
 )
 
 func TestMain(m *testing.M) {
-	os.Setenv("OLLAMA_DEBUG", "1")
+	os.Setenv("ROSE_DEBUG", "1")
 	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}))
 	slog.SetDefault(logger)
 	restoreMigrators := compatmigrate.SetMigratorsForTesting(nil)
@@ -304,8 +304,8 @@ func TestSchedRequestsSameModelSameRequest(t *testing.T) {
 	s.waitForRecovery = 10 * time.Millisecond
 	s.getGpuFn = getGpuFn
 	s.getSystemInfoFn = getSystemInfoFn
-	a := newScenarioRequest(t, ctx, "ollama-model-1", 10, &api.Duration{Duration: 5 * time.Millisecond}, nil)
-	b := newScenarioRequest(t, ctx, "ollama-model-1", 11, &api.Duration{Duration: 0}, nil)
+	a := newScenarioRequest(t, ctx, "rose-model-1", 10, &api.Duration{Duration: 5 * time.Millisecond}, nil)
+	b := newScenarioRequest(t, ctx, "rose-model-1", 11, &api.Duration{Duration: 0}, nil)
 	b.req.model = a.req.model
 
 	s.newServerFn = a.newServer
@@ -356,8 +356,8 @@ func TestSchedRequestsSimpleReloadSameModel(t *testing.T) {
 		return []ml.DeviceInfo{g}
 	}
 	s.getSystemInfoFn = getSystemInfoFn
-	a := newScenarioRequest(t, ctx, "ollama-model-1", 10, &api.Duration{Duration: 5 * time.Millisecond}, nil)
-	b := newScenarioRequest(t, ctx, "ollama-model-1", 20, &api.Duration{Duration: 5 * time.Millisecond}, nil)
+	a := newScenarioRequest(t, ctx, "rose-model-1", 10, &api.Duration{Duration: 5 * time.Millisecond}, nil)
+	b := newScenarioRequest(t, ctx, "rose-model-1", 20, &api.Duration{Duration: 5 * time.Millisecond}, nil)
 	tmpModel := *a.req.model
 	b.req.model = &tmpModel
 
@@ -448,7 +448,7 @@ func TestSchedRequestsMultipleLoadedModels(t *testing.T) {
 	require.Len(t, s.loaded, 1)
 	s.loadedMu.Unlock()
 
-	t.Setenv("OLLAMA_MAX_LOADED_MODELS", "0")
+	t.Setenv("ROSE_MAX_LOADED_MODELS", "0")
 	s.newServerFn = b.newServer
 	slog.Info("Loading B")
 	s.pendingReqCh <- b.req
@@ -536,10 +536,10 @@ func TestSchedGetRunner(t *testing.T) {
 	ctx, done := context.WithTimeout(t.Context(), 3*time.Second)
 	defer done()
 
-	a := newScenarioRequest(t, ctx, "ollama-model-1a", 10, &api.Duration{Duration: 2 * time.Millisecond}, nil)
-	b := newScenarioRequest(t, ctx, "ollama-model-1b", 10, &api.Duration{Duration: 2 * time.Millisecond}, nil)
-	c := newScenarioRequest(t, ctx, "ollama-model-1c", 10, &api.Duration{Duration: 2 * time.Millisecond}, nil)
-	t.Setenv("OLLAMA_MAX_QUEUE", "1")
+	a := newScenarioRequest(t, ctx, "rose-model-1a", 10, &api.Duration{Duration: 2 * time.Millisecond}, nil)
+	b := newScenarioRequest(t, ctx, "rose-model-1b", 10, &api.Duration{Duration: 2 * time.Millisecond}, nil)
+	c := newScenarioRequest(t, ctx, "rose-model-1c", 10, &api.Duration{Duration: 2 * time.Millisecond}, nil)
+	t.Setenv("ROSE_MAX_QUEUE", "1")
 	s := InitScheduler(ctx)
 	s.waitForRecovery = 10 * time.Millisecond
 	s.getGpuFn = getGpuFn
@@ -778,7 +778,7 @@ func TestSchedPrematureExpired(t *testing.T) {
 	defer done()
 
 	// Same model, same request
-	scenario1a := newScenarioRequest(t, ctx, "ollama-model-1a", 10, &api.Duration{Duration: 100 * time.Millisecond}, nil)
+	scenario1a := newScenarioRequest(t, ctx, "rose-model-1a", 10, &api.Duration{Duration: 100 * time.Millisecond}, nil)
 	s := InitScheduler(ctx)
 	s.waitForRecovery = 10 * time.Millisecond
 	s.getGpuFn = getGpuFn
@@ -1253,7 +1253,7 @@ func TestSchedAlreadyCanceled(t *testing.T) {
 	defer done()
 	dctx, done2 := context.WithCancel(ctx)
 	done2()
-	scenario1a := newScenarioRequest(t, dctx, "ollama-model-1", 10, &api.Duration{Duration: 0}, nil)
+	scenario1a := newScenarioRequest(t, dctx, "rose-model-1", 10, &api.Duration{Duration: 0}, nil)
 	s := InitScheduler(ctx)
 	s.waitForRecovery = 10 * time.Millisecond
 	slog.Info("scenario1a")
@@ -1395,7 +1395,7 @@ func TestSchedLlamaServerFitsAlongside(t *testing.T) {
 func TestSchedLlamaServerPredictionUsesTotalParallelContext(t *testing.T) {
 	ctx, done := context.WithTimeout(t.Context(), 500*time.Millisecond)
 	defer done()
-	t.Setenv("OLLAMA_NUM_PARALLEL", "2")
+	t.Setenv("ROSE_NUM_PARALLEL", "2")
 
 	s := InitScheduler(ctx)
 	s.waitForRecovery = 10 * time.Millisecond
@@ -1622,7 +1622,7 @@ func TestSelectLlamaServerPlacement(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Setenv("OLLAMA_SCHED_SPREAD", tt.schedSpread)
+			t.Setenv("ROSE_SCHED_SPREAD", tt.schedSpread)
 
 			selected, launchOpts := selectLlamaServerPlacement(systemInfo, tt.gpus, tt.predictedVRAM, tt.opts)
 			require.Len(t, selected, tt.wantSelectedGPUs)

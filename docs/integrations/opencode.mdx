@@ -4,14 +4,14 @@ title: OpenCode
 
 [OpenCode](https://opencode.ai) is an open-source coding agent that runs in your terminal, reads your project, edits files, and runs commands.
 
-Ollama configures OpenCode to use local and cloud models.
+Rose configures OpenCode to use local and cloud models.
 
 ## Get started
 
-Launch OpenCode with Ollama:
+Launch OpenCode with Rose:
 
 ```shell
-ollama launch opencode
+rose launch opencode
 ```
 
 ## Capabilities
@@ -100,17 +100,17 @@ npm install -g opencode-ai
 
 </CodeGroup>
 
-<p className="manual-step-title">2. Configure Ollama as a provider</p>
+<p className="manual-step-title">2. Configure Rose as a provider</p>
 
-Add an Ollama provider to `opencode.json`:
+Add an Rose provider to `opencode.json`:
 
 ```json
 {
   "$schema": "https://opencode.ai/config.json",
   "provider": {
-    "ollama": {
+    "rose": {
       "npm": "@ai-sdk/openai-compatible",
-      "name": "Ollama",
+      "name": "Rose",
       "options": {
         "baseURL": "http://localhost:11434/v1"
       },
@@ -130,16 +130,16 @@ Add an Ollama provider to `opencode.json`:
 opencode
 ```
 
-To configure OpenCode with Ollama without starting an interactive session:
+To configure OpenCode with Rose without starting an interactive session:
 
 ```shell
-ollama launch opencode --config
+rose launch opencode --config
 ```
 
 ### Configuration precedence
 
-`ollama launch opencode` starts OpenCode with an inline config for the selected Ollama model. It does not overwrite `~/.config/opencode/opencode.json`; existing OpenCode settings still apply.
+`rose launch opencode` starts OpenCode with an inline config for the selected Rose model. It does not overwrite `~/.config/opencode/opencode.json`; existing OpenCode settings still apply.
 
-Models defined only in `opencode.json` do not appear in the `ollama launch` model picker.
+Models defined only in `opencode.json` do not appear in the `rose launch` model picker.
 
 See OpenCode's [config precedence](https://opencode.ai/docs/config/#precedence-order).

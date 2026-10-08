@@ -10,10 +10,10 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/manifest"
-	"github.com/ollama/ollama/mlx/quant"
-	"github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/manifest"
+	"github.com/qompassai/rose/mlx/quant"
+	"github.com/qompassai/rose/types/model"
 )
 
 func canonicalQuantType(quantType string) string {

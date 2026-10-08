@@ -10,13 +10,13 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/llm"
-	"github.com/ollama/ollama/mlx"
-	"github.com/ollama/ollama/mlx/mlxtest"
-	"github.com/ollama/ollama/mlx/mlxthread"
-	"github.com/ollama/ollama/mlxrunner/batch"
-	"github.com/ollama/ollama/mlxrunner/cache"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/llm"
+	"github.com/qompassai/rose/mlx"
+	"github.com/qompassai/rose/mlx/mlxtest"
+	"github.com/qompassai/rose/mlx/mlxthread"
+	"github.com/qompassai/rose/mlxrunner/batch"
+	"github.com/qompassai/rose/mlxrunner/cache"
 )
 
 // This small stateful model uses real KV and recurrent caches. Its outputs

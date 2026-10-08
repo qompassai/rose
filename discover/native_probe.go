@@ -12,11 +12,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ollama/ollama/llm"
-	"github.com/ollama/ollama/ml"
+	"github.com/qompassai/rose/llm"
+	"github.com/qompassai/rose/ml"
 )
 
-// Native GPU discovery runs in a short-lived Ollama subprocess so loading GGML
+// Native GPU discovery runs in a short-lived Rose subprocess so loading GGML
 // and driver libraries cannot crash the main server process. The subprocess
 // keeps stdout reserved for JSON and lets GGML's default logger write to
 // stderr; the parent captures that stderr for trace/debug diagnostics.

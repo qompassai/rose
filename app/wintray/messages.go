@@ -3,15 +3,15 @@
 package wintray
 
 const (
-	firstTimeTitle   = "Ollama is running"
+	firstTimeTitle   = "Rose is running"
 	firstTimeMessage = "Click here to get started"
 	updateTitle      = "Update available"
-	updateMessage    = "Ollama version %s is ready to install"
+	updateMessage    = "Rose version %s is ready to install"
 
-	quitMenuTitle            = "Quit Ollama"
+	quitMenuTitle            = "Quit Rose"
 	updateAvailableMenuTitle = "An update is available"
 	updateMenuTitle          = "Restart to update"
 	diagLogsMenuTitle        = "View logs"
-	openAppsMenuTitle        = "Open Ollama"
+	openAppsMenuTitle        = "Open Rose"
 	settingsUIMenuTitle      = "Settings"
 )

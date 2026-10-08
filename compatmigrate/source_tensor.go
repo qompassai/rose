@@ -13,8 +13,8 @@ import (
 	"github.com/d4l3k/go-bfloat16"
 	"github.com/x448/float16"
 
-	"github.com/ollama/ollama/fs/gguf"
-	"github.com/ollama/ollama/manifest"
+	"github.com/qompassai/rose/fs/gguf"
+	"github.com/qompassai/rose/manifest"
 )
 
 func readAllSourceTensors(src *SourceModel) ([]*sourceTensor, error) {

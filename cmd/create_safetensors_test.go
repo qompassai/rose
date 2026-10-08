@@ -13,10 +13,10 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
-	"github.com/ollama/ollama/create"
-	"github.com/ollama/ollama/manifest"
-	"github.com/ollama/ollama/parser"
-	"github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/create"
+	"github.com/qompassai/rose/manifest"
+	"github.com/qompassai/rose/parser"
+	"github.com/qompassai/rose/types/model"
 )
 
 func TestModelfileConfig(t *testing.T) {
@@ -428,7 +428,7 @@ func TestCreateOptions_Defaults(t *testing.T) {
 }
 
 func TestNewManifestWriter_PopulatesFileTypeFromEffectiveQuantize(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	opts := createOptions{
 		ModelName: "test-quantized",
@@ -475,7 +475,7 @@ func TestNewManifestWriter_PopulatesFileTypeFromEffectiveQuantize(t *testing.T) 
 }
 
 func TestNewManifestWriterPreservesMultipleLicenses(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 	opts := createOptions{
 		ModelName: "test-licenses",
 		ModelDir:  t.TempDir(),
@@ -494,7 +494,7 @@ func TestNewManifestWriterPreservesMultipleLicenses(t *testing.T) {
 	}
 	var licenses []string
 	for _, layer := range mf.Layers {
-		if layer.MediaType != "application/vnd.ollama.image.license" {
+		if layer.MediaType != "application/vnd.rose.image.license" {
 			continue
 		}
 		f, err := layer.Open()
@@ -517,7 +517,7 @@ func TestNewManifestWriterPreservesMultipleLicenses(t *testing.T) {
 }
 
 func TestNewManifestWriter_PopulatesDraftMetadata(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	draftDir := t.TempDir()
 	if err := os.WriteFile(filepath.Join(draftDir, "config.json"), []byte(`{"architectures":["DFlashDraftModel"],"model_type":"qwen3"}`), 0o644); err != nil {
@@ -571,7 +571,7 @@ func TestNewManifestWriter_PopulatesDraftMetadata(t *testing.T) {
 }
 
 func TestCreateModelFromBaseReplacesDraftLayers(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 	newLayer := func(mediaType, name, content string) manifest.Layer {
 		t.Helper()
 		layer, err := manifest.NewLayer(strings.NewReader(content), mediaType)
@@ -586,9 +586,9 @@ func TestCreateModelFromBaseReplacesDraftLayers(t *testing.T) {
 	config := newLayer("application/vnd.docker.container.image.v1+json", "", `{"model_format":"safetensors","capabilities":["completion"]}`)
 	baseLayers := []manifest.Layer{
 		newLayer(manifest.MediaTypeImageTensor, "model.embed_tokens.weight", "base"),
-		newLayer("application/vnd.ollama.image.json", "config.json", `{}`),
+		newLayer("application/vnd.rose.image.json", "config.json", `{}`),
 		newLayer(manifest.MediaTypeImageTensor, "draft.model.embed_tokens.weight", "old tensor draft"),
-		newLayer("application/vnd.ollama.image.json", "draft/config.json", "old config draft"),
+		newLayer("application/vnd.rose.image.json", "draft/config.json", "old config draft"),
 		newLayer(manifest.MediaTypeImageDraft, "", "old GGUF draft"),
 		newLayer(manifest.MediaTypeImageTensor, "drafting.weight", "not a draft"),
 	}

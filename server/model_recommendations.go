@@ -15,9 +15,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/envconfig"
-	"github.com/ollama/ollama/format"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/envconfig"
+	"github.com/qompassai/rose/format"
 )
 
 const modelRecommendationsURL = "https://ollama.com/api/experimental/model-recommendations"
@@ -311,7 +311,7 @@ func modelRecommendationsSnapshotPath() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return filepath.Join(home, ".ollama", "cache", "model-recommendations.json"), nil
+	return filepath.Join(home, ".rose", "cache", "model-recommendations.json"), nil
 }
 
 func validateModelRecommendations(recs []api.ModelRecommendation) ([]api.ModelRecommendation, error) {

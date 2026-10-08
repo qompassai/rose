@@ -389,7 +389,7 @@ func TestConfigFile_PreservesUnknownFields(t *testing.T) {
 	setTestHome(t, tmpDir)
 
 	// Write config with extra fields
-	configPath := filepath.Join(tmpDir, ".ollama", "config.json")
+	configPath := filepath.Join(tmpDir, ".rose", "config.json")
 	os.MkdirAll(filepath.Dir(configPath), 0o755)
 
 	// Note: Our config struct only has Integrations, so top-level unknown fields

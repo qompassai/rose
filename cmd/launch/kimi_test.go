@@ -176,7 +176,7 @@ func TestValidateKimiPassthroughArgs_RejectsConflicts(t *testing.T) {
 }
 
 func TestBuildKimiInlineConfig(t *testing.T) {
-	t.Setenv("OLLAMA_HOST", "http://127.0.0.1:11434")
+	t.Setenv("ROSE_HOST", "http://127.0.0.1:11434")
 
 	cfg, err := buildKimiInlineConfig("llama3.2", 65536)
 	if err != nil {
@@ -188,17 +188,17 @@ func TestBuildKimiInlineConfig(t *testing.T) {
 		t.Fatalf("config is not valid JSON: %v", err)
 	}
 
-	if parsed["default_model"] != "ollama" {
-		t.Fatalf("default_model = %v, want ollama", parsed["default_model"])
+	if parsed["default_model"] != "rose" {
+		t.Fatalf("default_model = %v, want rose", parsed["default_model"])
 	}
 
 	providers, ok := parsed["providers"].(map[string]any)
 	if !ok {
 		t.Fatalf("providers missing or wrong type: %T", parsed["providers"])
 	}
-	ollamaProvider, ok := providers["ollama"].(map[string]any)
+	ollamaProvider, ok := providers["rose"].(map[string]any)
 	if !ok {
-		t.Fatalf("providers.ollama missing or wrong type: %T", providers["ollama"])
+		t.Fatalf("providers.rose missing or wrong type: %T", providers["rose"])
 	}
 	if ollamaProvider["type"] != "openai_legacy" {
 		t.Fatalf("provider type = %v, want openai_legacy", ollamaProvider["type"])
@@ -206,20 +206,20 @@ func TestBuildKimiInlineConfig(t *testing.T) {
 	if ollamaProvider["base_url"] != "http://127.0.0.1:11434/v1" {
 		t.Fatalf("provider base_url = %v, want http://127.0.0.1:11434/v1", ollamaProvider["base_url"])
 	}
-	if ollamaProvider["api_key"] != "ollama" {
-		t.Fatalf("provider api_key = %v, want ollama", ollamaProvider["api_key"])
+	if ollamaProvider["api_key"] != "rose" {
+		t.Fatalf("provider api_key = %v, want rose", ollamaProvider["api_key"])
 	}
 
 	models, ok := parsed["models"].(map[string]any)
 	if !ok {
 		t.Fatalf("models missing or wrong type: %T", parsed["models"])
 	}
-	ollamaModel, ok := models["ollama"].(map[string]any)
+	ollamaModel, ok := models["rose"].(map[string]any)
 	if !ok {
-		t.Fatalf("models.ollama missing or wrong type: %T", models["ollama"])
+		t.Fatalf("models.rose missing or wrong type: %T", models["rose"])
 	}
-	if ollamaModel["provider"] != "ollama" {
-		t.Fatalf("model provider = %v, want ollama", ollamaModel["provider"])
+	if ollamaModel["provider"] != "rose" {
+		t.Fatalf("model provider = %v, want rose", ollamaModel["provider"])
 	}
 	if ollamaModel["model"] != "llama3.2" {
 		t.Fatalf("model model = %v, want llama3.2", ollamaModel["model"])
@@ -230,7 +230,7 @@ func TestBuildKimiInlineConfig(t *testing.T) {
 }
 
 func TestBuildKimiInlineConfig_UsesConnectableHostForUnspecifiedBind(t *testing.T) {
-	t.Setenv("OLLAMA_HOST", "http://0.0.0.0:11434")
+	t.Setenv("ROSE_HOST", "http://0.0.0.0:11434")
 
 	cfg, err := buildKimiInlineConfig("llama3.2", 65536)
 	if err != nil {
@@ -247,9 +247,9 @@ func TestBuildKimiInlineConfig_UsesConnectableHostForUnspecifiedBind(t *testing.
 		t.Fatalf("providers missing or wrong type: %T", parsed["providers"])
 	}
 
-	ollamaProvider, ok := providers["ollama"].(map[string]any)
+	ollamaProvider, ok := providers["rose"].(map[string]any)
 	if !ok {
-		t.Fatalf("providers.ollama missing or wrong type: %T", providers["ollama"])
+		t.Fatalf("providers.rose missing or wrong type: %T", providers["rose"])
 	}
 	if got, _ := ollamaProvider["base_url"].(string); got != "http://127.0.0.1:11434/v1" {
 		t.Fatalf("provider base_url = %q, want %q", got, "http://127.0.0.1:11434/v1")
@@ -273,7 +273,7 @@ func TestResolveKimiMaxContextSize(t *testing.T) {
 			fmt.Fprint(w, `{"model_info":{"llama.context_length":131072}}`)
 		}))
 		defer srv.Close()
-		t.Setenv("OLLAMA_HOST", srv.URL)
+		t.Setenv("ROSE_HOST", srv.URL)
 
 		got := resolveKimiMaxContextSize("llama3.2")
 		if got != 131_072 {
@@ -284,7 +284,7 @@ func TestResolveKimiMaxContextSize(t *testing.T) {
 	t.Run("falls back to default when show fails", func(t *testing.T) {
 		srv := httptest.NewServer(http.NotFoundHandler())
 		defer srv.Close()
-		t.Setenv("OLLAMA_HOST", srv.URL)
+		t.Setenv("ROSE_HOST", srv.URL)
 
 		oldTimeout := kimiModelShowTimeout
 		kimiModelShowTimeout = 100 * 1000 * 1000 // 100ms
@@ -334,7 +334,7 @@ exit 0
 
 	srv := httptest.NewServer(http.NotFoundHandler())
 	defer srv.Close()
-	t.Setenv("OLLAMA_HOST", srv.URL)
+	t.Setenv("ROSE_HOST", srv.URL)
 
 	k := &Kimi{}
 	if err := k.Run("llama3.2", nil, []string{"--quiet", "--print"}); err != nil {
@@ -358,7 +358,7 @@ exit 0
 		t.Fatalf("config arg is not valid JSON: %v", err)
 	}
 	providers := cfg["providers"].(map[string]any)
-	ollamaProvider := providers["ollama"].(map[string]any)
+	ollamaProvider := providers["rose"].(map[string]any)
 	if ollamaProvider["type"] != "openai_legacy" {
 		t.Fatalf("provider type = %v, want openai_legacy", ollamaProvider["type"])
 	}

@@ -10,14 +10,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ollama/ollama/api"
+	"github.com/qompassai/rose/api"
 )
 
 func TestGenerateNativeJinjaDebugRender(t *testing.T) {
-	if os.Getenv("OLLAMA_TEST_EXISTING") != "" {
-		t.Skip("requires a test-managed server started with OLLAMA_GO_TEMPLATE=0")
+	if os.Getenv("ROSE_TEST_EXISTING") != "" {
+		t.Skip("requires a test-managed server started with ROSE_GO_TEMPLATE=0")
 	}
-	t.Setenv("OLLAMA_GO_TEMPLATE", "0")
+	t.Setenv("ROSE_GO_TEMPLATE", "0")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 	defer cancel()
@@ -110,10 +110,10 @@ func TestGenerateNativeJinjaDebugRender(t *testing.T) {
 }
 
 func TestGenerateNativeJinjaImages(t *testing.T) {
-	if os.Getenv("OLLAMA_TEST_EXISTING") != "" {
-		t.Skip("requires a test-managed server started with OLLAMA_GO_TEMPLATE=0")
+	if os.Getenv("ROSE_TEST_EXISTING") != "" {
+		t.Skip("requires a test-managed server started with ROSE_GO_TEMPLATE=0")
 	}
-	t.Setenv("OLLAMA_GO_TEMPLATE", "0")
+	t.Setenv("ROSE_GO_TEMPLATE", "0")
 	skipUnderMinVRAM(t, 6)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)

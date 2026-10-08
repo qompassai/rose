@@ -15,7 +15,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ollama/ollama/api"
+	"github.com/qompassai/rose/api"
 )
 
 const (
@@ -47,7 +47,7 @@ func runToolRoutesModel(t *testing.T, model string) {
 	}
 	requireCapability(ctx, t, client, model, "tools")
 
-	t.Run("ollama", func(t *testing.T) {
+	t.Run("rose", func(t *testing.T) {
 		runOllamaToolRoute(t, ctx, client, model)
 	})
 	t.Run("openai_chat_completions", func(t *testing.T) {
@@ -63,7 +63,7 @@ func runToolRoutesModel(t *testing.T, model string) {
 
 func assertNoUnexpectedRoleWarnings(t *testing.T) {
 	t.Helper()
-	if os.Getenv("OLLAMA_TEST_EXISTING") != "" || runtime.GOOS == "windows" {
+	if os.Getenv("ROSE_TEST_EXISTING") != "" || runtime.GOOS == "windows" {
 		return
 	}
 
@@ -125,11 +125,11 @@ func runOllamaToolRoute(t *testing.T, ctx context.Context, client *api.Client, m
 		content.WriteString(response.Message.Content)
 		return nil
 	}); err != nil {
-		t.Fatalf("Ollama chat failed: %v", err)
+		t.Fatalf("Rose chat failed: %v", err)
 	}
 	checkNoLeakedTags(t, content.String())
 	if len(calls) == 0 {
-		t.Fatalf("Ollama chat returned no tool call; content=%q", truncate(content.String(), 300))
+		t.Fatalf("Rose chat returned no tool call; content=%q", truncate(content.String(), 300))
 	}
 	assertToolRouteCall(t, calls[len(calls)-1].Function.Name, calls[len(calls)-1].Function.Arguments.String())
 }

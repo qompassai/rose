@@ -5,7 +5,7 @@ import (
 	"math"
 	"slices"
 
-	"github.com/ollama/ollama/mlx"
+	"github.com/qompassai/rose/mlx"
 )
 
 type Options struct {

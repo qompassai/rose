@@ -8,8 +8,8 @@ import (
 	"path/filepath"
 	"slices"
 
-	"github.com/ollama/ollama/cmd/internal/fileutil"
-	"github.com/ollama/ollama/envconfig"
+	"github.com/qompassai/rose/cmd/internal/fileutil"
+	"github.com/qompassai/rose/envconfig"
 )
 
 // Droid implements Runner and Editor for Droid integration
@@ -100,20 +100,20 @@ func (d *Droid) Edit(models []LaunchModel) error {
 }
 
 func updateDroidSettings(settingsMap map[string]any, settings droidSettings, models []LaunchModel) map[string]any {
-	// Keep only non-Ollama models from the raw map (preserves extra fields)
-	// Rebuild Ollama models
+	// Keep only non-Rose models from the raw map (preserves extra fields)
+	// Rebuild Rose models
 	var nonOllamaModels []any
 	if rawModels, ok := settingsMap["customModels"].([]any); ok {
 		for _, raw := range rawModels {
 			if m, ok := raw.(map[string]any); ok {
-				if m["apiKey"] != "ollama" {
+				if m["apiKey"] != "rose" {
 					nonOllamaModels = append(nonOllamaModels, raw)
 				}
 			}
 		}
 	}
 
-	// Build new Ollama model entries with sequential indices (0, 1, 2, ...)
+	// Build new Rose model entries with sequential indices (0, 1, 2, ...)
 
 	var newModels []any
 	var defaultModelID string
@@ -127,7 +127,7 @@ func updateDroidSettings(settingsMap map[string]any, settings droidSettings, mod
 			Model:           model.Name,
 			DisplayName:     model.Name,
 			BaseURL:         envconfig.Host().String() + "/v1",
-			APIKey:          "ollama",
+			APIKey:          "rose",
 			Provider:        "generic-chat-completion-api",
 			MaxOutputTokens: maxOutput,
 			SupportsImages:  model.HasCapability("vision"),
@@ -174,7 +174,7 @@ func (d *Droid) Models() []string {
 
 	var result []string
 	for _, m := range settings.CustomModels {
-		if m.APIKey == "ollama" {
+		if m.APIKey == "rose" {
 			result = append(result, m.Model)
 		}
 	}

@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"slices"
 
-	"github.com/ollama/ollama/mlx"
-	"github.com/ollama/ollama/mlxrunner/batch"
-	sampler "github.com/ollama/ollama/mlxrunner/sample"
+	"github.com/qompassai/rose/mlx"
+	"github.com/qompassai/rose/mlxrunner/batch"
+	sampler "github.com/qompassai/rose/mlxrunner/sample"
 )
 
 // mtpPendingFlushTokens caps how many committed look-ahead tokens wait in the

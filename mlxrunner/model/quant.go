@@ -10,8 +10,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/ollama/ollama/mlx"
-	"github.com/ollama/ollama/mlx/quant"
+	"github.com/qompassai/rose/mlx"
+	"github.com/qompassai/rose/mlx/quant"
 )
 
 // TensorQuantInfo describes per-tensor quantization metadata.
@@ -191,7 +191,7 @@ func defaultGroupSize(quantType string) int {
 
 // QuantizationParams returns default groupSize, bits, and mode for a
 // quantization type. The values live in the shared mlx/quant package so the
-// importer, the runtime loader, and `ollama show` agree on them.
+// importer, the runtime loader, and `rose show` agree on them.
 func QuantizationParams(quantization string) (groupSize, bits int, mode string) {
 	return quant.Params(quantization)
 }

@@ -1,4 +1,4 @@
-// Package compatmigrate converts older Ollama-format GGUF manifests already
+// Package compatmigrate converts older Rose-format GGUF manifests already
 // present in a local model store into llama.cpp-compatible manifest-list
 // children.
 //
@@ -24,9 +24,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ollama/ollama/fs/gguf"
-	"github.com/ollama/ollama/manifest"
-	"github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/fs/gguf"
+	"github.com/qompassai/rose/manifest"
+	"github.com/qompassai/rose/types/model"
 )
 
 var (
@@ -225,7 +225,7 @@ func EnsureLocalCompatibilityMigration(name model.Name) (bool, error) {
 	}
 
 	// The conversion can take minutes on a large model. If the named manifest
-	// was removed or replaced while it ran (ollama rm / pull / create), writing
+	// was removed or replaced while it ran (rose rm / pull / create), writing
 	// now would resurrect or revert it. The per-name lock is held for this
 	// whole function, so re-checking the raw manifest data closes the race.
 	if current, readErr := manifest.ReadManifestData(name); readErr != nil || !bytes.Equal(current, data) {

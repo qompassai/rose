@@ -10,8 +10,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/ollama/ollama/internal/orderedmap"
-	"github.com/ollama/ollama/llm"
+	"github.com/qompassai/rose/internal/orderedmap"
+	"github.com/qompassai/rose/llm"
 )
 
 // encodeClef preserves the reference encoder's JSON and segment boundaries,

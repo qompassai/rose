@@ -8,9 +8,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/manifest"
-	"github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/manifest"
+	"github.com/qompassai/rose/types/model"
 )
 
 func listedModel(t *testing.T, name string) api.ListModelResponse {
@@ -135,7 +135,7 @@ func TestListModelsKeepsUnloadableModel(t *testing.T) {
 	}
 	var corrupted bool
 	for _, layer := range mf.Layers {
-		if layer.MediaType != "application/vnd.ollama.image.template" {
+		if layer.MediaType != "application/vnd.rose.image.template" {
 			continue
 		}
 		path, err := manifest.BlobsPath(layer.Digest)

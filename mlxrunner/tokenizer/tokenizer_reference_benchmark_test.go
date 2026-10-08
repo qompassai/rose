@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ollama/ollama/mlxrunner/tokenizer"
+	"github.com/qompassai/rose/mlxrunner/tokenizer"
 )
 
 func BenchmarkTokenizerReference(b *testing.B) {

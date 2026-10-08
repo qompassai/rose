@@ -25,16 +25,16 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/format"
-	"github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/format"
+	"github.com/qompassai/rose/types/model"
 )
 
 var (
-	// testModel is set via OLLAMA_TEST_MODEL env var. When set, all tests
+	// testModel is set via ROSE_TEST_MODEL env var. When set, all tests
 	// that loop over model lists will test only this model, and smol is
 	// also overridden to use it.
-	testModel = os.Getenv("OLLAMA_TEST_MODEL")
+	testModel = os.Getenv("ROSE_TEST_MODEL")
 
 	smol   = defaultTestModel("llama3.2:1b")
 	stream = false
@@ -75,7 +75,7 @@ func defaultTestModel(model string) string {
 }
 
 // testModels returns the override model as a single-element slice when
-// OLLAMA_TEST_MODEL is set, otherwise returns the provided default list.
+// ROSE_TEST_MODEL is set, otherwise returns the provided default list.
 func testModels(defaults []string) []string {
 	if testModel != "" {
 		return []string{testModel}
@@ -87,7 +87,7 @@ func testModels(defaults []string) []string {
 // given capability. If the model is missing locally, it first goes through
 // the normal pull-if-missing path so tests still behave correctly on cold
 // hosts. For local-only models where Show may not return capabilities
-// (e.g. models created via ollama create), this is a best-effort check.
+// (e.g. models created via rose create), this is a best-effort check.
 func requireCapability(ctx context.Context, t *testing.T, client *api.Client, modelName string, cap model.Capability) {
 	t.Helper()
 
@@ -137,7 +137,7 @@ func FindPort() string {
 
 func GetTestEndpoint() (*api.Client, string) {
 	defaultPort := "11434"
-	ollamaHost := os.Getenv("OLLAMA_HOST")
+	ollamaHost := os.Getenv("ROSE_HOST")
 
 	scheme, hostport, ok := strings.Cut(ollamaHost, "://")
 	if !ok {
@@ -157,7 +157,7 @@ func GetTestEndpoint() (*api.Client, string) {
 		}
 	}
 
-	if os.Getenv("OLLAMA_TEST_EXISTING") == "" && runtime.GOOS != "windows" && port == defaultPort {
+	if os.Getenv("ROSE_TEST_EXISTING") == "" && runtime.GOOS != "windows" && port == defaultPort {
 		port = FindPort()
 	}
 
@@ -174,7 +174,7 @@ func GetTestEndpoint() (*api.Client, string) {
 func skipIfRemote(t *testing.T) {
 	t.Helper()
 
-	ollamaHost := os.Getenv("OLLAMA_HOST")
+	ollamaHost := os.Getenv("ROSE_HOST")
 	if ollamaHost == "" {
 		return
 	}
@@ -183,7 +183,7 @@ func skipIfRemote(t *testing.T) {
 	}
 	u, err := url.Parse(ollamaHost)
 	if err != nil {
-		t.Skipf("skipping local-server test with unparseable OLLAMA_HOST=%q", os.Getenv("OLLAMA_HOST"))
+		t.Skipf("skipping local-server test with unparseable ROSE_HOST=%q", os.Getenv("ROSE_HOST"))
 	}
 
 	host := u.Hostname()
@@ -193,7 +193,7 @@ func skipIfRemote(t *testing.T) {
 	if ip := net.ParseIP(host); ip != nil && (ip.IsLoopback() || ip.IsUnspecified()) {
 		return
 	}
-	t.Skipf("skipping local-server test with remote OLLAMA_HOST=%q", os.Getenv("OLLAMA_HOST"))
+	t.Skipf("skipping local-server test with remote ROSE_HOST=%q", os.Getenv("ROSE_HOST"))
 }
 
 // Server lifecycle management
@@ -207,7 +207,7 @@ var (
 
 func startServer(t *testing.T, ctx context.Context, ollamaHost string) error {
 	// Make sure the server has been built
-	CLIName, err := filepath.Abs("../ollama")
+	CLIName, err := filepath.Abs("../rose")
 	if err != nil {
 		return fmt.Errorf("failed to get absolute path: %w", err)
 	}
@@ -227,9 +227,9 @@ func startServer(t *testing.T, ctx context.Context, ollamaHost string) error {
 	serverDone = make(chan int)
 	serverLog.Reset()
 
-	if tmp := os.Getenv("OLLAMA_HOST"); tmp != ollamaHost {
-		slog.Info("setting env", "OLLAMA_HOST", ollamaHost)
-		t.Setenv("OLLAMA_HOST", ollamaHost)
+	if tmp := os.Getenv("ROSE_HOST"); tmp != ollamaHost {
+		slog.Info("setting env", "ROSE_HOST", ollamaHost)
+		t.Setenv("ROSE_HOST", ollamaHost)
 	}
 
 	serverCmd = exec.Command(CLIName, "serve")
@@ -331,7 +331,7 @@ var serverProcMutex sync.Mutex
 func InitServerConnection(ctx context.Context, t *testing.T) (*api.Client, string, func()) {
 	client, testEndpoint := GetTestEndpoint()
 	cleanup := func() {}
-	if os.Getenv("OLLAMA_TEST_EXISTING") == "" && runtime.GOOS != "windows" {
+	if os.Getenv("ROSE_TEST_EXISTING") == "" && runtime.GOOS != "windows" {
 		var err error
 		err = startServer(t, ctx, testEndpoint)
 		if err != nil {
@@ -348,7 +348,7 @@ func InitServerConnection(ctx context.Context, t *testing.T) (*api.Client, strin
 			<-serverDone
 			slog.Info("terminate complete")
 
-			if t.Failed() || os.Getenv("OLLAMA_TEST_LOG_SERVER") != "" {
+			if t.Failed() || os.Getenv("ROSE_TEST_LOG_SERVER") != "" {
 				slog.Warn("SERVER LOG FOLLOWS")
 				io.Copy(os.Stderr, bytes.NewReader(serverLog.Bytes()))
 				slog.Warn("END OF SERVER")
@@ -678,8 +678,8 @@ func skipIfMLXUnsupported(t *testing.T, err error) {
 }
 
 func targetPlatform() (goos, goarch string) {
-	goos = normalizeTargetGOOS(os.Getenv("OLLAMA_TEST_HOST_OS"))
-	goarch = normalizeTargetGOARCH(os.Getenv("OLLAMA_TEST_HOST_ARCH"))
+	goos = normalizeTargetGOOS(os.Getenv("ROSE_TEST_HOST_OS"))
+	goarch = normalizeTargetGOARCH(os.Getenv("ROSE_TEST_HOST_ARCH"))
 	if goos == "" {
 		goos = runtime.GOOS
 	}
@@ -714,19 +714,19 @@ func normalizeTargetGOARCH(goarch string) string {
 }
 
 // skipIfModelTooLargeForVRAM skips the test when the model's on-disk size
-// is larger than OLLAMA_MAX_VRAM by enough that even partial GPU offload
+// is larger than ROSE_MAX_VRAM by enough that even partial GPU offload
 // won't help. The 0.75x gate keeps vision/audio tests runnable on systems
 // where the model is slightly over VRAM and a portion legitimately spills to
-// CPU. No-op when OLLAMA_MAX_VRAM is unset.
+// CPU. No-op when ROSE_MAX_VRAM is unset.
 func skipIfModelTooLargeForVRAM(ctx context.Context, t *testing.T, client *api.Client, modelName string) {
 	t.Helper()
-	s := os.Getenv("OLLAMA_MAX_VRAM")
+	s := os.Getenv("ROSE_MAX_VRAM")
 	if s == "" {
 		return
 	}
 	maxVram, err := strconv.ParseUint(s, 10, 64)
 	if err != nil {
-		t.Fatalf("invalid OLLAMA_MAX_VRAM %v", err)
+		t.Fatalf("invalid ROSE_MAX_VRAM %v", err)
 	}
 	resp, err := client.List(ctx)
 	if err != nil {
@@ -745,7 +745,7 @@ func sameModelName(a, b string) bool {
 
 func skipUnderMinVRAM(t *testing.T, gb uint64) {
 	// TODO use info API in the future
-	if s := os.Getenv("OLLAMA_MAX_VRAM"); s != "" {
+	if s := os.Getenv("ROSE_MAX_VRAM"); s != "" {
 		maxVram, err := strconv.ParseUint(s, 10, 64)
 		if err != nil {
 			t.Fatal(err)

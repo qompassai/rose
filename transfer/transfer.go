@@ -38,7 +38,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/ollama/ollama/manifest"
+	"github.com/qompassai/rose/manifest"
 )
 
 // Blob represents a content-addressed blob to transfer.
@@ -111,7 +111,7 @@ const (
 	DefaultDownloadConcurrency = 64
 	DefaultUploadConcurrency   = 64
 	maxRetries                 = 6
-	defaultUserAgent           = "ollama-transfer/1.0"
+	defaultUserAgent           = "rose-transfer/1.0"
 
 	// maxTransientRetries is how many stalled or slow transfers a blob may
 	// absorb before they start counting against maxRetries. Both are usually

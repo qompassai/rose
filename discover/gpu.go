@@ -9,12 +9,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ollama/ollama/logutil"
-	"github.com/ollama/ollama/ml"
+	"github.com/qompassai/rose/logutil"
+	"github.com/qompassai/rose/ml"
 )
 
 // Jetson devices have JETSON_JETPACK="x.y.z" factory set to the Jetpack version installed.
-// Included to drive logic for reducing Ollama-allocated overhead on L4T/Jetson devices.
+// Included to drive logic for reducing Rose-allocated overhead on L4T/Jetson devices.
 var CudaTegra string = os.Getenv("JETSON_JETPACK")
 
 // GetSystemInfo returns host memory information used by scheduling.

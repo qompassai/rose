@@ -8,7 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/ollama/ollama/manifest"
+	"github.com/qompassai/rose/manifest"
 )
 
 func TestValidateCreateFilePath(t *testing.T) {
@@ -54,7 +54,7 @@ func TestValidateCreateFilesRejectsTooManyFiles(t *testing.T) {
 }
 
 func TestStageSafetensorsSourceFilesRejectsOversizedMetadata(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 	digest := "sha256:" + strings.Repeat("0", 64)
 	blobPath, err := manifest.BlobsPath(digest)
 	if err != nil {

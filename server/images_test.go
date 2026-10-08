@@ -19,16 +19,16 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ollama/ollama/api"
-	gguftest "github.com/ollama/ollama/internal/testutil/gguf"
-	"github.com/ollama/ollama/manifest"
-	"github.com/ollama/ollama/template"
-	"github.com/ollama/ollama/types/model"
-	"github.com/ollama/ollama/version"
+	"github.com/qompassai/rose/api"
+	gguftest "github.com/qompassai/rose/internal/testutil/gguf"
+	"github.com/qompassai/rose/manifest"
+	"github.com/qompassai/rose/template"
+	"github.com/qompassai/rose/types/model"
+	"github.com/qompassai/rose/version"
 )
 
 func TestPruneLayersSkipsRecentOrphans(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	recentDigest := "sha256:0000000000000000000000000000000000000000000000000000000000000001"
 	oldDigest := "sha256:0000000000000000000000000000000000000000000000000000000000000002"
@@ -117,10 +117,10 @@ func TestGenerationDefaultsFromMetadata(t *testing.T) {
 	check("frequency_penalty", float64(0))
 	check("presence_penalty", float64(0))
 	if _, ok := defaults["mirostat_tau"]; ok {
-		t.Fatal("mirostat_tau should not be mapped to an Ollama option")
+		t.Fatal("mirostat_tau should not be mapped to an Rose option")
 	}
 	if _, ok := defaults["xtc_threshold"]; ok {
-		t.Fatal("xtc_threshold should not be mapped to an Ollama option")
+		t.Fatal("xtc_threshold should not be mapped to an Rose option")
 	}
 }
 
@@ -128,8 +128,8 @@ func TestGetModelTemplateMetadata(t *testing.T) {
 	customTemplate := "CUSTOM {{ .Prompt }}"
 
 	t.Run("records chat template and Go TEMPLATE layer", func(t *testing.T) {
-		t.Setenv("OLLAMA_MODELS", t.TempDir())
-		t.Setenv("OLLAMA_GO_TEMPLATE", "")
+		t.Setenv("ROSE_MODELS", t.TempDir())
+		t.Setenv("ROSE_GO_TEMPLATE", "")
 
 		_, digest := createBinFile(t, gguftest.KV{
 			"general.architecture":    "llama",
@@ -153,8 +153,8 @@ func TestGetModelTemplateMetadata(t *testing.T) {
 	})
 
 	t.Run("prefers chat template when Go TEMPLATE has fewer capabilities", func(t *testing.T) {
-		t.Setenv("OLLAMA_MODELS", t.TempDir())
-		t.Setenv("OLLAMA_GO_TEMPLATE", "")
+		t.Setenv("ROSE_MODELS", t.TempDir())
+		t.Setenv("ROSE_GO_TEMPLATE", "")
 
 		_, digest := createBinFile(t, gguftest.KV{
 			"general.architecture":    "llama",
@@ -175,8 +175,8 @@ func TestGetModelTemplateMetadata(t *testing.T) {
 	})
 
 	t.Run("prefers Qwen chat template with tools and inferred thinking", func(t *testing.T) {
-		t.Setenv("OLLAMA_MODELS", t.TempDir())
-		t.Setenv("OLLAMA_GO_TEMPLATE", "")
+		t.Setenv("ROSE_MODELS", t.TempDir())
+		t.Setenv("ROSE_GO_TEMPLATE", "")
 
 		_, digest := createBinFile(t, gguftest.KV{
 			"general.architecture":    "llama",
@@ -200,8 +200,8 @@ func TestGetModelTemplateMetadata(t *testing.T) {
 	})
 
 	t.Run("prefers chat template with stronger tool round trip", func(t *testing.T) {
-		t.Setenv("OLLAMA_MODELS", t.TempDir())
-		t.Setenv("OLLAMA_GO_TEMPLATE", "")
+		t.Setenv("ROSE_MODELS", t.TempDir())
+		t.Setenv("ROSE_GO_TEMPLATE", "")
 
 		_, digest := createBinFile(t, gguftest.KV{
 			"general.architecture": "llama",
@@ -231,8 +231,8 @@ func TestGetModelTemplateMetadata(t *testing.T) {
 	})
 
 	t.Run("keeps Go TEMPLATE when chat template has weaker tool support", func(t *testing.T) {
-		t.Setenv("OLLAMA_MODELS", t.TempDir())
-		t.Setenv("OLLAMA_GO_TEMPLATE", "")
+		t.Setenv("ROSE_MODELS", t.TempDir())
+		t.Setenv("ROSE_GO_TEMPLATE", "")
 
 		_, digest := createBinFile(t, gguftest.KV{
 			"general.architecture": "llama",
@@ -269,8 +269,8 @@ func TestGetModelTemplateMetadata(t *testing.T) {
 	})
 
 	t.Run("prefers Mistral chat template with tool call IDs", func(t *testing.T) {
-		t.Setenv("OLLAMA_MODELS", t.TempDir())
-		t.Setenv("OLLAMA_GO_TEMPLATE", "")
+		t.Setenv("ROSE_MODELS", t.TempDir())
+		t.Setenv("ROSE_GO_TEMPLATE", "")
 
 		_, digest := createBinFile(t, map[string]any{
 			"general.architecture": "llama",
@@ -299,8 +299,8 @@ func TestGetModelTemplateMetadata(t *testing.T) {
 	})
 
 	t.Run("respects explicit Go TEMPLATE enablement", func(t *testing.T) {
-		t.Setenv("OLLAMA_MODELS", t.TempDir())
-		t.Setenv("OLLAMA_GO_TEMPLATE", "1")
+		t.Setenv("ROSE_MODELS", t.TempDir())
+		t.Setenv("ROSE_GO_TEMPLATE", "1")
 
 		_, digest := createBinFile(t, gguftest.KV{
 			"general.architecture":    "llama",
@@ -321,8 +321,8 @@ func TestGetModelTemplateMetadata(t *testing.T) {
 	})
 
 	t.Run("respects explicit Go TEMPLATE disablement", func(t *testing.T) {
-		t.Setenv("OLLAMA_MODELS", t.TempDir())
-		t.Setenv("OLLAMA_GO_TEMPLATE", "0")
+		t.Setenv("ROSE_MODELS", t.TempDir())
+		t.Setenv("ROSE_GO_TEMPLATE", "0")
 
 		_, digest := createBinFile(t, gguftest.KV{
 			"general.architecture":    "llama",
@@ -343,8 +343,8 @@ func TestGetModelTemplateMetadata(t *testing.T) {
 	})
 
 	t.Run("records missing chat template", func(t *testing.T) {
-		t.Setenv("OLLAMA_MODELS", t.TempDir())
-		t.Setenv("OLLAMA_GO_TEMPLATE", "")
+		t.Setenv("ROSE_MODELS", t.TempDir())
+		t.Setenv("ROSE_GO_TEMPLATE", "")
 
 		_, digest := createBinFile(t, gguftest.KV{
 			"general.architecture": "llama",
@@ -367,11 +367,11 @@ func TestGetModelTemplateMetadata(t *testing.T) {
 func writeTestModelManifest(t *testing.T, name, digest, tmpl string) {
 	t.Helper()
 
-	modelLayer, err := manifest.NewLayerFromLayer(digest, "application/vnd.ollama.image.model", "")
+	modelLayer, err := manifest.NewLayerFromLayer(digest, "application/vnd.rose.image.model", "")
 	if err != nil {
 		t.Fatal(err)
 	}
-	templateLayer, err := manifest.NewLayer(strings.NewReader(tmpl), "application/vnd.ollama.image.template")
+	templateLayer, err := manifest.NewLayer(strings.NewReader(tmpl), "application/vnd.rose.image.template")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -413,7 +413,7 @@ func loadTestMetadata(t *testing.T, m *Model) {
 }
 
 func TestPushLayersForManifestListIncludesChildManifests(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	writeChild := func(name, runner, formatName, layerMediaType string) (manifest.Manifest, manifest.Layer, manifest.Layer) {
 		t.Helper()
@@ -437,7 +437,7 @@ func TestPushLayersForManifestListIncludesChildManifests(t *testing.T) {
 	}
 
 	mlx, mlxConfig, mlxLayer := writeChild("library/push-mlx:latest", manifest.RunnerMLX, manifest.FormatSafetensors, manifest.MediaTypeImageTensor)
-	ggml, ggmlConfig, ggmlLayer := writeChild("library/push-ggml:latest", manifest.RunnerGGML, manifest.FormatGGUF, "application/vnd.ollama.image.model")
+	ggml, ggmlConfig, ggmlLayer := writeChild("library/push-ggml:latest", manifest.RunnerGGML, manifest.FormatGGUF, "application/vnd.rose.image.model")
 
 	mlxRef, err := manifest.NewManifestReference(mlx.BlobDigest(), mlx.Runner, mlx.Format)
 	if err != nil {
@@ -484,7 +484,7 @@ func TestPushLayersForManifestListIncludesChildManifests(t *testing.T) {
 }
 
 func TestCopyModelNarrowsManifestListToLocalChildren(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	writeChild := func(name, runner, formatName string) manifest.Manifest {
 		t.Helper()
@@ -493,7 +493,7 @@ func TestCopyModelNarrowsManifestListToLocalChildren(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		layer, err := manifest.NewLayer(strings.NewReader(name+" layer"), "application/vnd.ollama.image.model")
+		layer, err := manifest.NewLayer(strings.NewReader(name+" layer"), "application/vnd.rose.image.model")
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -594,7 +594,7 @@ func TestCopyModelNarrowsManifestListToLocalChildren(t *testing.T) {
 }
 
 func TestPullModelManifestListDownloadsSelectedChildOnly(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 	oldVersion := version.Version
 	t.Cleanup(func() { version.Version = oldVersion })
 	version.Version = "0.40.0-rc0"
@@ -1209,12 +1209,12 @@ func TestPullModelManifest(t *testing.T) {
 			name: "pretty printed",
 			manifest: `{  "schemaVersion": 2,  "mediaType": "application/vnd.docker.distribution.manifest.v2+json",
   "config": { "digest": "sha256:abc", "mediaType": "application/vnd.docker.container.image.v1+json", "size": 50 },
-  "layers": [{ "digest": "sha256:t1", "mediaType": "application/vnd.ollama.image.tensor", "size": 1024, "name": "model.weight" }]
+  "layers": [{ "digest": "sha256:t1", "mediaType": "application/vnd.rose.image.tensor", "size": 1024, "name": "model.weight" }]
 }`,
 		},
 		{
 			name:     "non-standard field order",
-			manifest: `{"layers":[{"size":999,"digest":"sha256:def","mediaType":"application/vnd.ollama.image.model"}],"schemaVersion":2,"config":{"size":50,"digest":"sha256:abc","mediaType":"application/vnd.docker.container.image.v1+json"},"mediaType":"application/vnd.docker.distribution.manifest.v2+json"}`,
+			manifest: `{"layers":[{"size":999,"digest":"sha256:def","mediaType":"application/vnd.rose.image.model"}],"schemaVersion":2,"config":{"size":50,"digest":"sha256:abc","mediaType":"application/vnd.docker.container.image.v1+json"},"mediaType":"application/vnd.docker.distribution.manifest.v2+json"}`,
 		},
 	}
 
@@ -1265,7 +1265,7 @@ func TestPullModelManifest(t *testing.T) {
 // an "internal" path serving bytes that don't match the digest, so PullModel
 // must reject the pull with errDigestMismatch.
 func TestPullModelDuplicateDigestVerifiesBlob(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	const bogusDigest = "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 
@@ -1278,12 +1278,12 @@ func TestPullModelDuplicateDigestVerifiesBlob(t *testing.T) {
 				"schemaVersion": 2,
 				"mediaType": "application/vnd.docker.distribution.manifest.v2+json",
 				"config": {
-					"mediaType": "application/vnd.ollama.image.config",
+					"mediaType": "application/vnd.rose.image.config",
 					"digest": %q,
 					"size": 5
 				},
 				"layers": [{
-					"mediaType": "application/vnd.ollama.image.model",
+					"mediaType": "application/vnd.rose.image.model",
 					"digest": %q,
 					"size": 5
 				}]
@@ -1317,7 +1317,7 @@ func TestPullModelDuplicateDigestVerifiesBlob(t *testing.T) {
 // pull at an internal address; cross-host redirects to public addresses
 // (hf.co's CDN) are fine. --insecure opts out.
 func TestPullManifestRejectsCrossHostRedirect(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	var internalHit atomic.Bool
 	internal := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -1374,7 +1374,7 @@ func TestPullManifestRedirectPolicy(t *testing.T) {
 	}{
 		{name: "hf to cdn sibling", origin: "hf.co", target: "us.aws.cdn.hf.co", allowed: true},
 		{name: "hf to huggingface", origin: "hf.co", target: "huggingface.co", allowed: true},
-		{name: "ollama registry to cdn", origin: "registry.ollama.ai", target: "cdn.ollama.com", allowed: true},
+		{name: "rose registry to cdn", origin: "registry.ollama.ai", target: "cdn.ollama.com", allowed: true},
 		{name: "public third party", origin: "hf.co", target: "93.184.216.34", allowed: false},
 		{name: "other registry cross-host", origin: "registry.example.com", target: "cdn.example.com", allowed: false},
 	} {
@@ -1482,28 +1482,28 @@ func TestCheckPullRequires(t *testing.T) {
 			requires:      "0.40.1",
 			clientVersion: "0.40.0-rc0-g75b952780f",
 			wantErr:       true,
-			wantMessage:   "model requires ollama version v0.40.1 or newer (current version is v0.40.0-rc0-g75b952780f)",
+			wantMessage:   "model requires rose version v0.40.1 or newer (current version is v0.40.0-rc0-g75b952780f)",
 		},
 		{
 			name:          "older release candidate fails",
 			requires:      "0.40.0",
 			clientVersion: "0.39.0-rc1",
 			wantErr:       true,
-			wantMessage:   "model requires ollama version v0.40.0 or newer (current version is v0.39.0-rc1)",
+			wantMessage:   "model requires rose version v0.40.0 or newer (current version is v0.39.0-rc1)",
 		},
 		{
 			name:          "malformed prerelease fails",
 			requires:      "0.40.0",
 			clientVersion: "0.40.0-rc?",
 			wantErr:       true,
-			wantMessage:   "model requires ollama version v0.40.0 or newer (current version is v0.40.0-rc?)",
+			wantMessage:   "model requires rose version v0.40.0 or newer (current version is v0.40.0-rc?)",
 		},
 		{
 			name:          "newer requirement fails",
 			requires:      "0.35.0",
 			clientVersion: "0.33.3",
 			wantErr:       true,
-			wantMessage:   "model requires ollama version v0.35.0 or newer (current version is v0.33.3)",
+			wantMessage:   "model requires rose version v0.35.0 or newer (current version is v0.33.3)",
 		},
 		{
 			name:          "dev build skips check",

@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/ollama/ollama/cmd/internal/fileutil"
+	"github.com/qompassai/rose/cmd/internal/fileutil"
 )
 
 func TestDroidIntegration(t *testing.T) {
@@ -145,10 +145,10 @@ func TestDroidEdit(t *testing.T) {
 		}
 	})
 
-	t.Run("preserves non-Ollama custom models", func(t *testing.T) {
+	t.Run("preserves non-Rose custom models", func(t *testing.T) {
 		cleanup()
 		os.MkdirAll(settingsDir, 0o755)
-		// Pre-existing non-Ollama model
+		// Pre-existing non-Rose model
 		os.WriteFile(settingsPath, []byte(`{
 			"customModels": [
 				{"model": "gpt-4", "displayName": "GPT-4", "provider": "openai"}
@@ -161,15 +161,15 @@ func TestDroidEdit(t *testing.T) {
 		models := getCustomModels(settings)
 
 		if len(models) != 2 {
-			t.Fatalf("expected 2 models (1 Ollama + 1 non-Ollama), got %d", len(models))
+			t.Fatalf("expected 2 models (1 Rose + 1 non-Rose), got %d", len(models))
 		}
 
-		// Ollama model should be first
+		// Rose model should be first
 		if models[0]["model"] != "model-a" {
-			t.Errorf("expected Ollama model first, got %s", models[0]["model"])
+			t.Errorf("expected Rose model first, got %s", models[0]["model"])
 		}
 
-		// Non-Ollama model should be preserved at end
+		// Non-Rose model should be preserved at end
 		if models[1]["model"] != "gpt-4" {
 			t.Errorf("expected gpt-4 preserved, got %s", models[1]["model"])
 		}
@@ -223,7 +223,7 @@ func TestDroidEdit(t *testing.T) {
 		if model["baseUrl"] != "http://127.0.0.1:11434/v1" {
 			t.Errorf("unexpected baseUrl: %s", model["baseUrl"])
 		}
-		if model["apiKey"] != "ollama" {
+		if model["apiKey"] != "rose" {
 			t.Errorf("unexpected apiKey: %s", model["apiKey"])
 		}
 		if model["provider"] != "generic-chat-completion-api" {
@@ -397,7 +397,7 @@ func TestDroidEdit_MalformedModelEntry(t *testing.T) {
 	settings, _ := fileutil.ReadJSON(settingsPath)
 	customModels, _ := settings["customModels"].([]any)
 
-	// Should have: 1 new Ollama model only (malformed entries dropped)
+	// Should have: 1 new Rose model only (malformed entries dropped)
 	if len(customModels) != 1 {
 		t.Errorf("expected 1 entry (malformed entries dropped), got %d", len(customModels))
 	}
@@ -447,14 +447,14 @@ const testDroidSettingsFixture = `{
   },
   "customModels": [
     {
-      "model": "existing-ollama-model",
-      "displayName": "existing-ollama-model",
+      "model": "existing-rose-model",
+      "displayName": "existing-rose-model",
       "baseUrl": "http://127.0.0.1:11434/v1",
-      "apiKey": "ollama",
+      "apiKey": "rose",
       "provider": "generic-chat-completion-api",
       "maxOutputTokens": 64000,
       "supportsImages": false,
-      "id": "custom:existing-ollama-model-0",
+      "id": "custom:existing-rose-model-0",
       "index": 0
     },
     {
@@ -472,7 +472,7 @@ const testDroidSettingsFixture = `{
   ],
   "sessionDefaultSettings": {
     "autonomyMode": "auto-medium",
-    "model": "custom:existing-ollama-model-0",
+    "model": "custom:existing-rose-model-0",
     "reasoningEffort": "high"
   },
   "todoDisplayMode": "pinned"
@@ -554,32 +554,32 @@ func TestDroidEdit_RoundTrip(t *testing.T) {
 		t.Errorf("sessionDefaultSettings.model not updated, got %s", session["model"])
 	}
 
-	// Verify customModels: old ollama replaced, non-ollama preserved with extra fields
+	// Verify customModels: old rose replaced, non-rose preserved with extra fields
 	models, ok := settings["customModels"].([]any)
 	if !ok {
 		t.Fatal("customModels not preserved")
 	}
-	if len(models) != 3 { // 2 new ollama + 1 non-ollama
+	if len(models) != 3 { // 2 new rose + 1 non-rose
 		t.Fatalf("expected 3 models, got %d", len(models))
 	}
 
-	// First two should be new Ollama models
+	// First two should be new Rose models
 	m0 := models[0].(map[string]any)
-	if m0["model"] != "llama3" || m0["apiKey"] != "ollama" {
+	if m0["model"] != "llama3" || m0["apiKey"] != "rose" {
 		t.Error("first model should be llama3")
 	}
 	m1 := models[1].(map[string]any)
-	if m1["model"] != "mistral" || m1["apiKey"] != "ollama" {
+	if m1["model"] != "mistral" || m1["apiKey"] != "rose" {
 		t.Error("second model should be mistral")
 	}
 
-	// Third should be preserved non-Ollama with extra field
+	// Third should be preserved non-Rose with extra field
 	m2 := models[2].(map[string]any)
 	if m2["model"] != "gpt-4" {
-		t.Error("non-Ollama model not preserved")
+		t.Error("non-Rose model not preserved")
 	}
 	if m2["customField"] != "should be preserved" {
-		t.Error("non-Ollama model's extra field not preserved")
+		t.Error("non-Rose model's extra field not preserved")
 	}
 }
 
@@ -646,7 +646,7 @@ func TestDroidEdit_PreservesUnknownFields(t *testing.T) {
 		}
 	})
 
-	t.Run("preserves extra fields in non-Ollama models", func(t *testing.T) {
+	t.Run("preserves extra fields in non-Rose models", func(t *testing.T) {
 		os.RemoveAll(settingsDir)
 		os.MkdirAll(settingsDir, 0o755)
 
@@ -666,7 +666,7 @@ func TestDroidEdit_PreservesUnknownFields(t *testing.T) {
 
 		settings := readSettings()
 		models := settings["customModels"].([]any)
-		gpt4 := models[1].(map[string]any) // non-Ollama is second
+		gpt4 := models[1].(map[string]any) // non-Rose is second
 
 		if gpt4["extraField"] != "preserved" {
 			t.Error("extraField not preserved")
@@ -764,7 +764,7 @@ func TestDroidEdit_MultipleConsecutiveEdits(t *testing.T) {
 		t.Error("enableHooks lost after multiple edits")
 	}
 
-	// Non-Ollama model should still be preserved
+	// Non-Rose model should still be preserved
 	models := settings["customModels"].([]any)
 	foundOther := false
 	for _, m := range models {

@@ -12,9 +12,9 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/cmd/launch"
-	"github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/cmd/launch"
+	"github.com/qompassai/rose/types/model"
 )
 
 func TestCloudSuggestionCandidate(t *testing.T) {
@@ -161,7 +161,7 @@ func (s *cloudSuggestServer) start(t *testing.T) {
 		}
 	}))
 
-	t.Setenv("OLLAMA_HOST", mockServer.URL)
+	t.Setenv("ROSE_HOST", mockServer.URL)
 	t.Cleanup(mockServer.Close)
 }
 
@@ -281,8 +281,8 @@ func TestPullHandler_CloudSuggestionNonInteractive(t *testing.T) {
 	if !strings.Contains(err.Error(), "pull model manifest: file does not exist") {
 		t.Fatalf("error = %q, want it to contain the original pull error", err)
 	}
-	if !strings.Contains(err.Error(), "ollama pull some-model:cloud") {
-		t.Fatalf("error = %q, want it to hint at 'ollama pull some-model:cloud'", err)
+	if !strings.Contains(err.Error(), "rose pull some-model:cloud") {
+		t.Fatalf("error = %q, want it to hint at 'rose pull some-model:cloud'", err)
 	}
 	if want := []string{"some-model"}; !slices.Equal(server.pullModels, want) {
 		t.Fatalf("pulled models = %v, want %v", server.pullModels, want)
@@ -402,8 +402,8 @@ func TestRunHandler_CloudSuggestionNonInteractive_Hint(t *testing.T) {
 	if err == nil {
 		t.Fatal("RunHandler returned nil, want an error")
 	}
-	if !strings.Contains(err.Error(), "ollama run some-model:cloud") {
-		t.Fatalf("error = %q, want it to hint at 'ollama run some-model:cloud'", err)
+	if !strings.Contains(err.Error(), "rose run some-model:cloud") {
+		t.Fatalf("error = %q, want it to hint at 'rose run some-model:cloud'", err)
 	}
 	if len(server.generateModels) != 0 {
 		t.Fatalf("generate models = %v, want none in non-interactive mode", server.generateModels)

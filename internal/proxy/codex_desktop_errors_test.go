@@ -19,7 +19,7 @@ import (
 const (
 	testCodexSubscriptionError = "this model requires a subscription or extra usage, upgrade for access at https://ollama.com/upgrade or add extra usage at https://ollama.com/settings (ref: test-reference)"
 	testCodexSubscriptionCopy  = "This model requires a subscription or extra usage credits. Please upgrade at https://ollama.com/upgrade or add extra usage at https://ollama.com/settings to use this model."
-	testCodexSignInCopy        = "This model requires an Ollama account. Please sign in to Ollama to use this model."
+	testCodexSignInCopy        = "This model requires an Rose account. Please sign in to Rose to use this model."
 )
 
 func TestCodexDesktopAccessErrorCopy(t *testing.T) {
@@ -128,7 +128,7 @@ func TestCodexDesktopAccessErrorCopy(t *testing.T) {
 					t.Errorf("body = %s, want copy %q", body, tt.want)
 				}
 				if tt.want == testCodexSignInCopy {
-					for _, unwanted := range []string{"signin_url", "https://ollama.com/connect", "ollama://connect", "test-key"} {
+					for _, unwanted := range []string{"signin_url", "https://ollama.com/connect", "rose://connect", "test-key"} {
 						if strings.Contains(string(body), unwanted) {
 							t.Errorf("device sign-in link is still visible: %s", body)
 						}

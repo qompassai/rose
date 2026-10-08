@@ -6,7 +6,7 @@ import (
 	"os/exec"
 	"runtime"
 
-	"github.com/ollama/ollama/envconfig"
+	"github.com/qompassai/rose/envconfig"
 )
 
 // Poolside implements Runner for Poolside's CLI.
@@ -45,7 +45,7 @@ func (p *Poolside) Run(model string, _ []LaunchModel, args []string) error {
 	cmd.Stderr = os.Stderr
 	cmd.Env = append(os.Environ(),
 		"POOLSIDE_STANDALONE_BASE_URL="+envconfig.Host().String()+"/v1",
-		"POOLSIDE_API_KEY=ollama",
+		"POOLSIDE_API_KEY=rose",
 	)
 	return cmd.Run()
 }

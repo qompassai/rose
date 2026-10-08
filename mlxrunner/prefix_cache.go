@@ -35,9 +35,9 @@ import (
 	"slices"
 	"time"
 
-	"github.com/ollama/ollama/logutil"
-	"github.com/ollama/ollama/mlx"
-	"github.com/ollama/ollama/mlxrunner/cache"
+	"github.com/qompassai/rose/logutil"
+	"github.com/qompassai/rose/mlx"
+	"github.com/qompassai/rose/mlxrunner/cache"
 )
 
 const prefillSnapshotInterval = 8192

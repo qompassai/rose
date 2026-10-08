@@ -7,8 +7,8 @@ import (
 	"io"
 	"path/filepath"
 
-	"github.com/ollama/ollama/fs/safetensors"
-	"github.com/ollama/ollama/manifest"
+	"github.com/qompassai/rose/fs/safetensors"
+	"github.com/qompassai/rose/manifest"
 )
 
 // BlobStore stores a finished blob and returns its layer info. The writer

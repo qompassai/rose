@@ -24,22 +24,22 @@ import (
 	gocmp "github.com/google/go-cmp/cmp"
 	gocmpopts "github.com/google/go-cmp/cmp/cmpopts"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/create"
-	"github.com/ollama/ollama/envconfig"
-	"github.com/ollama/ollama/fs/gguf"
-	st "github.com/ollama/ollama/fs/safetensors"
-	gguftest "github.com/ollama/ollama/internal/testutil/gguf"
-	"github.com/ollama/ollama/manifest"
-	"github.com/ollama/ollama/mlxrunner"
-	"github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/create"
+	"github.com/qompassai/rose/envconfig"
+	"github.com/qompassai/rose/fs/gguf"
+	st "github.com/qompassai/rose/fs/safetensors"
+	gguftest "github.com/qompassai/rose/internal/testutil/gguf"
+	"github.com/qompassai/rose/manifest"
+	"github.com/qompassai/rose/mlxrunner"
+	"github.com/qompassai/rose/types/model"
 )
 
 var stream bool = false
 
 func createBinFile(t *testing.T, kv map[string]any, ti []*gguftest.Tensor) (string, string) {
 	t.Helper()
-	t.Setenv("OLLAMA_MODELS", cmp.Or(os.Getenv("OLLAMA_MODELS"), t.TempDir()))
+	t.Setenv("ROSE_MODELS", cmp.Or(os.Getenv("ROSE_MODELS"), t.TempDir()))
 
 	f, err := os.CreateTemp(t.TempDir(), "")
 	if err != nil {
@@ -99,8 +99,8 @@ func (t *responseRecorder) CloseNotify() <-chan bool {
 
 func createRequest(t *testing.T, fn func(*gin.Context), body any) *httptest.ResponseRecorder {
 	t.Helper()
-	// if OLLAMA_MODELS is not set, set it to the temp directory
-	t.Setenv("OLLAMA_MODELS", cmp.Or(os.Getenv("OLLAMA_MODELS"), t.TempDir()))
+	// if ROSE_MODELS is not set, set it to the temp directory
+	t.Setenv("ROSE_MODELS", cmp.Or(os.Getenv("ROSE_MODELS"), t.TempDir()))
 
 	w := NewRecorder()
 	c, _ := gin.CreateTestContext(w)
@@ -186,7 +186,7 @@ func TestCreateHandlerRejectsInvalidInfoTypes(t *testing.T) {
 
 func TestCreateHandlerRejectsInvalidFiles(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 	var s Server
 
 	validDigest := "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
@@ -231,7 +231,7 @@ func TestCreateHandlerRejectsInvalidFiles(t *testing.T) {
 
 func TestCreateHandlerRejectsInvalidQuantizeOptions(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 	var s Server
 
 	validDigest := "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
@@ -313,7 +313,7 @@ func readCreatedModelConfig(t *testing.T, name string) model.ConfigV2 {
 }
 
 func TestCreateModelInfersGGUFFileTypesWithoutRewrite(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	for fileType := gguf.FileTypeF32; fileType < gguf.FileTypeUnknown; fileType++ {
 		want := fileType.String()
@@ -351,7 +351,7 @@ func TestCreateModelInfersGGUFFileTypesWithoutRewrite(t *testing.T) {
 			}
 			var found bool
 			for _, layer := range mf.Layers {
-				if layer.MediaType == "application/vnd.ollama.image.model" {
+				if layer.MediaType == "application/vnd.rose.image.model" {
 					found = true
 				}
 			}
@@ -395,7 +395,7 @@ func createSplitGGUFShardWithKV(t *testing.T, kv gguftest.KV, tensorName string)
 }
 
 func TestCreateModelRetainsSplitGGUF(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 	firstDigest := createSplitGGUFShard(t, 0, 2, 2, "blk.0.attn_q.weight")
 	secondDigest := createSplitGGUFShard(t, 1, 2, 2, "blk.1.attn_q.weight")
 
@@ -426,7 +426,7 @@ func TestCreateModelRetainsSplitGGUF(t *testing.T) {
 	}
 	var modelLayers []manifest.Layer
 	for _, layer := range mf.Layers {
-		if layer.MediaType == "application/vnd.ollama.image.model" {
+		if layer.MediaType == "application/vnd.rose.image.model" {
 			modelLayers = append(modelLayers, layer)
 		}
 	}
@@ -459,7 +459,7 @@ func TestCreateModelRetainsSplitGGUF(t *testing.T) {
 		t.Fatalf("model parameter size = %q, want 2", got)
 	}
 	if got := created.Config.Requires; got != splitGGUFMinOllamaVersion {
-		t.Fatalf("minimum Ollama version = %q, want %q", got, splitGGUFMinOllamaVersion)
+		t.Fatalf("minimum Rose version = %q, want %q", got, splitGGUFMinOllamaVersion)
 	}
 	kv, tensors, err := getModelData(created.modelPaths(), true)
 	if err != nil {
@@ -499,7 +499,7 @@ func TestCreateModelRetainsSplitGGUF(t *testing.T) {
 		t.Fatalf("derived model families = %q, want llama", derived.Config.ModelFamilies)
 	}
 	if got := derived.Config.Requires; got != splitGGUFMinOllamaVersion {
-		t.Fatalf("derived minimum Ollama version = %q, want %q", got, splitGGUFMinOllamaVersion)
+		t.Fatalf("derived minimum Rose version = %q, want %q", got, splitGGUFMinOllamaVersion)
 	}
 
 	explicitName := model.ParseName("test-create-explicit-version-split-gguf:latest")
@@ -508,12 +508,12 @@ func TestCreateModelRetainsSplitGGUF(t *testing.T) {
 		t.Fatal(err)
 	}
 	if got := readCreatedModelConfig(t, explicitName.String()).Requires; got != "0.14.0" {
-		t.Fatalf("minimum Ollama version = %q, want 0.14.0", got)
+		t.Fatalf("minimum Rose version = %q, want 0.14.0", got)
 	}
 }
 
 func TestCreateModelRetainsSplitDraftGGUF(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 	_, modelDigest := createBinFile(t, gguftest.KV{
 		"general.architecture": "llama",
 		"general.file_type":    uint32(gguf.FileTypeF32),
@@ -567,12 +567,12 @@ func TestCreateModelRetainsSplitDraftGGUF(t *testing.T) {
 		t.Fatalf("draft config = %#v, want llama architecture", created.Config.Draft)
 	}
 	if got := created.Config.Requires; got != splitGGUFMinOllamaVersion {
-		t.Fatalf("minimum Ollama version = %q, want %q", got, splitGGUFMinOllamaVersion)
+		t.Fatalf("minimum Rose version = %q, want %q", got, splitGGUFMinOllamaVersion)
 	}
 }
 
 func TestCreateModelDoesNotGroupSplitGGUFsAcrossDirectories(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 	firstDigest := createSplitGGUFShard(t, 0, 2, 2, "blk.0.attn_q.weight")
 	secondDigest := createSplitGGUFShard(t, 1, 2, 2, "blk.1.attn_q.weight")
 
@@ -586,7 +586,7 @@ func TestCreateModelDoesNotGroupSplitGGUFsAcrossDirectories(t *testing.T) {
 }
 
 func TestCreateModelGroupsSplitGGUFWithUnknownShardMetadata(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 	firstDigest := createSplitGGUFShard(t, 0, 2, 2, "blk.0.attn_q.weight")
 	secondDigest := createSplitGGUFShardWithKV(t, gguftest.KV{
 		"general.architecture":        "unknown",
@@ -611,7 +611,7 @@ func TestCreateModelGroupsSplitGGUFWithUnknownShardMetadata(t *testing.T) {
 }
 
 func TestCreateModelRejectsMissingSplitGGUFShard(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 	firstDigest := createSplitGGUFShard(t, 0, 2, 2, "blk.0.attn_q.weight")
 
 	baseLayers, err := convertModelFromFiles(t.Context(), map[string]string{
@@ -629,7 +629,7 @@ func TestCreateModelRejectsMissingSplitGGUFShard(t *testing.T) {
 }
 
 func TestCreateModelRejectsTooManySplitGGUFShards(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 	digest := createSplitGGUFShard(t, 0, uint32(maxSplitGGUFParts+1), 1, "blk.0.attn_q.weight")
 
 	baseLayers, err := convertModelFromFiles(t.Context(), map[string]string{
@@ -647,7 +647,7 @@ func TestCreateModelRejectsTooManySplitGGUFShards(t *testing.T) {
 }
 
 func TestCreateModelRejectsDuplicateSplitGGUFTensors(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 	firstDigest := createSplitGGUFShard(t, 0, 2, 2, "blk.0.attn_q.weight")
 	secondDigest := createSplitGGUFShard(t, 1, 2, 2, "blk.0.attn_q.weight")
 
@@ -661,7 +661,7 @@ func TestCreateModelRejectsDuplicateSplitGGUFTensors(t *testing.T) {
 }
 
 func TestGGUFLayersClassifiesMMProjAsProjector(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	_, digest := createBinFile(t, map[string]any{
 		"general.architecture":            "clip",
@@ -693,13 +693,13 @@ func TestGGUFLayersClassifiesMMProjAsProjector(t *testing.T) {
 	if len(layers) != 1 {
 		t.Fatalf("layers = %d, want 1", len(layers))
 	}
-	if got := layers[0].MediaType; got != "application/vnd.ollama.image.projector" {
+	if got := layers[0].MediaType; got != "application/vnd.rose.image.projector" {
 		t.Fatalf("media type = %q, want projector", got)
 	}
 }
 
 func TestCreateModelRejectsGGUFQuantize(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 	_, digest := createBinFile(t, map[string]any{
 		"general.architecture": "llama",
 		"general.file_type":    uint32(gguf.FileTypeF16),
@@ -729,7 +729,7 @@ func TestCreateModelRejectsGGUFQuantize(t *testing.T) {
 }
 
 func TestCreateModelDoesNotPublishAfterCancellation(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 	ctx, cancel := context.WithCancel(t.Context())
 	name := model.ParseName("test-create-canceled:latest")
 
@@ -795,7 +795,7 @@ func TestCreateFromBin(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
 	p := t.TempDir()
-	t.Setenv("OLLAMA_MODELS", p)
+	t.Setenv("ROSE_MODELS", p)
 
 	var s Server
 
@@ -871,7 +871,7 @@ func TestCreateFromModel(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
 	p := t.TempDir()
-	t.Setenv("OLLAMA_MODELS", p)
+	t.Setenv("ROSE_MODELS", p)
 	var s Server
 
 	_, digest := createBinFile(t, nil, nil)
@@ -910,7 +910,7 @@ func TestCreateFromModelInheritsRendererParser(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
 	p := t.TempDir()
-	t.Setenv("OLLAMA_MODELS", p)
+	t.Setenv("ROSE_MODELS", p)
 	var s Server
 
 	const (
@@ -980,7 +980,7 @@ func TestCreateRemovesLayers(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
 	p := t.TempDir()
-	t.Setenv("OLLAMA_MODELS", p)
+	t.Setenv("ROSE_MODELS", p)
 	var s Server
 
 	_, digest := createBinFile(t, nil, nil)
@@ -1037,7 +1037,7 @@ func writeManifestListVariant(t *testing.T, name, modelFormat string) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	modelLayer, err := manifest.NewLayer(strings.NewReader(name+" layer"), "application/vnd.ollama.image.license")
+	modelLayer, err := manifest.NewLayer(strings.NewReader(name+" layer"), "application/vnd.rose.image.license")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1050,7 +1050,7 @@ func writeManifestListVariant(t *testing.T, name, modelFormat string) {
 func TestCreateManifestList(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 	var s Server
 
 	writeManifestListVariant(t, "test-gguf", manifest.FormatGGUF)
@@ -1190,7 +1190,7 @@ func TestCreateManifestListRejectsAmbiguousChildren(t *testing.T) {
 		},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Setenv("OLLAMA_MODELS", t.TempDir())
+			t.Setenv("ROSE_MODELS", t.TempDir())
 			var s Server
 
 			writeManifestListVariant(t, "test-gguf-a", manifest.FormatGGUF)
@@ -1290,7 +1290,7 @@ func TestCreateUnsetsSystem(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
 	p := t.TempDir()
-	t.Setenv("OLLAMA_MODELS", p)
+	t.Setenv("ROSE_MODELS", p)
 	var s Server
 
 	_, digest := createBinFile(t, nil, nil)
@@ -1336,7 +1336,7 @@ func TestCreateMergeParameters(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
 	p := t.TempDir()
-	t.Setenv("OLLAMA_MODELS", p)
+	t.Setenv("ROSE_MODELS", p)
 	var s Server
 
 	_, digest := createBinFile(t, nil, nil)
@@ -1461,7 +1461,7 @@ func TestCreateReplacesMessages(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
 	p := t.TempDir()
-	t.Setenv("OLLAMA_MODELS", p)
+	t.Setenv("ROSE_MODELS", p)
 	var s Server
 
 	_, digest := createBinFile(t, nil, nil)
@@ -1562,7 +1562,7 @@ func TestCreateTemplateSystem(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
 	p := t.TempDir()
-	t.Setenv("OLLAMA_MODELS", p)
+	t.Setenv("ROSE_MODELS", p)
 	var s Server
 
 	_, digest := createBinFile(t, nil, nil)
@@ -1788,7 +1788,7 @@ func TestCreateLicenses(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
 	p := t.TempDir()
-	t.Setenv("OLLAMA_MODELS", p)
+	t.Setenv("ROSE_MODELS", p)
 	var s Server
 
 	_, digest := createBinFile(t, nil, nil)
@@ -1835,7 +1835,7 @@ func TestCreateDetectTemplate(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
 	p := t.TempDir()
-	t.Setenv("OLLAMA_MODELS", p)
+	t.Setenv("ROSE_MODELS", p)
 	var s Server
 
 	t.Run("matched", func(t *testing.T) {
@@ -1883,7 +1883,7 @@ func TestCreateGemma4KeepsDynamicRendererAlias(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
 	p := t.TempDir()
-	t.Setenv("OLLAMA_MODELS", p)
+	t.Setenv("ROSE_MODELS", p)
 	var s Server
 
 	_, digest := createBinFile(t, gguftest.KV{
@@ -1936,7 +1936,7 @@ func TestCreateLagunaDetectsRendererParser(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
 	p := t.TempDir()
-	t.Setenv("OLLAMA_MODELS", p)
+	t.Setenv("ROSE_MODELS", p)
 	var s Server
 
 	_, digest := createBinFile(t, gguftest.KV{
@@ -1991,7 +1991,7 @@ func TestCreateNemotronHDefaultsRendererParser(t *testing.T) {
 	for _, arch := range []string{"nemotron_h", "nemotron_h_moe", "nemotron_h_omni"} {
 		t.Run(arch, func(t *testing.T) {
 			p := t.TempDir()
-			t.Setenv("OLLAMA_MODELS", p)
+			t.Setenv("ROSE_MODELS", p)
 			var s Server
 
 			_, digest := createBinFile(t, gguftest.KV{
@@ -2025,7 +2025,7 @@ func TestCreateNemotronHDefaultsKeepExplicitRendererParser(t *testing.T) {
 	for _, arch := range []string{"nemotron_h", "nemotron_h_moe", "nemotron_h_omni"} {
 		t.Run(arch, func(t *testing.T) {
 			p := t.TempDir()
-			t.Setenv("OLLAMA_MODELS", p)
+			t.Setenv("ROSE_MODELS", p)
 			var s Server
 
 			_, digest := createBinFile(t, gguftest.KV{
@@ -2092,7 +2092,7 @@ func TestDetectModelTypeFromFiles(t *testing.T) {
 	})
 
 	t.Run("big-endian gguf file w/o extension", func(t *testing.T) {
-		t.Setenv("OLLAMA_MODELS", t.TempDir())
+		t.Setenv("ROSE_MODELS", t.TempDir())
 		digest := createTestBlob(t, []byte("FUGG"))
 
 		modelType, err := detectModelTypeFromFiles(map[string]string{"model": digest})
@@ -2105,7 +2105,7 @@ func TestDetectModelTypeFromFiles(t *testing.T) {
 	})
 
 	t.Run("legacy ggml file w/o extension", func(t *testing.T) {
-		t.Setenv("OLLAMA_MODELS", t.TempDir())
+		t.Setenv("ROSE_MODELS", t.TempDir())
 		digest := createTestBlob(t, []byte("gguf"))
 
 		modelType, err := detectModelTypeFromFiles(map[string]string{"model": digest})
@@ -2133,7 +2133,7 @@ func TestDetectModelTypeFromFiles(t *testing.T) {
 
 	t.Run("safetensors file with sidecars", func(t *testing.T) {
 		p := t.TempDir()
-		t.Setenv("OLLAMA_MODELS", p)
+		t.Setenv("ROSE_MODELS", p)
 
 		configDigest := createTestBlob(t, []byte(`{"model_type":"test"}`))
 		files := map[string]string{
@@ -2164,7 +2164,7 @@ func TestDetectModelTypeFromFiles(t *testing.T) {
 
 	t.Run("unsupported file type", func(t *testing.T) {
 		p := t.TempDir()
-		t.Setenv("OLLAMA_MODELS", p)
+		t.Setenv("ROSE_MODELS", p)
 
 		data := []byte("12345678")
 		digest := fmt.Sprintf("sha256:%x", sha256.Sum256(data))
@@ -2197,7 +2197,7 @@ func TestDetectModelTypeFromFiles(t *testing.T) {
 
 	t.Run("file with less than 4 bytes", func(t *testing.T) {
 		p := t.TempDir()
-		t.Setenv("OLLAMA_MODELS", p)
+		t.Setenv("ROSE_MODELS", p)
 
 		data := []byte("123")
 		digest := fmt.Sprintf("sha256:%x", sha256.Sum256(data))
@@ -2230,7 +2230,7 @@ func TestDetectModelTypeFromFiles(t *testing.T) {
 
 	t.Run("blob read error", func(t *testing.T) {
 		p := t.TempDir()
-		t.Setenv("OLLAMA_MODELS", p)
+		t.Setenv("ROSE_MODELS", p)
 
 		digest := "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
 		blobPath, err := manifest.BlobsPath(digest)
@@ -2272,7 +2272,7 @@ func createTestBlob(t *testing.T, data []byte) string {
 
 func TestHeadBlobHandler(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 	var s Server
 
 	digest := createTestBlob(t, []byte("blob"))
@@ -2319,7 +2319,7 @@ func TestHeadBlobHandlerReturnsStatErrors(t *testing.T) {
 	}
 
 	gin.SetMode(gin.TestMode)
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 	var s Server
 
 	digest := "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
@@ -2378,7 +2378,7 @@ func createTestLayerInfo(t *testing.T, name, mediaType string, data []byte) crea
 
 func TestCreateSafetensorsRejectsUnsupportedArchitecture(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 	var s Server
 
 	modelDigest := createTestSafetensorsBlob(t, []*st.TensorData{
@@ -2406,7 +2406,7 @@ func TestCreateSafetensorsRejectsUnsupportedArchitecture(t *testing.T) {
 
 func TestCreateSafetensorsRejectsInvalidInfo(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 	var s Server
 
 	modelDigest := createTestSafetensorsBlob(t, []*st.TensorData{
@@ -2432,7 +2432,7 @@ func TestCreateSafetensorsRejectsInvalidInfo(t *testing.T) {
 
 func TestCreateSafetensorsRejectsInvalidRequires(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 	var s Server
 
 	modelDigest := createTestSafetensorsBlob(t, []*st.TensorData{
@@ -2469,7 +2469,7 @@ func TestCreateSafetensorsRuntimeErrorHidesLoaderDetails(t *testing.T) {
 
 func TestCreateSafetensorsRejectsMissingBlob(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 	var s Server
 
 	digest := "sha256:" + strings.Repeat("0", 64)
@@ -2487,7 +2487,7 @@ func TestCreateSafetensorsRejectsMissingBlob(t *testing.T) {
 }
 
 func TestWriteSafetensorsManifestPreservesRequestMetadata(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 	r := api.CreateRequest{
 		Model:        "uploaded-safetensors",
 		Capabilities: []string{"decision", "completion", "decision"},
@@ -2509,8 +2509,8 @@ func TestWriteSafetensorsManifestPreservesRequestMetadata(t *testing.T) {
 	tokenizerData := []byte(`{"version":"1.0"}`)
 	info := create.ManifestInfo{Layers: []create.LayerInfo{
 		createTestLayerInfo(t, "model.embed_tokens.weight", manifest.MediaTypeImageTensor, tensorData),
-		createTestLayerInfo(t, "config.json", "application/vnd.ollama.image.json", configData),
-		createTestLayerInfo(t, "tokenizer.json", "application/vnd.ollama.image.json", tokenizerData),
+		createTestLayerInfo(t, "config.json", "application/vnd.rose.image.json", configData),
+		createTestLayerInfo(t, "tokenizer.json", "application/vnd.rose.image.json", tokenizerData),
 	}}
 	info.ModelConfig = *config
 	if err := writeSafetensorsManifest(r, "", func(api.ProgressResponse) {})(context.Background(), r.Model, info); err != nil {
@@ -2543,12 +2543,12 @@ func TestWriteSafetensorsManifestPreservesRequestMetadata(t *testing.T) {
 		t.Fatalf("tensor layer media type = %q, want %q", got, manifest.MediaTypeImageTensor)
 	}
 	for _, name := range []string{"config.json", "tokenizer.json"} {
-		if layerNames[name] != "application/vnd.ollama.image.json" {
+		if layerNames[name] != "application/vnd.rose.image.json" {
 			t.Fatalf("layer %q media type = %q, want image json", name, layerNames[name])
 		}
 	}
 	for _, l := range mf.Layers {
-		if l.MediaType == "application/vnd.ollama.image.system" {
+		if l.MediaType == "application/vnd.rose.image.system" {
 			return
 		}
 	}
@@ -2557,7 +2557,7 @@ func TestWriteSafetensorsManifestPreservesRequestMetadata(t *testing.T) {
 
 func TestCreateSafetensorsRejectedReplacementPreservesOldModel(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 	var s Server
 
 	_, oldDigest := createBinFile(t, nil, nil)
@@ -2606,7 +2606,7 @@ func TestCreateSafetensorsRejectedReplacementPreservesOldModel(t *testing.T) {
 }
 
 func TestWriteSafetensorsManifestIncludesDraft(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 	draftDir := t.TempDir()
 	if err := os.WriteFile(filepath.Join(draftDir, "config.json"), []byte(`{"architectures":["TestDraftModel"],"model_type":"test_draft"}`), 0o600); err != nil {
 		t.Fatal(err)
@@ -2618,7 +2618,7 @@ func TestWriteSafetensorsManifestIncludesDraft(t *testing.T) {
 	info := create.ManifestInfo{Layers: []create.LayerInfo{
 		createTestLayerInfo(t, "model.embed_tokens.weight", manifest.MediaTypeImageTensor, mainData),
 		createTestLayerInfo(t, "draft.model.embed_tokens.weight", manifest.MediaTypeImageTensor, draftData),
-		createTestLayerInfo(t, "draft/config.json", "application/vnd.ollama.image.json", draftConfig),
+		createTestLayerInfo(t, "draft/config.json", "application/vnd.rose.image.json", draftConfig),
 	}}
 	name := "uploaded-safetensors-with-draft"
 	if err := writeSafetensorsManifest(api.CreateRequest{Model: name}, draftDir, func(api.ProgressResponse) {})(context.Background(), name, info); err != nil {
@@ -2653,7 +2653,7 @@ func TestCreateSafetensorsWithDraft(t *testing.T) {
 		t.Skipf("MLX not available: %v", err)
 	}
 	gin.SetMode(gin.TestMode)
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 	var s Server
 
 	modelDigest := createTestSafetensorsBlob(t, []*st.TensorData{
@@ -2708,7 +2708,7 @@ func TestCreateSafetensorsWithDraft(t *testing.T) {
 
 func TestCreateSafetensorsRejectsUnsupportedInputs(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 	var s Server
 
 	t.Run("from overlay", func(t *testing.T) {
@@ -2744,7 +2744,7 @@ func TestCreateSafetensorsRejectsUnsupportedInputs(t *testing.T) {
 
 func TestCreateRejectsInvalidLicense(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 	var s Server
 
 	_, digest := createBinFile(t, nil, nil)
@@ -2771,7 +2771,7 @@ func TestCreateRejectsInvalidLicense(t *testing.T) {
 
 func TestCreateRejectsAdapterGGUF(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 	var s Server
 
 	_, digest := createBinFile(t, map[string]any{"general.type": "adapter"}, nil)
@@ -2790,7 +2790,7 @@ func TestCreateRejectsAdapterGGUF(t *testing.T) {
 
 func TestCreateDetectModelTypeErrors(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 	var s Server
 
 	t.Run("missing blob is a bad request", func(t *testing.T) {
@@ -2831,7 +2831,7 @@ func TestCreateDetectModelTypeErrors(t *testing.T) {
 }
 
 func TestConvertModelFromFilesHonorsContext(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 	_, digest := createBinFile(t, nil, nil)
 
 	ctx, cancel := context.WithCancel(t.Context())
@@ -2874,7 +2874,7 @@ func createSafetensorsTestModel(t *testing.T, modelName string, config model.Con
 func TestCreateFromSafetensorsModel_PreservesConfig(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	p := t.TempDir()
-	t.Setenv("OLLAMA_MODELS", p)
+	t.Setenv("ROSE_MODELS", p)
 	var s Server
 
 	sourceConfig := model.ConfigV2{
@@ -2940,7 +2940,7 @@ func TestCreateFromSafetensorsModel_PreservesConfig(t *testing.T) {
 	// Verify system prompt was added
 	var hasSystem bool
 	for _, l := range mf.Layers {
-		if l.MediaType == "application/vnd.ollama.image.system" {
+		if l.MediaType == "application/vnd.rose.image.system" {
 			hasSystem = true
 			break
 		}
@@ -2968,7 +2968,7 @@ func TestCreateFromSafetensorsModel_PreservesConfig(t *testing.T) {
 
 func TestCreateFromSafetensorsModel_AppliesOnlyExplicitOverrides(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 	var s Server
 
 	sourceConfig := model.ConfigV2{
@@ -3014,7 +3014,7 @@ func TestCreateFromSafetensorsModel_AppliesOnlyExplicitOverrides(t *testing.T) {
 
 func TestCreateFromRemoteModelPreservesRoutingAndMetadata(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 	var s Server
 
 	w := createRequest(t, s.CreateHandler, api.CreateRequest{
@@ -3053,7 +3053,7 @@ func TestCreateFromRemoteModelPreservesRoutingAndMetadata(t *testing.T) {
 
 func TestCreateFromModelRejectsCorruptConfig(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 	var s Server
 
 	configLayer, err := manifest.NewLayer(strings.NewReader("{"), "application/vnd.docker.container.image.v1+json")
@@ -3089,10 +3089,10 @@ func TestCreateFromModelRejectsCorruptConfig(t *testing.T) {
 func TestCreateFromSafetensorsModel_OverrideSystem(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	p := t.TempDir()
-	t.Setenv("OLLAMA_MODELS", p)
+	t.Setenv("ROSE_MODELS", p)
 	var s Server
 
-	systemLayer, err := manifest.NewLayer(strings.NewReader("Original system prompt"), "application/vnd.ollama.image.system")
+	systemLayer, err := manifest.NewLayer(strings.NewReader("Original system prompt"), "application/vnd.rose.image.system")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -3124,7 +3124,7 @@ func TestCreateFromSafetensorsModel_OverrideSystem(t *testing.T) {
 
 	var systems []string
 	for _, layer := range mf.Layers {
-		if layer.MediaType != "application/vnd.ollama.image.system" {
+		if layer.MediaType != "application/vnd.rose.image.system" {
 			continue
 		}
 		f, err := layer.Open()
@@ -3148,7 +3148,7 @@ func TestCreateFromSafetensorsModel_OverrideSystem(t *testing.T) {
 
 func TestCreateFromModelRejectsInvalidTemplate(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 	var s Server
 
 	createSafetensorsTestModel(t, "template-source", model.ConfigV2{
@@ -3173,7 +3173,7 @@ func TestCreateFromModelRejectsInvalidTemplate(t *testing.T) {
 func TestCreateFromSafetensorsModel_PreservesLayerNames(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	p := t.TempDir()
-	t.Setenv("OLLAMA_MODELS", p)
+	t.Setenv("ROSE_MODELS", p)
 	var s Server
 
 	// Create JSON config blobs to include as layers
@@ -3184,13 +3184,13 @@ func TestCreateFromSafetensorsModel_PreservesLayerNames(t *testing.T) {
 
 	extraLayers := []manifest.Layer{
 		{
-			MediaType: "application/vnd.ollama.image.json",
+			MediaType: "application/vnd.rose.image.json",
 			Digest:    configDigest,
 			Size:      int64(len(configJSON)),
 			Name:      "config.json",
 		},
 		{
-			MediaType: "application/vnd.ollama.image.json",
+			MediaType: "application/vnd.rose.image.json",
 			Digest:    tokenizerDigest,
 			Size:      int64(len(tokenizerJSON)),
 			Name:      "tokenizer.json",
@@ -3229,7 +3229,7 @@ func TestCreateFromSafetensorsModel_PreservesLayerNames(t *testing.T) {
 	// Check JSON layer names are preserved
 	jsonNames := make(map[string]bool)
 	for _, l := range mf.Layers {
-		if l.MediaType == "application/vnd.ollama.image.json" && l.Name != "" {
+		if l.MediaType == "application/vnd.rose.image.json" && l.Name != "" {
 			jsonNames[l.Name] = true
 		}
 	}
@@ -3268,7 +3268,7 @@ func writeDriftVariant(t *testing.T, name, format string, config model.ConfigV2)
 	switch format {
 	case manifest.FormatGGUF:
 		_, digest := createBinFile(t, map[string]any{"general.architecture": "test"}, nil)
-		modelLayer, err := manifest.NewLayerFromLayer(digest, "application/vnd.ollama.image.model", name)
+		modelLayer, err := manifest.NewLayerFromLayer(digest, "application/vnd.rose.image.model", name)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -3308,7 +3308,7 @@ func driftWarnings(t *testing.T, name string, children []model.ConfigV2) []strin
 
 func TestCreateManifestListWarnsOnDrift(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	baseConfig := func(format string) model.ConfigV2 {
 		return model.ConfigV2{
@@ -3384,7 +3384,7 @@ func TestCreateManifestListWarnsOnDrift(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Setenv("OLLAMA_MODELS", t.TempDir())
+			t.Setenv("ROSE_MODELS", t.TempDir())
 
 			first := baseConfig(manifest.FormatGGUF)
 			second := baseConfig(manifest.FormatSafetensors)
@@ -3401,7 +3401,7 @@ func TestCreateManifestListWarnsOnDrift(t *testing.T) {
 	}
 
 	t.Run("unset fields are not drift", func(t *testing.T) {
-		t.Setenv("OLLAMA_MODELS", t.TempDir())
+		t.Setenv("ROSE_MODELS", t.TempDir())
 
 		first := baseConfig(manifest.FormatGGUF)
 		second := baseConfig(manifest.FormatSafetensors)
@@ -3418,7 +3418,7 @@ func TestCreateManifestListWarnsOnDrift(t *testing.T) {
 	})
 
 	t.Run("same precision class is not drift", func(t *testing.T) {
-		t.Setenv("OLLAMA_MODELS", t.TempDir())
+		t.Setenv("ROSE_MODELS", t.TempDir())
 
 		first := baseConfig(manifest.FormatGGUF)
 		second := baseConfig(manifest.FormatSafetensors)
@@ -3433,7 +3433,7 @@ func TestCreateManifestListWarnsOnDrift(t *testing.T) {
 	})
 
 	t.Run("no drift is silent", func(t *testing.T) {
-		t.Setenv("OLLAMA_MODELS", t.TempDir())
+		t.Setenv("ROSE_MODELS", t.TempDir())
 
 		first := baseConfig(manifest.FormatGGUF)
 		second := baseConfig(manifest.FormatSafetensors)
@@ -3446,7 +3446,7 @@ func TestCreateManifestListWarnsOnDrift(t *testing.T) {
 }
 
 func TestCreateClefDecisionHead(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 	_, digest := createBinFile(t, gguftest.KV{
 		"general.architecture": "qwen35",
 		"qwen35.decision.type": "clef",

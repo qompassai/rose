@@ -1,6 +1,6 @@
 # Security
 
-The Ollama maintainer team takes security seriously and will actively work to resolve security issues.
+The Rose maintainer team takes security seriously and will actively work to resolve security issues.
 
 ## Reporting a vulnerability
 
@@ -14,10 +14,10 @@ Please include the following details in your report:
 
 ## Security best practices
 
-While the maintainer team does its best to secure Ollama, users are encouraged to implement their own security best practices, such as:
+While the maintainer team does its best to secure Rose, users are encouraged to implement their own security best practices, such as:
 
-- Regularly updating to the latest version of Ollama
-- Securing access to hosted instances of Ollama
+- Regularly updating to the latest version of Rose
+- Securing access to hosted instances of Rose
 - Monitoring systems for unusual activity
 
 ## Contact

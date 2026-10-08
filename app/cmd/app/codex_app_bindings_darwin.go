@@ -6,7 +6,7 @@ import (
 	"errors"
 	"log/slog"
 
-	"github.com/ollama/ollama/app/webview"
+	"github.com/qompassai/rose/app/webview"
 )
 
 func codexDesktopModelRefreshError(settings codexDesktopModelsSettings) string {

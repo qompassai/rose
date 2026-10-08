@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"slices"
 
-	"github.com/ollama/ollama/internal/cloud"
-	"github.com/ollama/ollama/model/renderers"
-	"github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/internal/cloud"
+	"github.com/qompassai/rose/model/renderers"
+	"github.com/qompassai/rose/types/model"
 )
 
 func (s *Server) thinkingInputError(ctx context.Context, name string, inputErr error) error {

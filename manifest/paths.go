@@ -9,8 +9,8 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/ollama/ollama/envconfig"
-	"github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/envconfig"
+	"github.com/qompassai/rose/types/model"
 )
 
 var (
@@ -308,7 +308,7 @@ func isDefaultPublicHost(host string) bool {
 
 // DigestReference parses a bare local manifest blob reference in sha256-<hex>
 // filename form. It deliberately rejects paths and registry digest syntax; this
-// form identifies blobs already present in the local Ollama model store.
+// form identifies blobs already present in the local Rose model store.
 func DigestReference(ref string) (string, bool) {
 	ref = strings.TrimSpace(ref)
 	if !blobFilenamePattern.MatchString(ref) {

@@ -1,14 +1,14 @@
 # Examples
 
-This directory contains different examples of using Ollama.
+This directory contains different examples of using Rose.
 
 ## Python examples
-Ollama Python examples at [ollama-python/examples](https://github.com/ollama/ollama-python/tree/main/examples)
+Rose Python examples at [rose-python/examples](https://github.com/qompassai/rose-python/tree/main/examples)
 
 
 ## JavaScript examples
-Ollama JavaScript examples at [ollama-js/examples](https://github.com/ollama/ollama-js/tree/main/examples)
+Rose JavaScript examples at [rose-js/examples](https://github.com/qompassai/rose-js/tree/main/examples)
 
 
 ## OpenAI compatibility examples
-Ollama OpenAI compatibility examples at [ollama/examples/openai](./api/openai-compatibility.mdx)
+Rose OpenAI compatibility examples at [rose/examples/openai](./api/openai-compatibility.mdx)

@@ -5,8 +5,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ollama/ollama/llm"
-	"github.com/ollama/ollama/mlxrunner/tokenizer"
+	"github.com/qompassai/rose/llm"
+	"github.com/qompassai/rose/mlxrunner/tokenizer"
 )
 
 func TestEncodeContextLimit(t *testing.T) {

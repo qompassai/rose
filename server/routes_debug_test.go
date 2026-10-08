@@ -8,14 +8,14 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/ollama/ollama/api"
-	gguftest "github.com/ollama/ollama/internal/testutil/gguf"
-	"github.com/ollama/ollama/llm"
-	"github.com/ollama/ollama/ml"
+	"github.com/qompassai/rose/api"
+	gguftest "github.com/qompassai/rose/internal/testutil/gguf"
+	"github.com/qompassai/rose/llm"
+	"github.com/qompassai/rose/ml"
 )
 
 func TestGenerateDebugRenderOnly(t *testing.T) {
-	t.Setenv("OLLAMA_CONTEXT_LENGTH", "4096")
+	t.Setenv("ROSE_CONTEXT_LENGTH", "4096")
 	gin.SetMode(gin.TestMode)
 
 	mock := mockRunner{
@@ -209,8 +209,8 @@ func TestGenerateDebugRenderOnly(t *testing.T) {
 }
 
 func TestChatDebugRenderOnly(t *testing.T) {
-	t.Setenv("OLLAMA_CONTEXT_LENGTH", "4096")
-	t.Setenv("OLLAMA_GO_TEMPLATE", "1")
+	t.Setenv("ROSE_CONTEXT_LENGTH", "4096")
+	t.Setenv("ROSE_GO_TEMPLATE", "1")
 	gin.SetMode(gin.TestMode)
 
 	mock := mockRunner{

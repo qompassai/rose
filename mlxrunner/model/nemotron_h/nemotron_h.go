@@ -9,12 +9,12 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/ollama/ollama/mlx"
-	"github.com/ollama/ollama/mlxrunner/batch"
-	"github.com/ollama/ollama/mlxrunner/cache"
-	"github.com/ollama/ollama/mlxrunner/model"
-	"github.com/ollama/ollama/mlxrunner/nn"
-	"github.com/ollama/ollama/mlxrunner/tokenizer"
+	"github.com/qompassai/rose/mlx"
+	"github.com/qompassai/rose/mlxrunner/batch"
+	"github.com/qompassai/rose/mlxrunner/cache"
+	"github.com/qompassai/rose/mlxrunner/model"
+	"github.com/qompassai/rose/mlxrunner/nn"
+	"github.com/qompassai/rose/mlxrunner/tokenizer"
 )
 
 func init() {
@@ -682,7 +682,7 @@ func tensorByBase(tensors map[string]*mlx.Array, base string) (*mlx.Array, strin
 }
 
 // loadStackedExpertProjection loads a pre-stacked [experts, out, in] expert
-// tensor (as produced by ollama create's TransformStackExperts). It returns
+// tensor (as produced by rose create's TransformStackExperts). It returns
 // nil if no stacked tensor is found, so the caller can fall back to
 // per-expert collection.
 func loadStackedExpertProjection(tensors map[string]*mlx.Array, cfg *Config, useQuantized bool, layerPrefix, proj string) *stackedExpertWeights {

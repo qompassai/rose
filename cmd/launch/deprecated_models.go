@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/ollama/ollama/internal/modelref"
+	"github.com/qompassai/rose/internal/modelref"
 )
 
 var deprecatedLaunchModels = map[string]struct{}{
@@ -51,7 +51,7 @@ func deprecatedLaunchModelPrompt(name, label, commandName, cloudRec, localRec st
 		return ""
 	}
 	if label = strings.TrimSpace(label); label == "" {
-		label = "ollama launch"
+		label = "rose launch"
 	}
 
 	var b strings.Builder
@@ -81,7 +81,7 @@ func launchReplacementCommand(commandName, model string) string {
 	if commandName == "" || model == "" {
 		return ""
 	}
-	return fmt.Sprintf("ollama launch %s --model %s", commandName, model)
+	return fmt.Sprintf("rose launch %s --model %s", commandName, model)
 }
 
 func firstNonEmpty(values ...string) string {

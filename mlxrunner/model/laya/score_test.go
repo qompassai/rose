@@ -9,9 +9,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/llm"
-	"github.com/ollama/ollama/mlxrunner/tokenizer"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/llm"
+	"github.com/qompassai/rose/mlxrunner/tokenizer"
 )
 
 func TestPrepareScoreInputLimits(t *testing.T) {

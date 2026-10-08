@@ -8,8 +8,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/ollama/ollama/manifest"
-	"github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/manifest"
+	"github.com/qompassai/rose/types/model"
 )
 
 func writeCompatibilityManifestList(name model.Name, source *manifest.Manifest, manifests []manifest.Manifest) (bool, error) {
@@ -21,7 +21,7 @@ func writeCompatibilityManifestList(name model.Name, source *manifest.Manifest, 
 
 	if source != nil {
 		// TODO: remove this downgrade anchor once rollback to pre-manifest-list
-		// Ollama versions is no longer supported.
+		// Rose versions is no longer supported.
 		manifestDigests := []string{parentDigest}
 		for _, child := range manifests {
 			digest, err := manifest.ChildManifestDigest(child)
@@ -39,7 +39,7 @@ func writeCompatibilityManifestList(name model.Name, source *manifest.Manifest, 
 }
 
 func writeConvertedLegacyShadow(digest string, data []byte) error {
-	// TODO: remove this shadow tag once rollback to pre-manifest-list Ollama
+	// TODO: remove this shadow tag once rollback to pre-manifest-list Rose
 	// versions is no longer supported.
 	name, err := convertedLegacyShadowName(digest)
 	if err != nil {

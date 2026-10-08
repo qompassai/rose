@@ -15,8 +15,8 @@ import (
 )
 
 var (
-	pidFile       = filepath.Join(os.Getenv("LOCALAPPDATA"), "Ollama", "ollama.pid")
-	serverLogPath = filepath.Join(os.Getenv("LOCALAPPDATA"), "Ollama", "server.log")
+	pidFile       = filepath.Join(os.Getenv("LOCALAPPDATA"), "Rose", "rose.pid")
+	serverLogPath = filepath.Join(os.Getenv("LOCALAPPDATA"), "Rose", "server.log")
 )
 
 func commandContext(ctx context.Context, name string, arg ...string) *exec.Cmd {
@@ -106,7 +106,7 @@ func ollamaServeProcess(pid int) bool {
 	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
 	output, err := cmd.Output()
 	if err != nil {
-		slog.Debug("failed to inspect ollama process", "pid", pid, "err", err)
+		slog.Debug("failed to inspect rose process", "pid", pid, "err", err)
 		return false
 	}
 
@@ -123,18 +123,18 @@ func ollamaServeProcess(pid int) bool {
 	return false
 }
 
-// reapServers kills external ollama serve processes except our own.
+// reapServers kills external rose serve processes except our own.
 func reapServers() error {
 	// Get current process ID to avoid killing ourselves
 	currentPID := os.Getpid()
 
-	// Use wmic to find ollama processes
-	cmd := exec.Command("wmic", "process", "where", "name='ollama.exe'", "get", "ProcessId")
+	// Use wmic to find rose processes
+	cmd := exec.Command("wmic", "process", "where", "name='rose.exe'", "get", "ProcessId")
 	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
 	output, err := cmd.Output()
 	if err != nil {
-		// No ollama processes found
-		slog.Debug("no ollama processes found")
+		// No rose processes found
+		slog.Debug("no rose processes found")
 		return nil //nolint:nilerr
 	}
 
@@ -166,7 +166,7 @@ func reapServers() error {
 
 		cmd := exec.Command("taskkill", "/F", "/T", "/PID", pidStr)
 		if err := cmd.Run(); err != nil {
-			slog.Warn("failed to kill ollama process", "pid", pid, "err", err)
+			slog.Warn("failed to kill rose process", "pid", pid, "err", err)
 		}
 	}
 

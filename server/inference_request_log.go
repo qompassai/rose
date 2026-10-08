@@ -13,7 +13,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/ollama/ollama/envconfig"
+	"github.com/qompassai/rose/envconfig"
 )
 
 type inferenceRequestLogger struct {
@@ -22,7 +22,7 @@ type inferenceRequestLogger struct {
 }
 
 func newInferenceRequestLogger() (*inferenceRequestLogger, error) {
-	dir, err := os.MkdirTemp("", "ollama-request-logs-*")
+	dir, err := os.MkdirTemp("", "rose-request-logs-*")
 	if err != nil {
 		return nil, err
 	}
@@ -37,7 +37,7 @@ func (s *Server) initRequestLogging() error {
 
 	requestLogger, err := newInferenceRequestLogger()
 	if err != nil {
-		return fmt.Errorf("enable OLLAMA_DEBUG_LOG_REQUESTS: %w", err)
+		return fmt.Errorf("enable ROSE_DEBUG_LOG_REQUESTS: %w", err)
 	}
 
 	s.requestLogger = requestLogger

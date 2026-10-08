@@ -11,8 +11,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ollama/ollama/app/store"
-	"github.com/ollama/ollama/app/version"
+	"github.com/qompassai/rose/app/store"
+	"github.com/qompassai/rose/app/version"
 )
 
 // TestLiveAppUpdate exercises the production update endpoint and downloads the
@@ -47,7 +47,7 @@ func TestLiveAppUpdate(t *testing.T) {
 		t.Setenv("LOCALAPPDATA", t.TempDir())
 		expectedFilename = "OllamaSetup.exe"
 	case "darwin":
-		expectedFilename = "Ollama-darwin.zip"
+		expectedFilename = "Rose-darwin.zip"
 	default:
 		t.Fatalf("unsupported updater live test OS %q", runtime.GOOS)
 	}

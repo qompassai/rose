@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/ollama/ollama/api"
+	"github.com/qompassai/rose/api"
 )
 
 // Trace truncation limits.
@@ -246,10 +246,10 @@ func ptrVal[T any](v *T) any {
 }
 
 // ---------------------------------------------------------------------------
-// Ollama api.* tracing (shared between anthropic and middleware packages)
+// Rose api.* tracing (shared between anthropic and middleware packages)
 // ---------------------------------------------------------------------------
 
-// TraceChatRequest returns a compact trace representation of an Ollama ChatRequest.
+// TraceChatRequest returns a compact trace representation of an Rose ChatRequest.
 func TraceChatRequest(req *api.ChatRequest) map[string]any {
 	if req == nil {
 		return nil
@@ -268,7 +268,7 @@ func TraceChatRequest(req *api.ChatRequest) map[string]any {
 	}
 }
 
-// TraceChatResponse returns a compact trace representation of an Ollama ChatResponse.
+// TraceChatResponse returns a compact trace representation of an Rose ChatResponse.
 func TraceChatResponse(resp api.ChatResponse) map[string]any {
 	return map[string]any{
 		"model":       resp.Model,

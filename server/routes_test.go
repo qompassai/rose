@@ -25,17 +25,17 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/go-cmp/cmp"
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/fs/gguf"
-	gguftest "github.com/ollama/ollama/internal/testutil/gguf"
-	"github.com/ollama/ollama/manifest"
-	"github.com/ollama/ollama/openai"
-	"github.com/ollama/ollama/types/model"
-	"github.com/ollama/ollama/version"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/fs/gguf"
+	gguftest "github.com/qompassai/rose/internal/testutil/gguf"
+	"github.com/qompassai/rose/manifest"
+	"github.com/qompassai/rose/openai"
+	"github.com/qompassai/rose/types/model"
+	"github.com/qompassai/rose/version"
 )
 
 func TestGetExistingName(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 	for _, name := range []string{"MyOrg/MyModel:Q4", "OtherOrg/OtherModel:Q8", "DefaultModel:latest", "localhost:12345/MyOrg/MyModel:Q4"} {
 		if err := manifest.WriteManifestData(model.ParseName(name), []byte(`{}`)); err != nil {
 			t.Fatal(err)
@@ -82,7 +82,7 @@ func BenchmarkGetExistingName(b *testing.B) {
 	}
 	for _, models := range []int{1, 10, 100} {
 		b.Run(fmt.Sprintf("models=%d", models), func(b *testing.B) {
-			b.Setenv("OLLAMA_MODELS", b.TempDir())
+			b.Setenv("ROSE_MODELS", b.TempDir())
 			for i := range models {
 				name := model.ParseName(fmt.Sprintf("Test/Model%d:Latest", i))
 				if err := manifest.WriteManifestData(name, data); err != nil {
@@ -248,7 +248,7 @@ func TestRouteHandlersRejectUnknownRunner(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Setenv("OLLAMA_MODELS", t.TempDir())
+			t.Setenv("ROSE_MODELS", t.TempDir())
 			var s Server
 
 			w := createRequest(t, tt.handler(&s), tt.body)
@@ -299,9 +299,9 @@ func TestWriteShowErrorNoCompatibleManifest(t *testing.T) {
 func createTestFile(t *testing.T, name string) (string, string) {
 	t.Helper()
 
-	modelDir := os.Getenv("OLLAMA_MODELS")
+	modelDir := os.Getenv("ROSE_MODELS")
 	if modelDir == "" {
-		t.Fatalf("OLLAMA_MODELS not specified")
+		t.Fatalf("ROSE_MODELS not specified")
 	}
 
 	f, err := os.CreateTemp(t.TempDir(), name)
@@ -351,7 +351,7 @@ func createTestFile(t *testing.T, name string) (string, string) {
 
 func TestRoutes(t *testing.T) {
 	modelsDir := t.TempDir()
-	t.Setenv("OLLAMA_MODELS", modelsDir)
+	t.Setenv("ROSE_MODELS", modelsDir)
 
 	type testCase struct {
 		Name     string
@@ -366,7 +366,7 @@ func TestRoutes(t *testing.T) {
 	createTestModel := func(t *testing.T, name string) {
 		t.Helper()
 
-		_, digest := createTestFile(t, "ollama-model")
+		_, digest := createTestFile(t, "rose-model")
 
 		fn := func(resp api.ProgressResponse) {
 			t.Logf("Status: %s", resp.Status)
@@ -596,7 +596,7 @@ func TestRoutes(t *testing.T) {
 			Method: http.MethodPost,
 			Path:   "/api/create",
 			Setup: func(t *testing.T, req *http.Request) {
-				_, digest := createTestFile(t, "ollama-model")
+				_, digest := createTestFile(t, "rose-model")
 				stream := false
 				createReq := api.CreateRequest{
 					Name:   "t-bone",
@@ -786,7 +786,7 @@ func TestRoutes(t *testing.T) {
 }
 
 func TestGetModelInfo_SafetensorsUsesStoredFileType(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	cfgData, err := json.Marshal(model.ConfigV2{
 		ModelFormat:  "safetensors",
@@ -818,7 +818,7 @@ func TestGetModelInfo_SafetensorsUsesStoredFileType(t *testing.T) {
 }
 
 func TestGetModelInfoSafetensorsTensorInfoRequiresVerbose(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	writeShowManifestVariant(t, "show-safetensors-tensors", manifest.RunnerMLX, manifest.FormatSafetensors, model.ConfigV2{
 		ModelFormat:  manifest.FormatSafetensors,
@@ -853,13 +853,13 @@ func TestGetModelInfoSafetensorsTensorInfoRequiresVerbose(t *testing.T) {
 }
 
 func TestGetModelInfoRepairsUnknownGGUFFileType(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	_, digest := createBinFile(t, gguftest.KV{
 		"general.architecture": "llama",
 		"general.file_type":    uint32(gguf.FileTypeQ4_K_M),
 	}, nil)
-	modelLayer, err := manifest.NewLayerFromLayer(digest, "application/vnd.ollama.image.model", "")
+	modelLayer, err := manifest.NewLayerFromLayer(digest, "application/vnd.rose.image.model", "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -889,7 +889,7 @@ func TestGetModelInfoRepairsUnknownGGUFFileType(t *testing.T) {
 }
 
 func TestGetModelInfo_SafetensorsModelfileUsesShortName(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 	for _, capability := range []string{"completion", "decision", "image"} {
 		t.Run(capability, func(t *testing.T) {
 			config, err := manifest.NewLayer(strings.NewReader(`{"model_type":"test","max_position_embeddings":512}`), manifest.MediaTypeImageJSON)
@@ -936,7 +936,7 @@ func casingShuffle(s string) string {
 }
 
 func TestManifestCaseSensitivity(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	r := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
@@ -1073,7 +1073,7 @@ func TestManifestCaseSensitivity(t *testing.T) {
 }
 
 func TestShow(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	var s Server
 
@@ -1108,8 +1108,8 @@ func TestShow(t *testing.T) {
 }
 
 func TestShowTemplateUsesSelectedRuntimeTemplate(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
-	t.Setenv("OLLAMA_GO_TEMPLATE", "")
+	t.Setenv("ROSE_MODELS", t.TempDir())
+	t.Setenv("ROSE_GO_TEMPLATE", "")
 
 	chatTemplate := "{% if tools %}{{ tools }}{% endif %}{% set content = (content.split('</think>')|last) %}"
 	goTemplate := "{{ range .Messages }}{{ if .Thinking }}<think>{{ .Thinking }}</think>{{ end }}{{ .Content }}{{ end }}"
@@ -1181,7 +1181,7 @@ func writeShowManifestVariant(t *testing.T, name, runner, format string, cfg mod
 	switch format {
 	case manifest.FormatGGUF:
 		_, digest := createBinFile(t, kv, nil)
-		modelLayer, err := manifest.NewLayerFromLayer(digest, "application/vnd.ollama.image.model", name)
+		modelLayer, err := manifest.NewLayerFromLayer(digest, "application/vnd.rose.image.model", name)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1197,7 +1197,7 @@ func writeShowManifestVariant(t *testing.T, name, runner, format string, cfg mod
 }
 
 func TestShowAllManifestsNonListReturnsSingleManifest(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	var s Server
 
@@ -1235,9 +1235,9 @@ func TestShowAllManifestsNonListReturnsSingleManifest(t *testing.T) {
 }
 
 func TestShowAllManifestsManifestListDedupesLicenses(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
-	licenseLayer, err := manifest.NewLayer(bytes.NewReader([]byte("Apache-2.0")), "application/vnd.ollama.image.license")
+	licenseLayer, err := manifest.NewLayer(bytes.NewReader([]byte("Apache-2.0")), "application/vnd.rose.image.license")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1342,7 +1342,7 @@ func TestShowAllManifestsManifestListDedupesLicenses(t *testing.T) {
 }
 
 func TestShowManifestListIncludesChildSummaries(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	writeShowManifestVariant(t, "show-mlx", manifest.RunnerMLX, manifest.FormatSafetensors, model.ConfigV2{
 		ModelFormat: manifest.FormatSafetensors,
@@ -1416,7 +1416,7 @@ func TestShowManifestListIncludesChildSummaries(t *testing.T) {
 }
 
 func TestShowManifestListRejectsInvalidChildRunner(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	writeShowManifestVariant(t, "show-good", manifest.RunnerGGML, manifest.FormatGGUF, model.ConfigV2{
 		ModelFormat: manifest.FormatGGUF,
@@ -1489,7 +1489,7 @@ func TestShowAllManifestsRejectsRunnerSelection(t *testing.T) {
 }
 
 func TestShowCopilotUserAgentOverwritesExistingBasename(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	var s Server
 
@@ -1550,7 +1550,7 @@ func TestShowCopilotUserAgentOverwritesExistingBasename(t *testing.T) {
 }
 
 func TestShowCopilotUserAgentSetsBasenameWhenModelInfoIsEmpty(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	var s Server
 
@@ -1852,7 +1852,7 @@ func TestWaitForStream(t *testing.T) {
 }
 
 func TestShowOmitsNonFiniteGGUFValues(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	var s Server
 

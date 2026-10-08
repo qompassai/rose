@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ollama/ollama/api"
+	"github.com/qompassai/rose/api"
 )
 
 const (
@@ -20,7 +20,7 @@ const (
 )
 
 var (
-	ErrPlanVerificationUnavailable = errors.New("Could not verify Ollama plan. Try again in a moment or use a local model.")
+	ErrPlanVerificationUnavailable = errors.New("Could not verify Rose plan. Try again in a moment or use a local model.")
 	errUpgradeCancelled            = errors.New("upgrade cancelled")
 )
 

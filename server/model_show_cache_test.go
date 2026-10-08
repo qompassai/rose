@@ -16,11 +16,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/envconfig"
-	internalcloud "github.com/ollama/ollama/internal/cloud"
-	"github.com/ollama/ollama/manifest"
-	modelpkg "github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/envconfig"
+	internalcloud "github.com/qompassai/rose/internal/cloud"
+	"github.com/qompassai/rose/manifest"
+	modelpkg "github.com/qompassai/rose/types/model"
 )
 
 func TestModelShowCacheLocalHitUsesManifestDigest(t *testing.T) {
@@ -119,7 +119,7 @@ func TestModelShowCacheLocalVerboseVariantsAreSeparate(t *testing.T) {
 
 func TestModelShowCacheLocalKeyUsesRunnerSelectionAndParentDigest(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	writeShowManifestVariant(t, "show-cache-mlx", manifest.RunnerMLX, manifest.FormatSafetensors, modelpkg.ConfigV2{
 		ModelFormat:  manifest.FormatSafetensors,
@@ -160,7 +160,7 @@ func TestModelShowCacheLocalKeyUsesRunnerSelectionAndParentDigest(t *testing.T) 
 func TestModelShowCacheStartupSkipsLocalHydration(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	setTestHome(t, t.TempDir())
-	t.Setenv("OLLAMA_NO_CLOUD", "1")
+	t.Setenv("ROSE_NO_CLOUD", "1")
 	createShowCacheModel(t, "show-cache-startup", map[string]any{"test.context_length": uint32(1024)})
 
 	cache := newModelShowCache()
@@ -447,7 +447,7 @@ func TestModelShowCacheCloudDisabledDoesNotServeStale(t *testing.T) {
 	setTestHome(t, t.TempDir())
 
 	t.Cleanup(envconfig.ReloadServerConfig)
-	t.Setenv("OLLAMA_NO_CLOUD", "1")
+	t.Setenv("ROSE_NO_CLOUD", "1")
 	envconfig.ReloadServerConfig()
 
 	cache := newModelShowCache()
@@ -494,7 +494,7 @@ func changeShowCacheManifest(t *testing.T, name string) {
 	if err != nil {
 		t.Fatalf("parse manifest: %v", err)
 	}
-	layer, err := manifest.NewLayer(strings.NewReader("changed"), "application/vnd.ollama.image.system")
+	layer, err := manifest.NewLayer(strings.NewReader("changed"), "application/vnd.rose.image.system")
 	if err != nil {
 		t.Fatalf("new layer: %v", err)
 	}

@@ -1,6 +1,6 @@
 package qwen4_exp
 
-import "github.com/ollama/ollama/mlx"
+import "github.com/qompassai/rose/mlx"
 
 type hyperConnectionState struct {
 	residual *mlx.Array

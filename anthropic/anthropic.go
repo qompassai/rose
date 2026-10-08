@@ -16,11 +16,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/auth"
-	internalcloud "github.com/ollama/ollama/internal/cloud"
-	"github.com/ollama/ollama/logutil"
-	"github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/auth"
+	internalcloud "github.com/qompassai/rose/internal/cloud"
+	"github.com/qompassai/rose/logutil"
+	"github.com/qompassai/rose/types/model"
 )
 
 // Error types matching Anthropic API
@@ -318,7 +318,7 @@ type StreamErrorEvent struct {
 	Error Error  `json:"error"`
 }
 
-// FromMessagesRequest converts an Anthropic MessagesRequest to an Ollama api.ChatRequest.
+// FromMessagesRequest converts an Anthropic MessagesRequest to an Rose api.ChatRequest.
 // An optional thinking descriptor preserves model-defined effort names for rendering.
 func FromMessagesRequest(r MessagesRequest, thinking ...*model.Thinking) (*api.ChatRequest, error) {
 	logutil.Trace("anthropic: converting request", "req", TraceMessagesRequest(r))
@@ -388,7 +388,7 @@ func FromMessagesRequest(r MessagesRequest, thinking ...*model.Thinking) (*api.C
 	}
 
 	for _, t := range r.Tools {
-		// Anthropic built-in web_search maps to Ollama function name "web_search".
+		// Anthropic built-in web_search maps to Rose function name "web_search".
 		// If a user-defined tool also uses that name in the same request, drop the
 		// user-defined one to avoid ambiguous tool-call routing.
 		if hasBuiltinWebSearch && !strings.HasPrefix(t.Type, "web_search") && t.Name == "web_search" {
@@ -442,7 +442,7 @@ func FromMessagesRequest(r MessagesRequest, thinking ...*model.Thinking) (*api.C
 	return convertedRequest, nil
 }
 
-// convertMessage converts an Anthropic MessageParam to Ollama api.Message(s)
+// convertMessage converts an Anthropic MessageParam to Rose api.Message(s)
 func convertMessage(msg MessageParam) ([]api.Message, error) {
 	var messages []api.Message
 	role := strings.ToLower(msg.Role)
@@ -641,7 +641,7 @@ func formatWebSearchToolResultContent(content any) string {
 	}
 }
 
-// convertTool converts an Anthropic Tool to an Ollama api.Tool, returning true if it's a server tool
+// convertTool converts an Anthropic Tool to an Rose api.Tool, returning true if it's a server tool
 func convertTool(t Tool) (api.Tool, bool, error) {
 	if strings.HasPrefix(t.Type, "web_search") {
 		props := api.NewToolPropertiesMap()
@@ -681,7 +681,7 @@ func convertTool(t Tool) (api.Tool, bool, error) {
 	}, false, nil
 }
 
-// ToMessagesResponse converts an Ollama api.ChatResponse to an Anthropic MessagesResponse
+// ToMessagesResponse converts an Rose api.ChatResponse to an Anthropic MessagesResponse
 func ToMessagesResponse(id string, r api.ChatResponse) MessagesResponse {
 	var content []ContentBlock
 
@@ -721,7 +721,7 @@ func ToMessagesResponse(id string, r api.ChatResponse) MessagesResponse {
 	}
 }
 
-// mapStopReason converts Ollama done_reason to Anthropic stop_reason
+// mapStopReason converts Rose done_reason to Anthropic stop_reason
 func mapStopReason(reason string, hasToolCalls bool) string {
 	if hasToolCalls {
 		return "tool_use"
@@ -740,7 +740,7 @@ func mapStopReason(reason string, hasToolCalls bool) string {
 	}
 }
 
-// StreamConverter manages state for converting Ollama streaming responses to Anthropic format
+// StreamConverter manages state for converting Rose streaming responses to Anthropic format
 type StreamConverter struct {
 	ID                   string
 	Model                string
@@ -772,7 +772,7 @@ type StreamEvent struct {
 	Data  any
 }
 
-// Process converts an Ollama ChatResponse to Anthropic streaming events
+// Process converts an Rose ChatResponse to Anthropic streaming events
 func (c *StreamConverter) Process(r api.ChatResponse) []StreamEvent {
 	var events []StreamEvent
 
@@ -1201,20 +1201,20 @@ func countContentBlock(block ContentBlock) int {
 	return total
 }
 
-// OllamaWebSearchRequest represents a request to the Ollama web search API
+// OllamaWebSearchRequest represents a request to the Rose web search API
 type OllamaWebSearchRequest struct {
 	Query      string `json:"query"`
 	MaxResults int    `json:"max_results,omitempty"`
 }
 
-// OllamaWebSearchResult represents a single search result from Ollama API
+// OllamaWebSearchResult represents a single search result from Rose API
 type OllamaWebSearchResult struct {
 	Title   string `json:"title"`
 	URL     string `json:"url"`
 	Content string `json:"content"`
 }
 
-// OllamaWebSearchResponse represents the response from the Ollama web search API
+// OllamaWebSearchResponse represents the response from the Rose web search API
 type OllamaWebSearchResponse struct {
 	Results []OllamaWebSearchResult `json:"results"`
 }

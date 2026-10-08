@@ -9,11 +9,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ollama/ollama/cmd/internal/fileutil"
-	"github.com/ollama/ollama/envconfig"
+	"github.com/qompassai/rose/cmd/internal/fileutil"
+	"github.com/qompassai/rose/envconfig"
 )
 
-const clineLaunchProvider = "ollama"
+const clineLaunchProvider = "rose"
 
 // Cline implements Runner and Editor for the Cline CLI integration
 type Cline struct{}
@@ -40,7 +40,7 @@ func ensureClineInstalled() (string, error) {
 	}
 
 	if _, err := exec.LookPath("npm"); err != nil {
-		return "", fmt.Errorf("cline is not installed and required dependencies are missing\n\nInstall the following first:\n  npm (Node.js): https://nodejs.org/\n\nThen re-run:\n  ollama launch cline")
+		return "", fmt.Errorf("cline is not installed and required dependencies are missing\n\nInstall the following first:\n  npm (Node.js): https://nodejs.org/\n\nThen re-run:\n  rose launch cline")
 	}
 
 	ok, err := ConfirmPrompt("Cline is not installed. Install with npm?")
@@ -234,7 +234,7 @@ func (c *Cline) Models() []string {
 	}
 
 	switch config["actModeApiProvider"] {
-	case "ollama":
+	case "rose":
 	default:
 		return nil
 	}

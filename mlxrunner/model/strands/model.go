@@ -6,10 +6,10 @@ import (
 	"math"
 	"slices"
 
-	"github.com/ollama/ollama/mlx"
-	"github.com/ollama/ollama/mlxrunner/model"
-	"github.com/ollama/ollama/mlxrunner/model/qwen3_5"
-	"github.com/ollama/ollama/mlxrunner/nn"
+	"github.com/qompassai/rose/mlx"
+	"github.com/qompassai/rose/mlxrunner/model"
+	"github.com/qompassai/rose/mlxrunner/model/qwen3_5"
+	"github.com/qompassai/rose/mlxrunner/nn"
 )
 
 type config struct {

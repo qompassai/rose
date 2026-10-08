@@ -13,8 +13,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/format"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/format"
 )
 
 var sweepVRAMWarning sync.Once
@@ -94,7 +94,7 @@ func chatModelRequest(model string) (api.ChatRequest, []string) {
 func skipIfTargetArchitecture(ctx context.Context, t *testing.T, client *api.Client, model string) {
 	t.Helper()
 
-	targetArch := os.Getenv("OLLAMA_TEST_ARCHITECTURE")
+	targetArch := os.Getenv("ROSE_TEST_ARCHITECTURE")
 	if targetArch == "" {
 		return
 	}
@@ -112,7 +112,7 @@ func skipIfTargetArchitecture(ctx context.Context, t *testing.T, client *api.Cli
 func skipIfModelTooLargeForSweepVRAM(ctx context.Context, t *testing.T, client *api.Client, model string) {
 	t.Helper()
 
-	s := os.Getenv("OLLAMA_MAX_VRAM")
+	s := os.Getenv("ROSE_MAX_VRAM")
 	if s == "" {
 		sweepVRAMWarning.Do(func() {
 			slog.Warn("No VRAM info available, testing all models, so larger ones might timeout...")
@@ -122,7 +122,7 @@ func skipIfModelTooLargeForSweepVRAM(ctx context.Context, t *testing.T, client *
 
 	maxVram, err := strconv.ParseUint(s, 10, 64)
 	if err != nil {
-		t.Fatalf("invalid  OLLAMA_MAX_VRAM %v", err)
+		t.Fatalf("invalid  ROSE_MAX_VRAM %v", err)
 	}
 
 	resp, err := client.List(ctx)

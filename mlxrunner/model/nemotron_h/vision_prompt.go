@@ -8,9 +8,9 @@ import (
 
 	"golang.org/x/image/draw"
 
-	"github.com/ollama/ollama/mlx"
-	"github.com/ollama/ollama/mlxrunner/batch"
-	"github.com/ollama/ollama/mlxrunner/model"
+	"github.com/qompassai/rose/mlx"
+	"github.com/qompassai/rose/mlxrunner/batch"
+	"github.com/qompassai/rose/mlxrunner/model"
 )
 
 // preparedImage is the model-private state travelling with a prepared item.

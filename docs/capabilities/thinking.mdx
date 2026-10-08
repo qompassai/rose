@@ -10,7 +10,7 @@ See the [full list of thinking models](https://ollama.com/search?c=thinking).
 
 ## Discover a model's thinking controls
 
-Thinking controls vary by model. Use `/api/show` to discover the values a model supports and the value Ollama uses by default:
+Thinking controls vary by model. Use `/api/show` to discover the values a model supports and the value Rose uses by default:
 
 ```shell
 curl http://localhost:11434/api/show -d '{
@@ -43,7 +43,7 @@ Set the `think` field on a chat or generate request:
 - `null`: use the model default.
 - A string: select a supported level from `thinking.values`. Use the exact value from `/api/show`. Numbers are not supported.
 
-If the model resolves named levels from `/api/show` metadata, Ollama applies supported names exactly. Unsupported names use the model default. 
+If the model resolves named levels from `/api/show` metadata, Rose applies supported names exactly. Unsupported names use the model default. 
 
 The reasoning output and answer use separate fields. Chat returns `message.thinking` and `message.content`. Generate returns `thinking` and `response`.
 
@@ -63,7 +63,7 @@ The reasoning output and answer use separate fields. Chat returns `message.think
   </Tab>
   <Tab title="Python">
     ```python
-    from ollama import chat
+    from rose import chat
 
     response = chat(
       model='qwen3',
@@ -78,9 +78,9 @@ The reasoning output and answer use separate fields. Chat returns `message.think
   </Tab>
   <Tab title="JavaScript">
     ```javascript
-    import ollama from 'ollama'
+    import rose from 'rose'
 
-    const response = await ollama.chat({
+    const response = await rose.chat({
       model: 'deepseek-r1',
       messages: [{ role: 'user', content: 'How many letter r are in strawberry?' }],
       think: true,
@@ -100,7 +100,7 @@ Thinking streams interleave reasoning tokens before answer tokens. Detect the fi
 <Tabs>
   <Tab title="Python">
     ```python
-    from ollama import chat
+    from rose import chat
 
     stream = chat(
       model='qwen3',
@@ -128,10 +128,10 @@ Thinking streams interleave reasoning tokens before answer tokens. Detect the fi
   </Tab>
   <Tab title="JavaScript">
     ```javascript
-    import ollama from 'ollama'
+    import rose from 'rose'
 
     async function main() {
-      const stream = await ollama.chat({
+      const stream = await rose.chat({
         model: 'qwen3',
         messages: [{ role: 'user', content: 'What is 17 × 23?' }],
         think: true,

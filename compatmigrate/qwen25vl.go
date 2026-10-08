@@ -6,7 +6,7 @@ import (
 
 type qwen25VLMigrator struct{}
 
-// Mirrors detect_ollama_qwen25vl in llama/compat/llama-ollama-compat.cpp; keep the two in sync.
+// Mirrors detect_ollama_qwen25vl in llama/compat/llama-rose-compat.cpp; keep the two in sync.
 func (qwen25VLMigrator) NeedsMigration(src *SourceModel) bool {
 	return src.GGUF.KeyValue("general.architecture").String() == "qwen25vl"
 }

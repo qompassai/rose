@@ -4,8 +4,8 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/ollama/ollama/mlx"
-	"github.com/ollama/ollama/mlx/mlxtest"
+	"github.com/qompassai/rose/mlx"
+	"github.com/qompassai/rose/mlx/mlxtest"
 )
 
 // fillKV writes n single-token steps into c, one Update per token, so the

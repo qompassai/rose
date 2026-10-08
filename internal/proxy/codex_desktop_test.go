@@ -18,15 +18,15 @@ import (
 	"time"
 
 	"github.com/klauspost/compress/zstd"
-	"github.com/ollama/ollama/model/renderers"
-	"github.com/ollama/ollama/openai"
-	modelpkg "github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/model/renderers"
+	"github.com/qompassai/rose/openai"
+	modelpkg "github.com/qompassai/rose/types/model"
 )
 
 func TestCodexDesktopRoutesCatalogModelToOllamaAndStripsCredentials(t *testing.T) {
 	var gotPath, gotQuery, gotAuthorization, gotEncoding, gotMetadata string
 	var gotBody []byte
-	ollama := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	rose := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		gotPath = r.URL.Path
 		gotQuery = r.URL.RawQuery
 		gotAuthorization = r.Header.Get("Authorization")
@@ -36,7 +36,7 @@ func TestCodexDesktopRoutesCatalogModelToOllamaAndStripsCredentials(t *testing.T
 		w.Header().Set("Content-Type", "text/event-stream")
 		_, _ = io.WriteString(w, "data: routed\n\n")
 	}))
-	defer ollama.Close()
+	defer rose.Close()
 
 	chatGPT := httptest.NewServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
 		t.Fatal("catalog model should not reach ChatGPT")
@@ -44,7 +44,7 @@ func TestCodexDesktopRoutesCatalogModelToOllamaAndStripsCredentials(t *testing.T
 	defer chatGPT.Close()
 
 	catalogPath := writeCatalog(t, "glm-5.2:cloud")
-	handler := newTestCodexDesktop(t, ollama.URL, chatGPT.URL+"/backend-api/codex", catalogPath)
+	handler := newTestCodexDesktop(t, rose.URL, chatGPT.URL+"/backend-api/codex", catalogPath)
 	proxy := httptest.NewServer(handler)
 	defer proxy.Close()
 
@@ -78,31 +78,31 @@ func TestCodexDesktopRoutesCatalogModelToOllamaAndStripsCredentials(t *testing.T
 			t.Fatalf("response with %q = %d %q", authorization, resp.StatusCode, responseBody)
 		}
 		if gotPath != "/v1/responses" || gotQuery != "trace=1" {
-			t.Fatalf("Ollama target = %s?%s", gotPath, gotQuery)
+			t.Fatalf("Rose target = %s?%s", gotPath, gotQuery)
 		}
 		if gotAuthorization != "" || gotEncoding != "" || gotMetadata != "" {
-			t.Fatalf("credentials leaked to Ollama: authorization=%q encoding=%q metadata=%q", gotAuthorization, gotEncoding, gotMetadata)
+			t.Fatalf("credentials leaked to Rose: authorization=%q encoding=%q metadata=%q", gotAuthorization, gotEncoding, gotMetadata)
 		}
 		if string(gotBody) != string(payload) {
-			t.Fatalf("Ollama body = %q, want decompressed %q", gotBody, payload)
+			t.Fatalf("Rose body = %q, want decompressed %q", gotBody, payload)
 		}
 	}
 }
 
 func TestCodexDesktopRoutesOllamaAndNativeModelsThroughOneEndpoint(t *testing.T) {
 	var ollamaCalls, chatGPTCalls int
-	ollama := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+	rose := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		ollamaCalls++
 		w.WriteHeader(http.StatusNoContent)
 	}))
-	defer ollama.Close()
+	defer rose.Close()
 	chatGPT := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		chatGPTCalls++
 		w.WriteHeader(http.StatusNoContent)
 	}))
 	defer chatGPT.Close()
 
-	handler := newTestCodexDesktop(t, ollama.URL, chatGPT.URL+"/backend-api/codex", writeCatalog(t, "glm-5.2:cloud"))
+	handler := newTestCodexDesktop(t, rose.URL, chatGPT.URL+"/backend-api/codex", writeCatalog(t, "glm-5.2:cloud"))
 	endpoint := httptest.NewServer(handler)
 	defer endpoint.Close()
 
@@ -128,7 +128,7 @@ func TestCodexDesktopRoutesOllamaAndNativeModelsThroughOneEndpoint(t *testing.T)
 	}
 
 	if ollamaCalls != 1 || chatGPTCalls != 1 {
-		t.Fatalf("routes through one endpoint: Ollama calls=%d ChatGPT calls=%d", ollamaCalls, chatGPTCalls)
+		t.Fatalf("routes through one endpoint: Rose calls=%d ChatGPT calls=%d", ollamaCalls, chatGPTCalls)
 	}
 }
 
@@ -228,7 +228,7 @@ func TestNormalizeOllamaThinkingUsesRoutedModelContract(t *testing.T) {
 			omitEffort:    true,
 		},
 		{
-			name: "minimal maps to Ollama low",
+			name: "minimal maps to Rose low",
 			model: routingModel{Thinking: &routingThinkingMetadata{
 				Supported: true,
 				Levels:    []string{"low", "medium", "high"},
@@ -530,10 +530,10 @@ func TestLoadCatalogModelsReadsOptionalThinkingMetadata(t *testing.T) {
 }
 
 func TestCodexDesktopRoutesAutoReviewToSelectedNativeModel(t *testing.T) {
-	ollama := httptest.NewServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
-		t.Fatal("native selected model should not reach Ollama")
+	rose := httptest.NewServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
+		t.Fatal("native selected model should not reach Rose")
 	}))
-	defer ollama.Close()
+	defer rose.Close()
 
 	var models []string
 	var encodings []string
@@ -556,7 +556,7 @@ func TestCodexDesktopRoutesAutoReviewToSelectedNativeModel(t *testing.T) {
 	}))
 	defer chatGPT.Close()
 
-	handler := newTestCodexDesktop(t, ollama.URL, chatGPT.URL, writeCatalogWithSelectedAutoReview(t, "glm-5.3-flash:cloud", "glm-5.3-flash:cloud"))
+	handler := newTestCodexDesktop(t, rose.URL, chatGPT.URL, writeCatalogWithSelectedAutoReview(t, "glm-5.3-flash:cloud", "glm-5.3-flash:cloud"))
 	proxy := httptest.NewServer(handler)
 	defer proxy.Close()
 
@@ -580,7 +580,7 @@ func TestCodexDesktopRoutesAutoReviewToSelectedNativeModel(t *testing.T) {
 func TestCodexDesktopRoutesAutoReviewToSelectedOllamaModel(t *testing.T) {
 	var models []string
 	var guardianBody map[string]json.RawMessage
-	ollama := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	rose := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var payload map[string]json.RawMessage
 		if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
 			t.Fatal(err)
@@ -598,33 +598,33 @@ func TestCodexDesktopRoutesAutoReviewToSelectedOllamaModel(t *testing.T) {
 		}
 		w.WriteHeader(http.StatusNoContent)
 	}))
-	defer ollama.Close()
+	defer rose.Close()
 	chatGPT := httptest.NewServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
-		t.Fatal("Ollama selected model should not reach ChatGPT")
+		t.Fatal("Rose selected model should not reach ChatGPT")
 	}))
 	defer chatGPT.Close()
 
-	handler := newTestCodexDesktop(t, ollama.URL, chatGPT.URL, writeCatalogWithSelectedAutoReview(t, "glm-5.3-flash:cloud", "glm-5.3-flash:cloud", "deepseek-v3.1:671b-cloud"))
+	handler := newTestCodexDesktop(t, rose.URL, chatGPT.URL, writeCatalogWithSelectedAutoReview(t, "glm-5.3-flash:cloud", "glm-5.3-flash:cloud", "deepseek-v3.1:671b-cloud"))
 	proxy := httptest.NewServer(handler)
 	defer proxy.Close()
 
-	postCodexRequest(t, proxy.URL, `{"model":"deepseek-v3.1:671b-cloud","client_metadata":{"turn_id":"turn-ollama"}}`, false)
-	postCodexRequest(t, proxy.URL, `{"model":"codex-auto-review","client_metadata":{"parent_turn_id":"turn-ollama"},"input":[{"role":"user","content":"review"}],"text":{"format":{"type":"json_schema"}}}`, false)
+	postCodexRequest(t, proxy.URL, `{"model":"deepseek-v3.1:671b-cloud","client_metadata":{"turn_id":"turn-rose"}}`, false)
+	postCodexRequest(t, proxy.URL, `{"model":"codex-auto-review","client_metadata":{"parent_turn_id":"turn-rose"},"input":[{"role":"user","content":"review"}],"text":{"format":{"type":"json_schema"}}}`, false)
 
 	if strings.Join(models, ",") != "deepseek-v3.1:671b-cloud,deepseek-v3.1:671b-cloud" {
-		t.Fatalf("forwarded models = %q, want selected Ollama model for Guardian", models)
+		t.Fatalf("forwarded models = %q, want selected Rose model for Guardian", models)
 	}
 	if _, ok := guardianBody["text"]; ok {
-		t.Fatalf("Ollama Guardian retained competing structured output: %#v", guardianBody)
+		t.Fatalf("Rose Guardian retained competing structured output: %#v", guardianBody)
 	}
 	if _, ok := guardianBody["tools"]; !ok {
-		t.Fatalf("Ollama Guardian decision tool is missing: %#v", guardianBody)
+		t.Fatalf("Rose Guardian decision tool is missing: %#v", guardianBody)
 	}
 }
 
 func TestCodexDesktopSelectedAutoReviewFallsBackWithoutParentTurn(t *testing.T) {
 	var gotModel string
-	ollama := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	rose := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var payload struct {
 			Model string `json:"model"`
 		}
@@ -635,13 +635,13 @@ func TestCodexDesktopSelectedAutoReviewFallsBackWithoutParentTurn(t *testing.T) 
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = io.WriteString(w, autoReviewJSONResponse(`{"risk_level":"low","user_authorization":"high","outcome":"allow","rationale":"Allowed."}`))
 	}))
-	defer ollama.Close()
+	defer rose.Close()
 	chatGPT := httptest.NewServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
 		t.Fatal("selected Auto-review fallback should not reach ChatGPT")
 	}))
 	defer chatGPT.Close()
 
-	handler := newTestCodexDesktop(t, ollama.URL, chatGPT.URL, writeCatalogWithSelectedAutoReview(t, "glm-5.3-flash:cloud", "glm-5.3-flash:cloud"))
+	handler := newTestCodexDesktop(t, rose.URL, chatGPT.URL, writeCatalogWithSelectedAutoReview(t, "glm-5.3-flash:cloud", "glm-5.3-flash:cloud"))
 	proxy := httptest.NewServer(handler)
 	defer proxy.Close()
 
@@ -666,19 +666,19 @@ func TestTurnModelCacheIsBounded(t *testing.T) {
 
 func TestCodexDesktopRoutesAutoReviewToConfiguredOllamaModel(t *testing.T) {
 	var gotBody []byte
-	ollama := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	rose := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		gotBody, _ = io.ReadAll(r.Body)
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = io.WriteString(w, autoReviewJSONResponse(`{"risk_level":"low","user_authorization":"high","outcome":"allow","rationale":"The user requested this action."}`))
 	}))
-	defer ollama.Close()
+	defer rose.Close()
 
 	chatGPT := httptest.NewServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
 		t.Fatal("configured Auto-review request should not reach ChatGPT")
 	}))
 	defer chatGPT.Close()
 
-	handler := newTestCodexDesktop(t, ollama.URL, chatGPT.URL, writeCatalogWithAutoReview(t, "glm-5.3-flash:cloud", "glm-5.3-flash:cloud"))
+	handler := newTestCodexDesktop(t, rose.URL, chatGPT.URL, writeCatalogWithAutoReview(t, "glm-5.3-flash:cloud", "glm-5.3-flash:cloud"))
 	proxy := httptest.NewServer(handler)
 	defer proxy.Close()
 
@@ -717,7 +717,7 @@ func TestCodexDesktopRoutesAutoReviewToConfiguredOllamaModel(t *testing.T) {
 		t.Fatal(err)
 	}
 	if forwarded.Model != "glm-5.3-flash:cloud" {
-		t.Fatalf("forwarded model = %q, want selected Ollama model", forwarded.Model)
+		t.Fatalf("forwarded model = %q, want selected Rose model", forwarded.Model)
 	}
 	if len(forwarded.Input) != 1 || len(forwarded.Input[0].Content) != 2 {
 		t.Fatalf("forwarded input = %#v", forwarded.Input)
@@ -1014,10 +1014,10 @@ func TestTransformAutoReviewResponsePreservesProviderFailure(t *testing.T) {
 }
 
 func TestCodexDesktopKeepsAutoReviewOnChatGPTByDefault(t *testing.T) {
-	ollama := httptest.NewServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
-		t.Fatal("native Auto-review request should not reach Ollama")
+	rose := httptest.NewServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
+		t.Fatal("native Auto-review request should not reach Rose")
 	}))
-	defer ollama.Close()
+	defer rose.Close()
 
 	var gotModel string
 	chatGPT := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -1032,7 +1032,7 @@ func TestCodexDesktopKeepsAutoReviewOnChatGPTByDefault(t *testing.T) {
 	}))
 	defer chatGPT.Close()
 
-	handler := newTestCodexDesktop(t, ollama.URL, chatGPT.URL, writeCatalog(t, "glm-5.3-flash:cloud"))
+	handler := newTestCodexDesktop(t, rose.URL, chatGPT.URL, writeCatalog(t, "glm-5.3-flash:cloud"))
 	proxy := httptest.NewServer(handler)
 	defer proxy.Close()
 
@@ -1078,17 +1078,17 @@ func TestCodexDesktopRejectsAutoReviewModelOutsideRoutingCatalog(t *testing.T) {
 
 func TestCodexDesktopNormalizesCodexOnlyHistoryForOllama(t *testing.T) {
 	var gotBody []byte
-	ollama := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	rose := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		gotBody, _ = io.ReadAll(r.Body)
 		w.WriteHeader(http.StatusOK)
 	}))
-	defer ollama.Close()
+	defer rose.Close()
 	chatGPT := httptest.NewServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
-		t.Fatal("Ollama model should not reach ChatGPT")
+		t.Fatal("Rose model should not reach ChatGPT")
 	}))
 	defer chatGPT.Close()
 
-	handler := newTestCodexDesktop(t, ollama.URL, chatGPT.URL, writeCatalog(t, "glm-5.2:cloud"))
+	handler := newTestCodexDesktop(t, rose.URL, chatGPT.URL, writeCatalog(t, "glm-5.2:cloud"))
 	proxy := httptest.NewServer(handler)
 	defer proxy.Close()
 
@@ -1124,7 +1124,7 @@ func TestCodexDesktopNormalizesCodexOnlyHistoryForOllama(t *testing.T) {
 	}
 	developer := forwarded.Input[0]
 	if developer["type"] != "message" || developer["role"] != "system" {
-		t.Fatalf("developer instructions were not promoted for Ollama: %#v", developer)
+		t.Fatalf("developer instructions were not promoted for Rose: %#v", developer)
 	}
 	call := forwarded.Input[1]
 	if call["type"] != "function_call" || call["call_id"] != "call_1" || call["name"] != "apply_patch" {
@@ -1144,17 +1144,17 @@ func TestCodexDesktopNormalizesCodexOnlyHistoryForOllama(t *testing.T) {
 
 func TestCodexDesktopPreservesToolSearchAndOllamaCompactionForOllama(t *testing.T) {
 	var gotBody []byte
-	ollama := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	rose := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		gotBody, _ = io.ReadAll(r.Body)
 		w.WriteHeader(http.StatusOK)
 	}))
-	defer ollama.Close()
+	defer rose.Close()
 	chatGPT := httptest.NewServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
-		t.Fatal("Ollama model should not reach ChatGPT")
+		t.Fatal("Rose model should not reach ChatGPT")
 	}))
 	defer chatGPT.Close()
 
-	handler := newTestCodexDesktop(t, ollama.URL, chatGPT.URL, writeCatalog(t, "glm-5.3-flash:cloud"))
+	handler := newTestCodexDesktop(t, rose.URL, chatGPT.URL, writeCatalog(t, "glm-5.3-flash:cloud"))
 	proxy := httptest.NewServer(handler)
 	defer proxy.Close()
 
@@ -1197,17 +1197,17 @@ func TestCodexDesktopPreservesToolSearchAndOllamaCompactionForOllama(t *testing.
 
 func TestCodexDesktopFiltersNativeReasoningWhenSwitchingToOllama(t *testing.T) {
 	var gotBody []byte
-	ollama := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	rose := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		gotBody, _ = io.ReadAll(r.Body)
 		w.WriteHeader(http.StatusOK)
 	}))
-	defer ollama.Close()
+	defer rose.Close()
 	chatGPT := httptest.NewServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
-		t.Fatal("Ollama model should not reach ChatGPT")
+		t.Fatal("Rose model should not reach ChatGPT")
 	}))
 	defer chatGPT.Close()
 
-	handler := newTestCodexDesktop(t, ollama.URL, chatGPT.URL, writeCatalog(t, "glm-5.3-flash:cloud"))
+	handler := newTestCodexDesktop(t, rose.URL, chatGPT.URL, writeCatalog(t, "glm-5.3-flash:cloud"))
 	proxy := httptest.NewServer(handler)
 	defer proxy.Close()
 
@@ -1215,8 +1215,8 @@ func TestCodexDesktopFiltersNativeReasoningWhenSwitchingToOllama(t *testing.T) {
 		"model":"glm-5.3-flash:cloud",
 		"input":[
 			{"type":"reasoning","id":"rs_098c6fb068ce51bf016a9709ab7dcc87d185ecc21991f0f39c","encrypted_content":"gAAAAAB-native"},
-			{"type":"reasoning","id":"rs_713083","encrypted_content":"Ollama plaintext thinking"},
-			{"type":"reasoning","id":"rs_resp_123456","encrypted_content":"More Ollama thinking"},
+			{"type":"reasoning","id":"rs_713083","encrypted_content":"Rose plaintext thinking"},
+			{"type":"reasoning","id":"rs_resp_123456","encrypted_content":"More Rose thinking"},
 			{"type":"message","role":"user","content":[{"type":"input_text","text":"continue"}]}
 		]
 	}`
@@ -1239,7 +1239,7 @@ func TestCodexDesktopFiltersNativeReasoningWhenSwitchingToOllama(t *testing.T) {
 		t.Fatalf("forwarded input = %#v", forwarded.Input)
 	}
 	if forwarded.Input[0]["id"] != "rs_713083" || forwarded.Input[1]["id"] != "rs_resp_123456" {
-		t.Fatalf("Ollama reasoning was not preserved: %#v", forwarded.Input)
+		t.Fatalf("Rose reasoning was not preserved: %#v", forwarded.Input)
 	}
 	if forwarded.Input[2]["type"] != "message" {
 		t.Fatalf("message was not preserved: %#v", forwarded.Input[2])
@@ -1247,10 +1247,10 @@ func TestCodexDesktopFiltersNativeReasoningWhenSwitchingToOllama(t *testing.T) {
 }
 
 func TestCodexDesktopPassesNativeModelToChatGPT(t *testing.T) {
-	ollama := httptest.NewServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
-		t.Fatal("native model should not reach Ollama")
+	rose := httptest.NewServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
+		t.Fatal("native model should not reach Rose")
 	}))
-	defer ollama.Close()
+	defer rose.Close()
 
 	var gotPath, gotAuthorization, gotMetadata string
 	var gotBody []byte
@@ -1264,7 +1264,7 @@ func TestCodexDesktopPassesNativeModelToChatGPT(t *testing.T) {
 	}))
 	defer chatGPT.Close()
 
-	handler := newTestCodexDesktop(t, ollama.URL, chatGPT.URL+"/backend-api/codex", writeCatalog(t, "glm-5.2:cloud"))
+	handler := newTestCodexDesktop(t, rose.URL, chatGPT.URL+"/backend-api/codex", writeCatalog(t, "glm-5.2:cloud"))
 	proxy := httptest.NewServer(handler)
 	defer proxy.Close()
 
@@ -1297,10 +1297,10 @@ func TestCodexDesktopPassesNativeModelToChatGPT(t *testing.T) {
 }
 
 func TestCodexDesktopPassesNativeModelToOpenAIAPIWithAPIKey(t *testing.T) {
-	ollama := httptest.NewServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
-		t.Fatal("native model should not reach Ollama")
+	rose := httptest.NewServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
+		t.Fatal("native model should not reach Rose")
 	}))
-	defer ollama.Close()
+	defer rose.Close()
 	chatGPT := httptest.NewServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
 		t.Fatal("API-key request should not reach the ChatGPT subscription endpoint")
 	}))
@@ -1316,7 +1316,7 @@ func TestCodexDesktopPassesNativeModelToOpenAIAPIWithAPIKey(t *testing.T) {
 	defer openAI.Close()
 
 	handler, err := NewCodexDesktop(CodexDesktopConfig{
-		OllamaURL:          ollama.URL,
+		OllamaURL:          rose.URL,
 		ChatGPTURL:         chatGPT.URL + "/backend-api/codex",
 		OpenAIURL:          openAI.URL + "/v1",
 		RoutingCatalogPath: writeCatalog(t, "glm-5.2:cloud"),
@@ -1356,10 +1356,10 @@ func TestCodexDesktopPassesNativeModelToOpenAIAPIWithAPIKey(t *testing.T) {
 
 func TestCodexDesktopRejectsManagedAPIKeyForNativeModel(t *testing.T) {
 	ollamaCalled := false
-	ollama := httptest.NewServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
+	rose := httptest.NewServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
 		ollamaCalled = true
 	}))
-	defer ollama.Close()
+	defer rose.Close()
 	chatGPTCalled := false
 	chatGPT := httptest.NewServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
 		chatGPTCalled = true
@@ -1372,7 +1372,7 @@ func TestCodexDesktopRejectsManagedAPIKeyForNativeModel(t *testing.T) {
 	defer openAI.Close()
 
 	handler, err := NewCodexDesktop(CodexDesktopConfig{
-		OllamaURL:          ollama.URL,
+		OllamaURL:          rose.URL,
 		ChatGPTURL:         chatGPT.URL + "/backend-api/codex",
 		OpenAIURL:          openAI.URL + "/v1",
 		RoutingCatalogPath: writeCatalog(t, "glm-5.2:cloud"),
@@ -1406,15 +1406,15 @@ func TestCodexDesktopRejectsManagedAPIKeyForNativeModel(t *testing.T) {
 		t.Fatalf("body = %q, want sign-in recovery", body)
 	}
 	if ollamaCalled || chatGPTCalled || openAICalled {
-		t.Fatalf("managed API key escaped local rejection: ollama=%v chatgpt=%v openai=%v", ollamaCalled, chatGPTCalled, openAICalled)
+		t.Fatalf("managed API key escaped local rejection: rose=%v chatgpt=%v openai=%v", ollamaCalled, chatGPTCalled, openAICalled)
 	}
 }
 
 func TestCodexDesktopPreservesCompressedNativeRequestWithoutOllamaReasoning(t *testing.T) {
-	ollama := httptest.NewServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
-		t.Fatal("native model should not reach Ollama")
+	rose := httptest.NewServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
+		t.Fatal("native model should not reach Rose")
 	}))
-	defer ollama.Close()
+	defer rose.Close()
 
 	var gotEncoding string
 	var gotBody []byte
@@ -1425,7 +1425,7 @@ func TestCodexDesktopPreservesCompressedNativeRequestWithoutOllamaReasoning(t *t
 	}))
 	defer chatGPT.Close()
 
-	handler := newTestCodexDesktop(t, ollama.URL, chatGPT.URL+"/backend-api/codex", writeCatalog(t, "glm-5.3-flash:cloud"))
+	handler := newTestCodexDesktop(t, rose.URL, chatGPT.URL+"/backend-api/codex", writeCatalog(t, "glm-5.3-flash:cloud"))
 	proxy := httptest.NewServer(handler)
 	defer proxy.Close()
 
@@ -1461,10 +1461,10 @@ func TestCodexDesktopPreservesCompressedNativeRequestWithoutOllamaReasoning(t *t
 }
 
 func TestCodexDesktopFiltersOllamaProviderStateWhenSwitchingToNativeModel(t *testing.T) {
-	ollama := httptest.NewServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
-		t.Fatal("native model should not reach Ollama")
+	rose := httptest.NewServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
+		t.Fatal("native model should not reach Rose")
 	}))
-	defer ollama.Close()
+	defer rose.Close()
 
 	var gotAuthorization, gotEncoding string
 	var gotBody []byte
@@ -1476,7 +1476,7 @@ func TestCodexDesktopFiltersOllamaProviderStateWhenSwitchingToNativeModel(t *tes
 	}))
 	defer chatGPT.Close()
 
-	handler := newTestCodexDesktop(t, ollama.URL, chatGPT.URL+"/backend-api/codex", writeCatalog(t, "glm-5.3-flash:cloud"))
+	handler := newTestCodexDesktop(t, rose.URL, chatGPT.URL+"/backend-api/codex", writeCatalog(t, "glm-5.3-flash:cloud"))
 	proxy := httptest.NewServer(handler)
 	defer proxy.Close()
 
@@ -1563,16 +1563,16 @@ func TestIsOllamaReasoningItemID(t *testing.T) {
 }
 
 func TestCodexDesktopRequestsHTTPFallbackForWebSocketUpgrade(t *testing.T) {
-	ollama := httptest.NewServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
-		t.Fatal("WebSocket fallback should not reach Ollama")
+	rose := httptest.NewServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
+		t.Fatal("WebSocket fallback should not reach Rose")
 	}))
-	defer ollama.Close()
+	defer rose.Close()
 	chatGPT := httptest.NewServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
 		t.Fatal("WebSocket fallback should not reach ChatGPT")
 	}))
 	defer chatGPT.Close()
 
-	handler := newTestCodexDesktop(t, ollama.URL, chatGPT.URL+"/backend-api/codex", writeCatalog(t, "glm-5.2:cloud"))
+	handler := newTestCodexDesktop(t, rose.URL, chatGPT.URL+"/backend-api/codex", writeCatalog(t, "glm-5.2:cloud"))
 	proxy := httptest.NewServer(handler)
 	defer proxy.Close()
 
@@ -1596,17 +1596,17 @@ func TestCodexDesktopRequestsHTTPFallbackForWebSocketUpgrade(t *testing.T) {
 }
 
 func TestCodexDesktopStatusReportsObservedRoutes(t *testing.T) {
-	ollama := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+	rose := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	}))
-	defer ollama.Close()
+	defer rose.Close()
 
 	chatGPT := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusAccepted)
 	}))
 	defer chatGPT.Close()
 
-	handler := newTestCodexDesktop(t, ollama.URL, chatGPT.URL+"/backend-api/codex", writeCatalog(t, "glm-5.2:cloud"))
+	handler := newTestCodexDesktop(t, rose.URL, chatGPT.URL+"/backend-api/codex", writeCatalog(t, "glm-5.2:cloud"))
 	proxy := httptest.NewServer(handler)
 	defer proxy.Close()
 
@@ -1645,16 +1645,16 @@ func TestCodexDesktopStatusReportsObservedRoutes(t *testing.T) {
 }
 
 func TestCodexDesktopCountersExcludeProbesAndFailedRetries(t *testing.T) {
-	ollama := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+	rose := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 	}))
-	defer ollama.Close()
+	defer rose.Close()
 	chatGPT := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 	}))
 	defer chatGPT.Close()
 
-	handler := newTestCodexDesktop(t, ollama.URL, chatGPT.URL+"/backend-api/codex", writeCatalog(t, "glm-5.2:cloud"))
+	handler := newTestCodexDesktop(t, rose.URL, chatGPT.URL+"/backend-api/codex", writeCatalog(t, "glm-5.2:cloud"))
 	proxy := httptest.NewServer(handler)
 	defer proxy.Close()
 
@@ -1696,14 +1696,14 @@ func TestCodexDesktopCountersExcludeProbesAndFailedRetries(t *testing.T) {
 }
 
 func TestCodexDesktopWritesSafeActivityLog(t *testing.T) {
-	ollama := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+	rose := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	}))
-	defer ollama.Close()
+	defer rose.Close()
 
 	activityLogPath := filepath.Join(t.TempDir(), "logs", "codex-proxy.log")
 	handler, err := NewCodexDesktop(CodexDesktopConfig{
-		OllamaURL:          ollama.URL,
+		OllamaURL:          rose.URL,
 		ChatGPTURL:         "https://chatgpt.com/backend-api/codex",
 		RoutingCatalogPath: writeCatalog(t, "glm-5.2:cloud"),
 		ActivityLogPath:    activityLogPath,
@@ -1739,7 +1739,7 @@ func TestCodexDesktopWritesSafeActivityLog(t *testing.T) {
 		data, readErr := os.ReadFile(activityLogPath)
 		if readErr == nil {
 			logText = string(data)
-			if strings.Contains(logText, `route=ollama model="glm-5.2:cloud"`) {
+			if strings.Contains(logText, `route=rose model="glm-5.2:cloud"`) {
 				break
 			}
 		}
@@ -1747,12 +1747,12 @@ func TestCodexDesktopWritesSafeActivityLog(t *testing.T) {
 			if readErr != nil {
 				t.Fatal(readErr)
 			}
-			t.Fatalf("activity log missing %q:\n%s", `route=ollama model="glm-5.2:cloud"`, logText)
+			t.Fatalf("activity log missing %q:\n%s", `route=rose model="glm-5.2:cloud"`, logText)
 		}
 		time.Sleep(time.Millisecond)
 	}
 	for _, want := range []string{
-		`route=ollama model="glm-5.2:cloud"`,
+		`route=rose model="glm-5.2:cloud"`,
 		"method=POST path=/v1/responses status=200",
 		"result=ok",
 	} {
@@ -1818,7 +1818,7 @@ func TestCodexDesktopRecordsMidstreamAbortWithoutPanicking(t *testing.T) {
 	}
 	logText := string(data)
 	for _, want := range []string{
-		`route=ollama model="glm-5.3-flash:cloud"`,
+		`route=rose model="glm-5.3-flash:cloud"`,
 		"status=200",
 		"result=stream_error",
 	} {
@@ -2108,11 +2108,11 @@ func TestCodexDesktopDoesNotAddForwardedHeaders(t *testing.T) {
 		return forwarded
 	}
 	var ollamaForwarded, nativeForwarded []string
-	ollama := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	rose := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ollamaForwarded = forwardedHeaders(r)
 		w.WriteHeader(http.StatusOK)
 	}))
-	defer ollama.Close()
+	defer rose.Close()
 
 	native := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		nativeForwarded = forwardedHeaders(r)
@@ -2121,7 +2121,7 @@ func TestCodexDesktopDoesNotAddForwardedHeaders(t *testing.T) {
 	defer native.Close()
 
 	catalogPath := writeCatalog(t, "glm-5.2:cloud")
-	handler := newTestCodexDesktop(t, ollama.URL, native.URL, catalogPath)
+	handler := newTestCodexDesktop(t, rose.URL, native.URL, catalogPath)
 	proxy := httptest.NewServer(handler)
 	defer proxy.Close()
 
@@ -2139,7 +2139,7 @@ func TestCodexDesktopDoesNotAddForwardedHeaders(t *testing.T) {
 		resp.Body.Close()
 	}
 	if len(ollamaForwarded) != 0 {
-		t.Fatalf("Ollama received forwarding headers: %q", ollamaForwarded)
+		t.Fatalf("Rose received forwarding headers: %q", ollamaForwarded)
 	}
 	if len(nativeForwarded) != 0 {
 		t.Fatalf("native upstream received forwarding headers: %q", nativeForwarded)
@@ -2154,13 +2154,13 @@ func TestCodexDesktopPassesThroughRedirectResponse(t *testing.T) {
 	}))
 	defer native.Close()
 
-	ollama := httptest.NewServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
-		t.Fatal("native model should not reach Ollama")
+	rose := httptest.NewServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
+		t.Fatal("native model should not reach Rose")
 	}))
-	defer ollama.Close()
+	defer rose.Close()
 
 	catalogPath := writeCatalog(t, "glm-5.2:cloud")
-	handler := newTestCodexDesktop(t, ollama.URL, native.URL, catalogPath)
+	handler := newTestCodexDesktop(t, rose.URL, native.URL, catalogPath)
 	proxy := httptest.NewServer(handler)
 	defer proxy.Close()
 

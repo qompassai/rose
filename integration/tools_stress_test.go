@@ -12,7 +12,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ollama/ollama/api"
+	"github.com/qompassai/rose/api"
 )
 
 func registerToolStressCases(models []string) {
@@ -495,7 +495,7 @@ func checkNoLeakedTags(t *testing.T, content string) {
 }
 
 func contextLength(defaultVal int) int {
-	if s := os.Getenv("OLLAMA_CONTEXT_LENGTH"); s != "" {
+	if s := os.Getenv("ROSE_CONTEXT_LENGTH"); s != "" {
 		if n, err := strconv.Atoi(s); err == nil {
 			return n
 		}

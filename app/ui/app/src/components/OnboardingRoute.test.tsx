@@ -40,7 +40,7 @@ async function renderOnboarding(authenticated: boolean) {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   vi.stubGlobal("navigator", { platform: "MacIntel" });
   vi.stubGlobal("window", {
-    OLLAMA_PLATFORM: "darwin",
+    ROSE_PLATFORM: "darwin",
     location: { search: "" },
     setOnboardingWindow: vi.fn(),
   });

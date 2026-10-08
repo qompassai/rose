@@ -1,6 +1,6 @@
 package nn
 
-import "github.com/ollama/ollama/mlx"
+import "github.com/qompassai/rose/mlx"
 
 // RMSNorm represents an RMS normalization layer.
 type RMSNorm struct {

@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/ollama/ollama/logutil"
+	"github.com/qompassai/rose/logutil"
 )
 
 func TestHost(t *testing.T) {
@@ -38,13 +38,13 @@ func TestHost(t *testing.T) {
 		"http port":           {"http://1.2.3.4:4321", "http://1.2.3.4:4321"},
 		"https":               {"https://1.2.3.4", "https://1.2.3.4:443"},
 		"https port":          {"https://1.2.3.4:4321", "https://1.2.3.4:4321"},
-		"proxy path":          {"https://example.com/ollama", "https://example.com:443/ollama"},
+		"proxy path":          {"https://example.com/rose", "https://example.com:443/rose"},
 		"ollama.com":          {"ollama.com", "https://ollama.com:443"},
 	}
 
 	for name, tt := range cases {
 		t.Run(name, func(t *testing.T) {
-			t.Setenv("OLLAMA_HOST", tt.value)
+			t.Setenv("ROSE_HOST", tt.value)
 			if host := Host(); host.String() != tt.expect {
 				t.Errorf("%s: expected %s, got %s", name, tt.expect, host.String())
 			}
@@ -75,7 +75,7 @@ func TestConnectableHost(t *testing.T) {
 
 	for name, tt := range cases {
 		t.Run(name, func(t *testing.T) {
-			t.Setenv("OLLAMA_HOST", tt.value)
+			t.Setenv("ROSE_HOST", tt.value)
 			if host := ConnectableHost(); host.String() != tt.expect {
 				t.Errorf("%s: expected %s, got %s", name, tt.expect, host.String())
 			}
@@ -172,7 +172,7 @@ func TestOrigins(t *testing.T) {
 	}
 	for _, tt := range cases {
 		t.Run(tt.value, func(t *testing.T) {
-			t.Setenv("OLLAMA_ORIGINS", tt.value)
+			t.Setenv("ROSE_ORIGINS", tt.value)
 
 			if diff := cmp.Diff(AllowedOrigins(), tt.expect); diff != "" {
 				t.Errorf("%s: mismatch (-want +got):\n%s", tt.value, diff)
@@ -195,8 +195,8 @@ func TestBool(t *testing.T) {
 
 	for k, v := range cases {
 		t.Run(k, func(t *testing.T) {
-			t.Setenv("OLLAMA_BOOL", k)
-			if b := Bool("OLLAMA_BOOL")(); b != v {
+			t.Setenv("ROSE_BOOL", k)
+			if b := Bool("ROSE_BOOL")(); b != v {
 				t.Errorf("%s: expected %t, got %t", k, v, b)
 			}
 		})
@@ -218,8 +218,8 @@ func TestUint(t *testing.T) {
 
 	for k, v := range cases {
 		t.Run(k, func(t *testing.T) {
-			t.Setenv("OLLAMA_UINT", k)
-			if i := Uint("OLLAMA_UINT", 11434)(); i != v {
+			t.Setenv("ROSE_UINT", k)
+			if i := Uint("ROSE_UINT", 11434)(); i != v {
 				t.Errorf("%s: expected %d, got %d", k, v, i)
 			}
 		})
@@ -251,7 +251,7 @@ func TestKeepAlive(t *testing.T) {
 
 	for tt, expect := range cases {
 		t.Run(tt, func(t *testing.T) {
-			t.Setenv("OLLAMA_KEEP_ALIVE", tt)
+			t.Setenv("ROSE_KEEP_ALIVE", tt)
 			if actual := KeepAlive(); actual != expect {
 				t.Errorf("%s: expected %s, got %s", tt, expect, actual)
 			}
@@ -285,7 +285,7 @@ func TestLoadTimeout(t *testing.T) {
 
 	for tt, expect := range cases {
 		t.Run(tt, func(t *testing.T) {
-			t.Setenv("OLLAMA_LOAD_TIMEOUT", tt)
+			t.Setenv("ROSE_LOAD_TIMEOUT", tt)
 			if actual := LoadTimeout(); actual != expect {
 				t.Errorf("%s: expected %s, got %s", tt, expect, actual)
 			}
@@ -305,8 +305,8 @@ func TestVar(t *testing.T) {
 
 	for k, v := range cases {
 		t.Run(k, func(t *testing.T) {
-			t.Setenv("OLLAMA_VAR", k)
-			if s := Var("OLLAMA_VAR"); s != v {
+			t.Setenv("ROSE_VAR", k)
+			if s := Var("ROSE_VAR"); s != v {
 				t.Errorf("%s: expected %q, got %q", k, v, s)
 			}
 		})
@@ -321,7 +321,7 @@ func TestContextLength(t *testing.T) {
 
 	for k, v := range cases {
 		t.Run(k, func(t *testing.T) {
-			t.Setenv("OLLAMA_CONTEXT_LENGTH", k)
+			t.Setenv("ROSE_CONTEXT_LENGTH", k)
 			if i := ContextLength(); i != v {
 				t.Errorf("%s: expected %d, got %d", k, v, i)
 			}
@@ -352,7 +352,7 @@ func TestLogLevel(t *testing.T) {
 
 	for k, v := range cases {
 		t.Run(k, func(t *testing.T) {
-			t.Setenv("OLLAMA_DEBUG", k)
+			t.Setenv("ROSE_DEBUG", k)
 			if i := LogLevel(); i != v {
 				t.Errorf("%s: expected %d, got %d", k, v, i)
 			}
@@ -415,7 +415,7 @@ func TestNoCloud(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			home := t.TempDir()
 			if tt.configContent != "" {
-				configDir := filepath.Join(home, ".ollama")
+				configDir := filepath.Join(home, ".rose")
 				if err := os.MkdirAll(configDir, 0o755); err != nil {
 					t.Fatal(err)
 				}
@@ -425,7 +425,7 @@ func TestNoCloud(t *testing.T) {
 			}
 
 			setTestHome(t, home)
-			t.Setenv("OLLAMA_NO_CLOUD", tt.envValue)
+			t.Setenv("ROSE_NO_CLOUD", tt.envValue)
 
 			if got := NoCloud(); got != tt.wantDisabled {
 				t.Errorf("NoCloud() = %v, want %v", got, tt.wantDisabled)

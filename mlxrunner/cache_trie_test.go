@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ollama/ollama/mlxrunner/cache"
+	"github.com/qompassai/rose/mlxrunner/cache"
 )
 
 func newTestTrie(tokens []trieKey) *trieNode {

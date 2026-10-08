@@ -165,7 +165,7 @@ func (db *database) init() error {
 	}
 
 	// Clean up orphaned records created before foreign key constraints were properly enforced
-	// TODO: Can eventually be removed - cleans up data from foreign key bug (ollama/ollama#11785, ollama/app#476)
+	// TODO: Can eventually be removed - cleans up data from foreign key bug (rose/rose#11785, rose/app#476)
 	if err := db.cleanupOrphanedData(); err != nil {
 		return fmt.Errorf("cleanup orphaned data: %w", err)
 	}
@@ -515,7 +515,7 @@ func (db *database) migrateV12ToV13() error {
 }
 
 // migrateV13ToV14 changes the default context_length from 4096 to 0.
-// When context_length is 0, the ollama server uses VRAM-based tiered defaults.
+// When context_length is 0, the rose server uses VRAM-based tiered defaults.
 func (db *database) migrateV13ToV14() error {
 	_, err := db.conn.Exec(`UPDATE settings SET context_length = 0 WHERE context_length = 4096`)
 	if err != nil {

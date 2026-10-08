@@ -31,21 +31,21 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/ollama/ollama/api"
-	appui "github.com/ollama/ollama/app/ui"
-	"github.com/ollama/ollama/app/updater"
-	"github.com/ollama/ollama/app/version"
-	ollamaAuth "github.com/ollama/ollama/auth"
-	"github.com/ollama/ollama/cmd/launch"
-	"github.com/ollama/ollama/envconfig"
-	"github.com/ollama/ollama/internal/modelref"
-	"github.com/ollama/ollama/internal/proxy"
+	"github.com/qompassai/rose/api"
+	appui "github.com/qompassai/rose/app/ui"
+	"github.com/qompassai/rose/app/updater"
+	"github.com/qompassai/rose/app/version"
+	ollamaAuth "github.com/qompassai/rose/auth"
+	"github.com/qompassai/rose/cmd/launch"
+	"github.com/qompassai/rose/envconfig"
+	"github.com/qompassai/rose/internal/modelref"
+	"github.com/qompassai/rose/internal/proxy"
 	"golang.org/x/sys/unix"
 )
 
 var ollamaPath = func() string {
 	if updater.BundlePath != "" {
-		return filepath.Join(updater.BundlePath, "Contents", "Resources", "ollama")
+		return filepath.Join(updater.BundlePath, "Contents", "Resources", "rose")
 	}
 
 	pwd, err := os.Getwd()
@@ -53,7 +53,7 @@ var ollamaPath = func() string {
 		slog.Warn("failed to get pwd", "error", err)
 		return ""
 	}
-	return filepath.Join(pwd, "ollama")
+	return filepath.Join(pwd, "rose")
 }()
 
 type claudeProxyFailure uint8
@@ -78,8 +78,8 @@ type claudeDesktopController interface {
 
 var (
 	isApp              = updater.BundlePath != ""
-	appLogPath         = filepath.Join(os.Getenv("HOME"), ".ollama", "logs", "app.log")
-	launchAgentPath    = filepath.Join(os.Getenv("HOME"), "Library", "LaunchAgents", "com.ollama.ollama.plist")
+	appLogPath         = filepath.Join(os.Getenv("HOME"), ".rose", "logs", "app.log")
+	launchAgentPath    = filepath.Join(os.Getenv("HOME"), "Library", "LaunchAgents", "com.rose.rose.plist")
 	claudeAppProxy     *proxy.ClaudeDesktop
 	claudeProxyStartMu sync.Mutex
 	// Serialize default resets with connect, disconnect, and shutdown decisions.
@@ -119,7 +119,7 @@ var (
 	claudeLocalModelsResolver = currentClaudeDesktopLocalModels
 )
 
-var errClaudeDesktopAccessUnavailable = errors.New("Ollama couldn't verify the selected models. Try again")
+var errClaudeDesktopAccessUnavailable = errors.New("Rose couldn't verify the selected models. Try again")
 
 // TODO(jmorganca): pre-create the window and pass
 // it to the webview instead of using the internal one
@@ -185,7 +185,7 @@ func init() {
 	if len(os.Args) > 2 {
 		if os.Args[1] == "___launch___" {
 			path := strings.TrimPrefix(os.Args[2], "file://")
-			slog.Info("Ollama binary called as ShipIt - launching", "app", path)
+			slog.Info("Rose binary called as ShipIt - launching", "app", path)
 			appName := C.CString(path)
 			defer C.free(unsafe.Pointer(appName))
 			C.launchApp(appName)
@@ -392,7 +392,7 @@ func darwinOtherOllamaProcesses() ([]appProcessIdentity, error) {
 	var discovered *C.AppProcessIdentity
 	var count C.size_t
 	if !C.otherOllamaProcesses(&discovered, &count) {
-		return nil, errors.New("discover other Ollama app processes")
+		return nil, errors.New("discover other Rose app processes")
 	}
 	defer C.free(unsafe.Pointer(discovered))
 
@@ -410,7 +410,7 @@ func darwinAppProcessRunning(expected appProcessIdentity) (bool, error) {
 		return false, nil
 	}
 	if err != nil {
-		return false, fmt.Errorf("inspect Ollama app process %d: %w", expected.pid, err)
+		return false, fmt.Errorf("inspect Rose app process %d: %w", expected.pid, err)
 	}
 	return actual.sameProcess(expected), nil
 }
@@ -427,9 +427,9 @@ func stopDarwinAppProcess(process appProcessIdentity, mode appProcessStopMode) e
 	case appProcessStopForcefully:
 		processSignal = syscall.SIGKILL
 	}
-	slog.Info("signaling Ollama app process", "pid", process.pid, "signal", processSignal)
+	slog.Info("signaling Rose app process", "pid", process.pid, "signal", processSignal)
 	if err := syscall.Kill(process.pid, processSignal); err != nil && !errors.Is(err, syscall.ESRCH) {
-		return fmt.Errorf("signal Ollama app process %d: %w", process.pid, err)
+		return fmt.Errorf("signal Rose app process %d: %w", process.pid, err)
 	}
 	return nil
 }
@@ -453,7 +453,7 @@ func runDarwinAppSyncBarrier() bool {
 	}
 	switch {
 	case errors.Is(err, errNewerAppInstance):
-		slog.Info("newer Ollama app instance owns the handoff")
+		slog.Info("newer Rose app instance owns the handoff")
 	case err != nil:
 		slog.Warn("app instance sync barrier failed, continuing startup", "error", err)
 	}
@@ -484,7 +484,7 @@ func installSymlink() {
 	defer C.free(unsafe.Pointer(cliPath))
 
 	// Check the users path first
-	cmd, _ := exec.LookPath("ollama")
+	cmd, _ := exec.LookPath("rose")
 	if cmd != "" {
 		resolved, err := os.Readlink(cmd)
 		if err == nil {
@@ -496,7 +496,7 @@ func installSymlink() {
 			resolved = cmd
 		}
 		if resolved == ollamaPath {
-			slog.Info("ollama already in users PATH", "cli", cmd)
+			slog.Info("rose already in users PATH", "cli", cmd)
 			return
 		}
 	}
@@ -603,7 +603,7 @@ func startClaudeAppProxy() error {
 	}
 	if ollamaURL.Port() == gatewayPort {
 		return recordClaudeProxyFailure(
-			fmt.Errorf("OLLAMA_HOST cannot use port %s because it is reserved for Claude", gatewayPort),
+			fmt.Errorf("ROSE_HOST cannot use port %s because it is reserved for Claude", gatewayPort),
 			claudeProxyFailurePortConflict,
 		)
 	}
@@ -771,7 +771,7 @@ func refreshClaudeDesktopCatalog(ctx context.Context, current []proxy.ClaudeDesk
 		}
 	}
 	// Preserve installed local choices. Preserve cloud choices only when the
-	// refreshed account inventory still contains their exact Ollama route.
+	// refreshed account inventory still contains their exact Rose route.
 	for _, model := range current {
 		if !model.Cloud {
 			available = includeSelectedClaudeDesktopModels(available, []proxy.ClaudeDesktopModel{model})
@@ -965,7 +965,7 @@ func resolveClaudeDesktopAccessState(
 	status, err := cloudStatus(statusCtx)
 	cancel()
 	if err != nil {
-		return state, fmt.Errorf("check whether Ollama cloud is enabled: %w", err)
+		return state, fmt.Errorf("check whether Rose cloud is enabled: %w", err)
 	}
 	if status != nil && status.Cloud.Disabled {
 		state.Cloud = proxy.ClaudeDesktopCloudOff
@@ -984,7 +984,7 @@ func resolveClaudeDesktopAccessState(
 			state.Account = proxy.ClaudeDesktopAccountSignedOut
 			return state, nil
 		}
-		return state, fmt.Errorf("check Ollama account: %w", err)
+		return state, fmt.Errorf("check Rose account: %w", err)
 	}
 	if user == nil || strings.TrimSpace(user.Name) == "" {
 		state.Account = proxy.ClaudeDesktopAccountSignedOut
@@ -1097,21 +1097,21 @@ func validateClaudeDesktopModels(models []proxy.ClaudeDesktopModel, state proxy.
 
 	// Prefer the action that resolves the broadest part of the selected set.
 	if _, ok := reasons[proxy.ClaudeDesktopAccessCloudOff]; ok {
-		return errors.New("Cloud models are off. Choose an installed model in Ollama Settings")
+		return errors.New("Cloud models are off. Choose an installed model in Rose Settings")
 	}
 	if _, ok := reasons[proxy.ClaudeDesktopAccessSignInRequired]; ok {
-		return errors.New("Sign in to Ollama or choose an installed model in Ollama Settings")
+		return errors.New("Sign in to Rose or choose an installed model in Rose Settings")
 	}
 	if _, ok := reasons[proxy.ClaudeDesktopAccessUpgradeRequired]; ok {
 		return errors.New("Select another model in Settings to connect Claude")
 	}
 	if _, ok := reasons[proxy.ClaudeDesktopAccessModelNotInstalled]; ok {
-		return errors.New("Install the selected model or choose another model in Ollama Settings")
+		return errors.New("Install the selected model or choose another model in Rose Settings")
 	}
 	if _, ok := reasons[proxy.ClaudeDesktopAccessVerificationUnavailable]; ok {
 		return errClaudeDesktopAccessUnavailable
 	}
-	return errors.New("Choose at least one model in Ollama Settings")
+	return errors.New("Choose at least one model in Rose Settings")
 }
 
 func claudeGatewayPort() (string, error) {
@@ -1497,7 +1497,7 @@ func openClaudeDesktopApplication() error {
 func setClaudeDesktopAutoMode(enabled, restartConfirmed bool) error {
 	models := activeClaudeDesktopModels()
 	if enabled && !claudeDesktopModelsSupportAutoMode(models) {
-		return errors.New("select at least one cloud model available to your Ollama.com account")
+		return errors.New("select at least one cloud model available to your Rose.com account")
 	}
 	previous, err := launch.ClaudeDesktopAutoModeEnabled()
 	if err != nil {
@@ -1751,7 +1751,7 @@ func selectKnownClaudeDesktopModels(available, current []proxy.ClaudeDesktopMode
 	}
 	for _, name := range names {
 		if _, ok := allowed[strings.TrimSpace(name)]; !ok {
-			return nil, fmt.Errorf("model %q is not installed, recommended, or available to this Ollama.com account", name)
+			return nil, fmt.Errorf("model %q is not installed, recommended, or available to this Rose.com account", name)
 		}
 	}
 
@@ -1976,13 +1976,13 @@ func logStartup() {
 			if filepath.Base(p) == "MacOS" {
 				p = filepath.Dir(filepath.Dir(p))
 				if p != appPath {
-					slog.Info("starting sandboxed Ollama", "app", appPath, "sandbox", p)
+					slog.Info("starting sandboxed Rose", "app", appPath, "sandbox", p)
 					return
 				}
 			}
 		}
 	}
-	slog.Info("starting Ollama", "app", appPath, "version", version.Version, "OS", updater.UserAgentOS)
+	slog.Info("starting Rose", "app", appPath, "version", version.Version, "OS", updater.UserAgentOS)
 }
 
 func hideWindow(ptr unsafe.Pointer) {
@@ -2003,15 +2003,15 @@ func setOnboardingWindowStyle(ptr unsafe.Pointer, enabled bool) {
 }
 
 func runInBackground() {
-	cmd := exec.Command(filepath.Join(updater.BundlePath, "Contents", "MacOS", "Ollama"), "hidden")
+	cmd := exec.Command(filepath.Join(updater.BundlePath, "Contents", "MacOS", "Rose"), "hidden")
 	if cmd != nil {
 		err := cmd.Run()
 		if err != nil {
-			slog.Error("failed to run Ollama", "bundlePath", updater.BundlePath, "error", err)
+			slog.Error("failed to run Rose", "bundlePath", updater.BundlePath, "error", err)
 			os.Exit(1)
 		}
 	} else {
-		slog.Error("failed to start Ollama in background", "bundlePath", updater.BundlePath)
+		slog.Error("failed to start Rose in background", "bundlePath", updater.BundlePath)
 		os.Exit(1)
 	}
 }

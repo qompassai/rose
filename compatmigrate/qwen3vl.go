@@ -8,12 +8,12 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/ollama/ollama/fs/gguf"
+	"github.com/qompassai/rose/fs/gguf"
 )
 
 type qwen3VLMigrator struct{}
 
-// Mirrors detect_ollama_qwen3vl in llama/compat/llama-ollama-compat.cpp; keep the two in sync.
+// Mirrors detect_ollama_qwen3vl in llama/compat/llama-rose-compat.cpp; keep the two in sync.
 func (qwen3VLMigrator) NeedsMigration(src *SourceModel) bool {
 	arch := src.GGUF.KeyValue("general.architecture").String()
 	if arch != "qwen3vl" && arch != "qwen3vlmoe" {

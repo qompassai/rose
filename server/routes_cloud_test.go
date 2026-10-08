@@ -15,16 +15,16 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/ollama/ollama/api"
-	internalcloud "github.com/ollama/ollama/internal/cloud"
-	"github.com/ollama/ollama/middleware"
-	"github.com/ollama/ollama/version"
+	"github.com/qompassai/rose/api"
+	internalcloud "github.com/qompassai/rose/internal/cloud"
+	"github.com/qompassai/rose/middleware"
+	"github.com/qompassai/rose/version"
 )
 
 func TestStatusHandler(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	setTestHome(t, t.TempDir())
-	t.Setenv("OLLAMA_NO_CLOUD", "1")
+	t.Setenv("ROSE_NO_CLOUD", "1")
 
 	s := Server{}
 	w := createRequest(t, s.StatusHandler, nil)
@@ -48,7 +48,7 @@ func TestStatusHandler(t *testing.T) {
 func TestCloudDisabledBlocksRemoteOperations(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	setTestHome(t, t.TempDir())
-	t.Setenv("OLLAMA_NO_CLOUD", "1")
+	t.Setenv("ROSE_NO_CLOUD", "1")
 
 	s := Server{}
 
@@ -451,7 +451,7 @@ func TestExplicitCloudPassthroughAPIAndV1(t *testing.T) {
 		}
 
 		if strings.Contains(capture.body, `"options"`) {
-			t.Fatalf("expected no converted Ollama options in upstream body, got %q", capture.body)
+			t.Fatalf("expected no converted Rose options in upstream body, got %q", capture.body)
 		}
 
 		if got := capture.header.Get("X-Test-Header"); got != "v1-header" {
@@ -507,7 +507,7 @@ func TestExplicitCloudPassthroughAPIAndV1(t *testing.T) {
 		}
 
 		if strings.Contains(capture.body, `"options"`) {
-			t.Fatalf("expected no converted Ollama options in upstream body, got %q", capture.body)
+			t.Fatalf("expected no converted Rose options in upstream body, got %q", capture.body)
 		}
 
 		if got := capture.header.Get("X-Test-Header"); got != "v1-legacy-header" {
@@ -562,7 +562,7 @@ func TestExplicitCloudPassthroughAPIAndV1(t *testing.T) {
 		}
 
 		if strings.Contains(capture.body, `"options"`) {
-			t.Fatalf("expected no converted Ollama options in upstream body, got %q", capture.body)
+			t.Fatalf("expected no converted Rose options in upstream body, got %q", capture.body)
 		}
 	})
 
@@ -613,7 +613,7 @@ func TestExplicitCloudPassthroughAPIAndV1(t *testing.T) {
 		}
 
 		if strings.Contains(capture.body, `"options"`) {
-			t.Fatalf("expected no converted Ollama options in upstream body, got %q", capture.body)
+			t.Fatalf("expected no converted Rose options in upstream body, got %q", capture.body)
 		}
 	})
 
@@ -666,7 +666,7 @@ func TestExplicitCloudPassthroughAPIAndV1(t *testing.T) {
 		}
 
 		if !strings.Contains(capture.body, `"num_predict":10`) {
-			t.Fatalf("expected converted ollama options in upstream body, got %q", capture.body)
+			t.Fatalf("expected converted rose options in upstream body, got %q", capture.body)
 		}
 	})
 
@@ -732,7 +732,7 @@ func TestExplicitCloudPassthroughAPIAndV1(t *testing.T) {
 	})
 
 	t.Run("v1 model retrieve bypasses conversion", func(t *testing.T) {
-		upstream, capture := newUpstream(t, `{"id":"kimi-k2.5:cloud","object":"model","created":1,"owned_by":"ollama"}`)
+		upstream, capture := newUpstream(t, `{"id":"kimi-k2.5:cloud","object":"model","created":1,"owned_by":"rose"}`)
 		defer upstream.Close()
 
 		original := cloudProxyBaseURL
@@ -778,7 +778,7 @@ func TestExplicitCloudPassthroughAPIAndV1(t *testing.T) {
 	})
 
 	t.Run("v1 model retrieve normalizes legacy cloud suffix", func(t *testing.T) {
-		upstream, capture := newUpstream(t, `{"id":"kimi-k2.5:latest","object":"model","created":1,"owned_by":"ollama"}`)
+		upstream, capture := newUpstream(t, `{"id":"kimi-k2.5:latest","object":"model","created":1,"owned_by":"rose"}`)
 		defer upstream.Close()
 
 		original := cloudProxyBaseURL
@@ -827,15 +827,15 @@ func TestCloudResponsesWebSearchUsesLocalOrchestration(t *testing.T) {
 			chatCalls++
 			w.Header().Set("Content-Type", "application/x-ndjson")
 			if chatCalls == 1 {
-				_, _ = io.WriteString(w, `{"message":{"role":"assistant","tool_calls":[{"id":"call_1","function":{"name":"web_search","arguments":{"query":"latest Ollama release"}}}]},"done":false}`+"\n")
+				_, _ = io.WriteString(w, `{"message":{"role":"assistant","tool_calls":[{"id":"call_1","function":{"name":"web_search","arguments":{"query":"latest Rose release"}}}]},"done":false}`+"\n")
 				_, _ = io.WriteString(w, `{"message":{"role":"assistant"},"done":true,"prompt_eval_count":12,"prompt_eval_cached_count":5,"eval_count":4}`+"\n")
 				return
 			}
-			_, _ = io.WriteString(w, `{"message":{"role":"assistant","content":"Ollama [release](https://ollama.com/release)."},"done":true,"prompt_eval_count":20,"prompt_eval_cached_count":17,"eval_count":6}`)
+			_, _ = io.WriteString(w, `{"message":{"role":"assistant","content":"Rose [release](https://ollama.com/release)."},"done":true,"prompt_eval_count":20,"prompt_eval_cached_count":17,"eval_count":6}`)
 		case "/api/web_search":
 			searchCalls++
 			w.Header().Set("Content-Type", "application/json")
-			_, _ = io.WriteString(w, `{"results":[{"title":"Ollama release","url":"https://ollama.com/release","content":"current release"}]}`)
+			_, _ = io.WriteString(w, `{"results":[{"title":"Rose release","url":"https://ollama.com/release","content":"current release"}]}`)
 		default:
 			t.Fatalf("unexpected upstream path %q", r.URL.Path)
 		}
@@ -858,11 +858,11 @@ func TestCloudResponsesWebSearchUsesLocalOrchestration(t *testing.T) {
 	}
 	local := httptest.NewServer(router)
 	defer local.Close()
-	t.Setenv("OLLAMA_HOST", local.URL)
+	t.Setenv("ROSE_HOST", local.URL)
 
 	reqBody := `{
 		"model":"kimi-k2.5:cloud",
-		"input":"Find the latest Ollama release",
+		"input":"Find the latest Rose release",
 		"stream":true,
 		"tools":[{"type":"web_search","external_web_access":false}]
 	}`
@@ -941,7 +941,7 @@ func TestCloudResponsesUnsupportedWebSearchPassthrough(t *testing.T) {
 			capture.body = ""
 			reqBody := fmt.Sprintf(`{
 				"model":"kimi-k2.5:cloud",
-				"input":"Find the latest Ollama release",
+				"input":"Find the latest Rose release",
 				"tools":[{"type":%q}]
 			}`, toolType)
 			req, err := http.NewRequestWithContext(t.Context(), http.MethodPost, local.URL+"/v1/responses", bytes.NewBufferString(reqBody))
@@ -972,7 +972,7 @@ func TestCloudResponsesUnsupportedWebSearchPassthrough(t *testing.T) {
 func TestCloudDisabledBlocksExplicitCloudPassthrough(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	setTestHome(t, t.TempDir())
-	t.Setenv("OLLAMA_NO_CLOUD", "1")
+	t.Setenv("ROSE_NO_CLOUD", "1")
 
 	s := &Server{}
 	router, err := s.GenerateRoutes()

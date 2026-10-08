@@ -11,15 +11,15 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/envconfig"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/envconfig"
 )
 
 // Kimi implements Runner for Kimi Code CLI integration.
 type Kimi struct{}
 
 const (
-	kimiDefaultModelAlias     = "ollama"
+	kimiDefaultModelAlias     = "rose"
 	kimiDefaultMaxContextSize = 32768
 )
 
@@ -148,13 +148,13 @@ func validateKimiPassthroughArgs(args []string) error {
 	for _, arg := range args {
 		switch {
 		case arg == "--config", strings.HasPrefix(arg, "--config="):
-			return fmt.Errorf("conflicting extra argument %q: ollama launch kimi manages --config", arg)
+			return fmt.Errorf("conflicting extra argument %q: rose launch kimi manages --config", arg)
 		case arg == "--config-file", strings.HasPrefix(arg, "--config-file="):
-			return fmt.Errorf("conflicting extra argument %q: ollama launch kimi manages --config-file", arg)
+			return fmt.Errorf("conflicting extra argument %q: rose launch kimi manages --config-file", arg)
 		case arg == "--model", strings.HasPrefix(arg, "--model="):
-			return fmt.Errorf("conflicting extra argument %q: ollama launch kimi manages --model", arg)
+			return fmt.Errorf("conflicting extra argument %q: rose launch kimi manages --model", arg)
 		case arg == "-m", strings.HasPrefix(arg, "-m="):
-			return fmt.Errorf("conflicting extra argument %q: ollama launch kimi manages -m/--model", arg)
+			return fmt.Errorf("conflicting extra argument %q: rose launch kimi manages -m/--model", arg)
 		}
 	}
 	return nil
@@ -167,7 +167,7 @@ func buildKimiInlineConfig(model string, maxContextSize int) (string, error) {
 			kimiDefaultModelAlias: map[string]any{
 				"type":     "openai_legacy",
 				"base_url": envconfig.ConnectableHost().String() + "/v1",
-				"api_key":  "ollama",
+				"api_key":  "rose",
 			},
 		},
 		"models": map[string]any{
@@ -277,7 +277,7 @@ func checkKimiInstallerDependencies() error {
 	switch kimiGOOS {
 	case "windows":
 		if _, err := exec.LookPath("powershell"); err != nil {
-			return fmt.Errorf("kimi is not installed and required dependencies are missing\n\nInstall the following first:\n  PowerShell: https://learn.microsoft.com/powershell/\n\nThen re-run:\n  ollama launch kimi")
+			return fmt.Errorf("kimi is not installed and required dependencies are missing\n\nInstall the following first:\n  PowerShell: https://learn.microsoft.com/powershell/\n\nThen re-run:\n  rose launch kimi")
 		}
 	default:
 		var missing []string
@@ -288,7 +288,7 @@ func checkKimiInstallerDependencies() error {
 			missing = append(missing, "bash: https://www.gnu.org/software/bash/")
 		}
 		if len(missing) > 0 {
-			return fmt.Errorf("kimi is not installed and required dependencies are missing\n\nInstall the following first:\n  %s\n\nThen re-run:\n  ollama launch kimi", strings.Join(missing, "\n  "))
+			return fmt.Errorf("kimi is not installed and required dependencies are missing\n\nInstall the following first:\n  %s\n\nThen re-run:\n  rose launch kimi", strings.Join(missing, "\n  "))
 		}
 	}
 	return nil

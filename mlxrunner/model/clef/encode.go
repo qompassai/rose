@@ -3,8 +3,8 @@ package clef
 import (
 	"fmt"
 
-	"github.com/ollama/ollama/llm"
-	"github.com/ollama/ollama/mlxrunner/tokenizer"
+	"github.com/qompassai/rose/llm"
+	"github.com/qompassai/rose/mlxrunner/tokenizer"
 )
 
 type tokenSpan struct{ start, end int }

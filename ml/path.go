@@ -79,22 +79,22 @@ func libOllamaPathCandidates(search libOllamaPathSearch) []string {
 		exeDir := filepath.Dir(search.executable)
 		switch goos {
 		case "darwin":
-			// Local dist output and standard installs keep helpers under lib/ollama.
-			add(filepath.Join(exeDir, "lib", "ollama"))
-			add(filepath.Join(exeDir, "..", "lib", "ollama"))
+			// Local dist output and standard installs keep helpers under lib/rose.
+			add(filepath.Join(exeDir, "lib", "rose"))
+			add(filepath.Join(exeDir, "..", "lib", "rose"))
 		case "linux":
-			add(filepath.Join(exeDir, "..", "lib", "ollama"))
-			add(filepath.Join(exeDir, "lib", "ollama"))
+			add(filepath.Join(exeDir, "..", "lib", "rose"))
+			add(filepath.Join(exeDir, "lib", "rose"))
 		case "windows":
-			add(filepath.Join(exeDir, "lib", "ollama"))
-			add(filepath.Join(exeDir, "..", "lib", "ollama"))
+			add(filepath.Join(exeDir, "lib", "rose"))
+			add(filepath.Join(exeDir, "..", "lib", "rose"))
 		default:
-			add(filepath.Join(exeDir, "lib", "ollama"))
-			add(filepath.Join(exeDir, "..", "lib", "ollama"))
+			add(filepath.Join(exeDir, "lib", "rose"))
+			add(filepath.Join(exeDir, "..", "lib", "rose"))
 		}
 		addLocalLibOllamaPaths(add, exeDir, goos, goarch)
 		if goos == "darwin" {
-			// macOS release artifacts colocate native helpers with ollama.
+			// macOS release artifacts colocate native helpers with rose.
 			add(exeDir)
 		}
 	}
@@ -107,10 +107,10 @@ func addLocalLibOllamaPaths(add func(string), base, goos, goarch string) {
 	if base == "" {
 		return
 	}
-	add(filepath.Join(base, "build", "lib", "ollama"))
-	add(filepath.Join(base, "dist", goos+"-"+goarch, "lib", "ollama"))
+	add(filepath.Join(base, "build", "lib", "rose"))
+	add(filepath.Join(base, "dist", goos+"-"+goarch, "lib", "rose"))
 	if goos+"_"+goarch != goos+"-"+goarch {
-		add(filepath.Join(base, "dist", goos+"_"+goarch, "lib", "ollama"))
+		add(filepath.Join(base, "dist", goos+"_"+goarch, "lib", "rose"))
 	}
 	if goos == "darwin" {
 		add(filepath.Join(base, "dist", "darwin"))

@@ -38,19 +38,19 @@ static void configureChatGPTRestartAlert(NSAlert *alert,
                                          ChatGPTRestartAction action) {
     switch (action) {
     case ChatGPTRestartActionAddModels:
-        [alert setMessageText:@"Restart ChatGPT to add Ollama models?"];
+        [alert setMessageText:@"Restart ChatGPT to add Rose models?"];
         [alert setInformativeText:
-            @"ChatGPT must restart to add Ollama models. Any running task will stop."];
+            @"ChatGPT must restart to add Rose models. Any running task will stop."];
         break;
     case ChatGPTRestartActionUpdateModels:
-        [alert setMessageText:@"Restart ChatGPT to update Ollama models?"];
+        [alert setMessageText:@"Restart ChatGPT to update Rose models?"];
         [alert setInformativeText:
-            @"ChatGPT must restart to update Ollama models. Any running task will stop."];
+            @"ChatGPT must restart to update Rose models. Any running task will stop."];
         break;
     case ChatGPTRestartActionRemoveModels:
-        [alert setMessageText:@"Restart ChatGPT to remove Ollama models?"];
+        [alert setMessageText:@"Restart ChatGPT to remove Rose models?"];
         [alert setInformativeText:
-            @"ChatGPT must restart to remove Ollama models. Any running task will stop."];
+            @"ChatGPT must restart to remove Rose models. Any running task will stop."];
         break;
     }
     [alert addButtonWithTitle:@"Restart ChatGPT"];
@@ -223,7 +223,7 @@ static NSImage *integrationAppIcon(NSString *appName,
         self.integrationSwitch = [[MenuSwitch alloc] initWithFrame:NSZeroRect];
         [self.integrationSwitch setTarget:target];
         [self.integrationSwitch setAction:toggleAction];
-        [self.integrationSwitch setAccessibilityLabel:[NSString stringWithFormat:@"Use Ollama with %@", title]];
+        [self.integrationSwitch setAccessibilityLabel:[NSString stringWithFormat:@"Use Rose with %@", title]];
         [self.integrationSwitch setTranslatesAutoresizingMaskIntoConstraints:NO];
 
         [self addSubview:self.controlSurface];
@@ -319,8 +319,8 @@ static NSImage *integrationAppIcon(NSString *appName,
         : [NSColor clearColor];
     self.controlSurface.layer.backgroundColor = surfaceColor.CGColor;
     self.integrationTitleLabel.textColor = [NSColor labelColor];
-    NSString *status = active ? (self.activeStatusText ?: @"Using Ollama")
-                              : (self.inactiveStatusText ?: @"Use Ollama models");
+    NSString *status = active ? (self.activeStatusText ?: @"Using Rose")
+                              : (self.inactiveStatusText ?: @"Use Rose models");
     BOOL hasStatus = status.length > 0;
     self.titleWithStatusConstraint.active = hasStatus;
     self.titleCenteredConstraint.active = !hasStatus;
@@ -412,8 +412,8 @@ static NSBundle *OllamaResourceBundle(void) {
 
     NSString *cwdPath = [[NSFileManager defaultManager] currentDirectoryPath];
     NSArray<NSString *> *bundlePaths = @[
-        [cwdPath stringByAppendingPathComponent:@"darwin/Ollama.app"],
-        [cwdPath stringByAppendingPathComponent:@"app/darwin/Ollama.app"],
+        [cwdPath stringByAppendingPathComponent:@"darwin/Rose.app"],
+        [cwdPath stringByAppendingPathComponent:@"app/darwin/Rose.app"],
     ];
     for (NSString *bundlePath in bundlePaths) {
         if ([[NSFileManager defaultManager] fileExistsAtPath:bundlePath]) {
@@ -435,7 +435,7 @@ static NSImage *ollamaApplicationIcon(void) {
 
 - (void)application:(NSApplication *)application openURLs:(NSArray<NSURL *> *)urls {
     for (NSURL *url in urls) {
-        if ([url.scheme isEqualToString:@"ollama"]) {
+        if ([url.scheme isEqualToString:@"rose"]) {
             NSString *path = url.path;
 
             if (path && ([path isEqualToString:@"/connect"] || [url.host isEqualToString:@"connect"])) {
@@ -507,7 +507,7 @@ static NSImage *ollamaApplicationIcon(void) {
     [self applyShowAppsInMenu:shouldShowAppsInMenu()];
 
     NSMenuItem *appsMenuItem =
-        [[NSMenuItem alloc] initWithTitle:@"Open Ollama"
+        [[NSMenuItem alloc] initWithTitle:@"Open Rose"
                                    action:@selector(appsUI)
                             keyEquivalent:@""];
     [appsMenuItem setTarget:self];
@@ -536,7 +536,7 @@ static NSImage *ollamaApplicationIcon(void) {
 
     [menu addItem:[NSMenuItem separatorItem]];
 
-    [menu addItemWithTitle:@"Quit Ollama"
+    [menu addItemWithTitle:@"Quit Rose"
                     action:@selector(requestQuit)
              keyEquivalent:@"q"];
 
@@ -552,7 +552,7 @@ static NSImage *ollamaApplicationIcon(void) {
     [self refreshStatusItem];
 
     // Application menu
-    NSString *appName = @"Ollama";
+    NSString *appName = @"Rose";
 
     NSMenu *mainMenu = [[NSMenu alloc] init];
     NSMenuItem *appMenuItem = [[NSMenuItem alloc] initWithTitle:appName
@@ -699,7 +699,7 @@ static NSImage *ollamaApplicationIcon(void) {
     BOOL configured = installed && IsClaudeGatewayConfigured();
     NSString *failureStatus = portConflict
         ? [NSString stringWithFormat:@"Port %d is in use", ClaudeGatewayPort()]
-        : (startFailed ? @"Unable to use Ollama" : nil);
+        : (startFailed ? @"Unable to use Rose" : nil);
     self.claudeAppEnabled = configured;
     self.claudeAppReady = configured && !startFailed;
     [self.claudeAppRow setActiveStatusText:configured ? failureStatus : nil];
@@ -723,7 +723,7 @@ static NSImage *ollamaApplicationIcon(void) {
         ? activeStatus
         : nil];
     [self.codexAppRow setInactiveStatusText:installed
-        ? @"Use Ollama models in ChatGPT"
+        ? @"Use Rose models in ChatGPT"
         : @"Not installed"];
     [self.codexAppRow setIntegrationActive:connected];
     [self.codexAppRow setIntegrationReady:installed && connected];
@@ -954,12 +954,12 @@ static NSImage *ollamaApplicationIcon(void) {
         : [NSURL URLWithString:downloadURLString];
     if (url == nil || (!chatGPT && authorization.length == 0)) {
         NSError *error = [NSError
-            errorWithDomain:@"com.ollama.app"
+            errorWithDomain:@"com.rose.app"
                        code:3
                    userInfo:@{NSLocalizedDescriptionKey:
                        chatGPT
-                           ? @"Ollama could not prepare the ChatGPT download."
-                           : @"Ollama could not authenticate the download request."}];
+                           ? @"Rose could not prepare the ChatGPT download."
+                           : @"Rose could not authenticate the download request."}];
         if (chatGPT) {
             [self showChatGPTDownloadFailure:error];
         } else {
@@ -1086,7 +1086,7 @@ didFinishDownloadingToURL:(NSURL *)location {
     if (response.statusCode != 200 || !trustedHost ||
         ![response.URL.scheme isEqualToString:@"https"]) {
         error = [NSError
-            errorWithDomain:@"com.ollama.app"
+            errorWithDomain:@"com.rose.app"
                        code:1
                    userInfo:@{NSLocalizedDescriptionKey:
                        chatGPT
@@ -1100,7 +1100,7 @@ didFinishDownloadingToURL:(NSURL *)location {
                              error:&error];
         if (error == nil && [attributes fileSize] < 1024 * 1024) {
             error = [NSError
-                errorWithDomain:@"com.ollama.app"
+                errorWithDomain:@"com.rose.app"
                        code:2
                    userInfo:@{NSLocalizedDescriptionKey:
                            chatGPT
@@ -1170,7 +1170,7 @@ didCompleteWithError:(NSError *)error {
         self.claudeDownloadedInstallerURL == nil) {
         if (self.claudeDownloadError == nil) {
             self.claudeDownloadError = [NSError
-                errorWithDomain:@"com.ollama.app"
+                errorWithDomain:@"com.rose.app"
                            code:3
                        userInfo:@{NSLocalizedDescriptionKey:
                            chatGPT
@@ -1199,7 +1199,7 @@ didCompleteWithError:(NSError *)error {
         [installAlert setIcon:ollamaApplicationIcon()];
         [installAlert setMessageText:@"Installing ChatGPT"];
         [installAlert setInformativeText:
-            @"Ollama is verifying and copying the ChatGPT app."];
+            @"Rose is verifying and copying the ChatGPT app."];
         NSButton *installingButton =
             [installAlert addButtonWithTitle:@"Installing…"];
         [installingButton setEnabled:NO];
@@ -1243,7 +1243,7 @@ didCompleteWithError:(NSError *)error {
     }
     if (!installed) {
         NSError *installError = [NSError
-            errorWithDomain:@"com.ollama.app"
+            errorWithDomain:@"com.rose.app"
                        code:4
                    userInfo:@{NSLocalizedDescriptionKey:
                        [NSString stringWithFormat:
@@ -1278,7 +1278,7 @@ didCompleteWithError:(NSError *)error {
         [installAlert setIcon:ollamaApplicationIcon()];
         [installAlert setMessageText:@"Claude is not installed"];
         [installAlert setInformativeText:
-            @"Download Claude to add Ollama models to the Claude app."];
+            @"Download Claude to add Rose models to the Claude app."];
         [installAlert addButtonWithTitle:@"Download Claude"];
         [installAlert addButtonWithTitle:@"Cancel"];
         if ([installAlert runModal] == NSAlertFirstButtonReturn) {
@@ -1295,11 +1295,11 @@ didCompleteWithError:(NSError *)error {
         [restartAlert setAlertStyle:NSAlertStyleWarning];
         [restartAlert setIcon:ollamaApplicationIcon()];
         [restartAlert setMessageText:enabled
-            ? @"Restart Claude Desktop to use Ollama?"
-            : @"Restart Claude Desktop to remove Ollama?"];
+            ? @"Restart Claude Desktop to use Rose?"
+            : @"Restart Claude Desktop to remove Rose?"];
         [restartAlert setInformativeText:enabled
-            ? @"Claude Desktop must restart to use Ollama. Any running task will stop."
-            : @"Claude Desktop must restart to remove Ollama. Any running task will stop."];
+            ? @"Claude Desktop must restart to use Rose. Any running task will stop."
+            : @"Claude Desktop must restart to remove Rose. Any running task will stop."];
         [restartAlert addButtonWithTitle:@"Restart Claude Desktop"];
         [restartAlert addButtonWithTitle:@"Cancel"];
         if ([restartAlert runModal] != NSAlertFirstButtonReturn) {
@@ -1327,13 +1327,13 @@ didCompleteWithError:(NSError *)error {
                 [alert setMessageText:portConflict
                     ? [NSString stringWithFormat:@"Port %d is already in use", ClaudeGatewayPort()]
                     : (enabled
-                        ? @"Unable to use Ollama with Claude"
-                        : @"Unable to remove Ollama from Claude")];
+                        ? @"Unable to use Rose with Claude"
+                        : @"Unable to remove Rose from Claude")];
                 [alert setInformativeText:portConflict
-                    ? [NSString stringWithFormat:@"Change OLLAMA_HOST or quit the app using port %d, then try again.", ClaudeGatewayPort()]
+                    ? [NSString stringWithFormat:@"Change ROSE_HOST or quit the app using port %d, then try again.", ClaudeGatewayPort()]
                     : (gatewayError.length > 0
                         ? gatewayError
-                        : @"Ollama could not update Claude. Check the Ollama log for details.")];
+                        : @"Rose could not update Claude. Check the Rose log for details.")];
                 [alert runModal];
                 return;
             }
@@ -1361,7 +1361,7 @@ didCompleteWithError:(NSError *)error {
         [installAlert setIcon:ollamaApplicationIcon()];
         [installAlert setMessageText:@"ChatGPT is not installed"];
         [installAlert setInformativeText:
-            @"Download ChatGPT to add Ollama models to the ChatGPT app."];
+            @"Download ChatGPT to add Rose models to the ChatGPT app."];
         [installAlert addButtonWithTitle:@"Download ChatGPT"];
         [installAlert addButtonWithTitle:@"Cancel"];
         if ([installAlert runModal] == NSAlertFirstButtonReturn) {
@@ -1399,10 +1399,10 @@ didCompleteWithError:(NSError *)error {
                 [alert setAlertStyle:NSAlertStyleWarning];
                 [alert setIcon:ollamaApplicationIcon()];
                 [alert setMessageText:enabled
-                    ? @"Unable to add Ollama models to ChatGPT"
-                    : @"Unable to remove Ollama models from ChatGPT"];
+                    ? @"Unable to add Rose models to ChatGPT"
+                    : @"Unable to remove Rose models from ChatGPT"];
                 [alert setInformativeText:
-                    @"ChatGPT could not complete the model update. Check the Ollama log for details, then try again."];
+                    @"ChatGPT could not complete the model update. Check the Rose log for details, then try again."];
                 [alert runModal];
                 return;
             }
@@ -1495,7 +1495,7 @@ didCompleteWithError:(NSError *)error {
 
     NSAppearance *appearance = self.statusItem.button.effectiveAppearance;
     NSString *appearanceName = (NSString *)(appearance.name);
-    NSString *iconName = @"ollama";
+    NSString *iconName = @"rose";
     if (self.updateAvailable) {
         iconName = [iconName stringByAppendingString:@"Update"];
     }
@@ -1511,7 +1511,7 @@ didCompleteWithError:(NSError *)error {
         self.statusItem.button.image = statusImage;
     } else {
         self.statusItem.button.image = nil;
-        self.statusItem.button.title = @"Ollama";
+        self.statusItem.button.title = @"Rose";
     }
 }
 
@@ -1541,9 +1541,9 @@ didCompleteWithError:(NSError *)error {
         NSAlert *alert = [[NSAlert alloc] init];
         [alert setAlertStyle:NSAlertStyleWarning];
         [alert setIcon:ollamaApplicationIcon()];
-        [alert setMessageText:@"Restart Claude before quitting Ollama?"];
+        [alert setMessageText:@"Restart Claude before quitting Rose?"];
         [alert setInformativeText:
-            @"Claude must restart before Ollama quits. Any running task will stop."];
+            @"Claude must restart before Rose quits. Any running task will stop."];
         [alert addButtonWithTitle:@"Restart Claude and Quit"];
         [alert addButtonWithTitle:@"Cancel"];
         if ([alert runModal] != NSAlertFirstButtonReturn) {
@@ -1572,9 +1572,9 @@ didCompleteWithError:(NSError *)error {
             NSAlert *alert = [[NSAlert alloc] init];
             [alert setAlertStyle:NSAlertStyleWarning];
             [alert setIcon:ollamaApplicationIcon()];
-            [alert setMessageText:@"Unable to quit Ollama"];
+            [alert setMessageText:@"Unable to quit Rose"];
             [alert setInformativeText:
-                @"Ollama couldn’t update Claude, so it is still running. Check the Ollama log and try again."];
+                @"Rose couldn’t update Claude, so it is still running. Check the Rose log and try again."];
             [alert runModal];
         });
     });
@@ -1598,10 +1598,10 @@ didCompleteWithError:(NSError *)error {
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 - (void)registerSelfAsLoginItem:(BOOL)firstTimeRun {
     appLogInfo(@"using v13+ SMAppService for login registration");
-    // Maps to the file Ollama.app/Contents/Library/LaunchAgents/com.ollama.ollama.plist
-    SMAppService* service = [SMAppService agentServiceWithPlistName:@"com.ollama.ollama.plist"];
+    // Maps to the file Rose.app/Contents/Library/LaunchAgents/com.rose.rose.plist
+    SMAppService* service = [SMAppService agentServiceWithPlistName:@"com.rose.rose.plist"];
     if (!service) {
-        appLogInfo(@"SMAppService failed to find service for com.ollama.ollama.plist");
+        appLogInfo(@"SMAppService failed to find service for com.rose.rose.plist");
         return;
     }
     SMAppServiceStatus status = [service status];
@@ -1631,7 +1631,7 @@ didCompleteWithError:(NSError *)error {
     return;
 }
 
-/// Remove ollama from the deprecated Login Items list as we now use LaunchAgents
+/// Remove rose from the deprecated Login Items list as we now use LaunchAgents
 - (void)unregisterSelfFromLoginItem {
     NSURL *bundleURL = NSBundle.mainBundle.bundleURL;
     NSString *bundlePrefix = [SystemWidePath stringByDeletingPathExtension];
@@ -1650,7 +1650,7 @@ didCompleteWithError:(NSError *)error {
         if (LSSharedFileListItemResolve((LSSharedFileListItemRef)item, 0,
                                         &itemURL, NULL) == noErr) {
             CFStringRef loginPath = CFURLCopyFileSystemPath(itemURL, kCFURLPOSIXPathStyle);
-            // Compare the prefix to match against "keep existing" flow, e.g. // "/Applications/Ollama.app" vs "/Applications/Ollama 2.app"
+            // Compare the prefix to match against "keep existing" flow, e.g. // "/Applications/Rose.app" vs "/Applications/Rose 2.app"
             if (loginPath && [(NSString *)loginPath hasPrefix:bundlePrefix]) {
                 appLogInfo([NSString stringWithFormat:@"removing login item %@", loginPath]);
                 LSSharedFileListItemRemove(loginItems,
@@ -1665,7 +1665,7 @@ didCompleteWithError:(NSError *)error {
             CFStringRef displayName = LSSharedFileListItemCopyDisplayName((LSSharedFileListItemRef)item);
             if (displayName) {
                 NSString *name = (__bridge NSString *)displayName;
-                if ([name hasPrefix:@"Ollama"]) {
+                if ([name hasPrefix:@"Rose"]) {
                     LSSharedFileListItemRemove(loginItems, (LSSharedFileListItemRef)item);
                     appLogInfo([NSString stringWithFormat:@"removing dangling login item %@", displayName]);
                 }
@@ -1746,21 +1746,21 @@ decidePolicyForNavigationAction:(WKNavigationAction *)action
     [alert setAlertStyle:NSAlertStyleWarning];
     [alert setIcon:ollamaApplicationIcon()];
 
-    if ([message isEqualToString:@"Restart Claude Desktop to use Ollama? Any running task will stop."]) {
-        [alert setMessageText:@"Restart Claude Desktop to use Ollama?"];
+    if ([message isEqualToString:@"Restart Claude Desktop to use Rose? Any running task will stop."]) {
+        [alert setMessageText:@"Restart Claude Desktop to use Rose?"];
         [alert setInformativeText:
-            @"Claude Desktop must restart to use Ollama. Any running task will stop."];
+            @"Claude Desktop must restart to use Rose. Any running task will stop."];
         [alert addButtonWithTitle:@"Restart Claude Desktop"];
-    } else if ([message isEqualToString:@"Restart Claude Desktop to remove Ollama? Any running task will stop."]) {
-        [alert setMessageText:@"Restart Claude Desktop to remove Ollama?"];
+    } else if ([message isEqualToString:@"Restart Claude Desktop to remove Rose? Any running task will stop."]) {
+        [alert setMessageText:@"Restart Claude Desktop to remove Rose?"];
         [alert setInformativeText:
-            @"Claude Desktop must restart to remove Ollama. Any running task will stop."];
+            @"Claude Desktop must restart to remove Rose. Any running task will stop."];
         [alert addButtonWithTitle:@"Restart Claude Desktop"];
-    } else if ([message hasPrefix:@"Restart ChatGPT to add Ollama models?"]) {
+    } else if ([message hasPrefix:@"Restart ChatGPT to add Rose models?"]) {
         configureChatGPTRestartAlert(alert, ChatGPTRestartActionAddModels);
-    } else if ([message hasPrefix:@"Restart ChatGPT to update Ollama models?"]) {
+    } else if ([message hasPrefix:@"Restart ChatGPT to update Rose models?"]) {
         configureChatGPTRestartAlert(alert, ChatGPTRestartActionUpdateModels);
-    } else if ([message hasPrefix:@"Restart ChatGPT to remove Ollama models?"]) {
+    } else if ([message hasPrefix:@"Restart ChatGPT to remove Rose models?"]) {
         configureChatGPTRestartAlert(alert, ChatGPTRestartActionRemoveModels);
     } else {
         [alert setMessageText:message];
@@ -1886,8 +1886,8 @@ static BOOL isOllamaApplication(NSRunningApplication *app) {
         return NO;
     }
     return [bundleId isEqualToString:[[NSBundle mainBundle] bundleIdentifier]] ||
-        [bundleId isEqualToString:@"ai.ollama.ollama"] ||
-        [bundleId isEqualToString:@"com.electron.ollama"];
+        [bundleId isEqualToString:@"ai.rose.rose"] ||
+        [bundleId isEqualToString:@"com.electron.rose"];
 }
 
 bool otherOllamaProcesses(AppProcessIdentity **processes, size_t *count) {
@@ -1920,7 +1920,7 @@ bool otherOllamaProcesses(AppProcessIdentity **processes, size_t *count) {
                 continue;
             }
             appLogInfo([NSString stringWithFormat:
-                @"unable to inspect ollama instance %d", pid]);
+                @"unable to inspect rose instance %d", pid]);
             free(result);
             return false;
         }
@@ -1939,7 +1939,7 @@ bool otherOllamaProcesses(AppProcessIdentity **processes, size_t *count) {
                 continue;
             }
             appLogInfo([NSString stringWithFormat:
-                @"unable to confirm ollama instance %d", pid]);
+                @"unable to confirm rose instance %d", pid]);
             free(result);
             return false;
         }
@@ -2017,7 +2017,7 @@ bool moveToApplications(const char *src) {
 }
 
 AuthorizationRef getSymlinkAuthorization() {
-    return getAuthorization(@"Ollama is trying to install its command line "
+    return getAuthorization(@"Rose is trying to install its command line "
                             @"interface (CLI) tool.",
                             @"symlink");
 }
@@ -2037,7 +2037,7 @@ bool moveToApplicationsWithAuthorization(const char *src) {
         return NO;
     }
 
-    // Remove existing /Applications/Ollama.app (if any)
+    // Remove existing /Applications/Rose.app (if any)
     //    - We do this via /bin/rm with elevated privileges
     //
     const char *rmTool = "/bin/rm";
@@ -2150,7 +2150,7 @@ enum AppMove askToMoveToApplications() {
         [[NSAppleEventManager sharedAppleEventManager] currentAppleEvent];
     if (!evt || [evt eventID] != kAEOpenApplication) {
         // This scenario triggers if we were launched from a double click,
-        // or the CLI spawns the app via open -a Ollama.app
+        // or the CLI spawns the app via open -a Rose.app
         appLogDebug([NSString
             stringWithFormat:@"launched from double click or open -a"]);
     }
@@ -2169,7 +2169,7 @@ enum AppMove askToMoveToApplications() {
     NSAlert *alert = [[NSAlert alloc] init];
     [alert setMessageText:@"Move to Applications?"];
     [alert setInformativeText:
-               @"Ollama works best when run from the Applications directory."];
+               @"Rose works best when run from the Applications directory."];
     [alert addButtonWithTitle:@"Move to Applications"];
     [alert addButtonWithTitle:@"Don't move"];
 
@@ -2218,7 +2218,7 @@ void launchApp(const char *appPath) {
 }
 
 int installSymlink(const char *cliPath) {
-    NSString *linkPath = @"/usr/local/bin/ollama";
+    NSString *linkPath = @"/usr/local/bin/rose";
     NSString *dirPath = @"/usr/local/bin";
     NSError *error = nil;
 
@@ -2267,7 +2267,7 @@ int installSymlink(const char *cliPath) {
     // Create the symlink using the same authorization
     const char *toolPath = "/bin/ln";
     const char *args[] = {"-s", "-F", [resPath UTF8String],
-                          "/usr/local/bin/ollama", NULL};
+                          "/usr/local/bin/rose", NULL};
     FILE *pipe = NULL;
 
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"

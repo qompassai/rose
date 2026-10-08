@@ -18,24 +18,24 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/cmd/config"
-	"github.com/ollama/ollama/cmd/internal/fileutil"
-	"github.com/ollama/ollama/envconfig"
-	"github.com/ollama/ollama/internal/proxy"
-	modelpkg "github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/cmd/config"
+	"github.com/qompassai/rose/cmd/internal/fileutil"
+	"github.com/qompassai/rose/envconfig"
+	"github.com/qompassai/rose/internal/proxy"
+	modelpkg "github.com/qompassai/rose/types/model"
 )
 
 const (
 	chatGPTIntegrationName         = "chatgpt"
 	codexAppIntegrationName        = "codex-app"
-	codexAppProfileName            = "ollama-launch-codex-app"
+	codexAppProfileName            = "rose-launch-codex-app"
 	codexAppBundleID               = "com.openai.codex"
 	codexAppLaunchURL              = "codex://threads/new?mode=codex"
 	codexAppModelCatalogFilename   = proxy.CodexDesktopModelCatalogFilename
 	codexAppRoutingCatalogFilename = proxy.CodexDesktopRoutingCatalogFilename
-	codexAppAutoReviewModelEnv     = "OLLAMA_CODEX_AUTO_REVIEW_MODEL"
-	codexAppOllamaProfileDirName   = "chatgpt-ollama"
+	codexAppAutoReviewModelEnv     = "ROSE_CODEX_AUTO_REVIEW_MODEL"
+	codexAppOllamaProfileDirName   = "chatgpt-rose"
 	codexAppOllamaUserDataName     = "electron-data"
 	codexAppOllamaPIDFilename      = "chatgpt.pid"
 	codexAppSingletonLockName      = "SingletonLock"
@@ -43,9 +43,9 @@ const (
 	codexAppSingletonCookieName    = "SingletonCookie"
 	codexAppDesktopTableName       = "desktop"
 	codexAppReasoningEffortsKey    = "enabled-reasoning-efforts"
-	codexAppRestoreHint            = "To remove Ollama models from ChatGPT, run: ollama launch chatgpt --restore"
-	codexAppConfigurationSuccess   = "Ollama models added to ChatGPT."
-	codexAppRestoreSuccess         = "Ollama models removed from ChatGPT."
+	codexAppRestoreHint            = "To remove Rose models from ChatGPT, run: rose launch chatgpt --restore"
+	codexAppConfigurationSuccess   = "Rose models added to ChatGPT."
+	codexAppRestoreSuccess         = "Rose models removed from ChatGPT."
 )
 
 var (
@@ -75,7 +75,7 @@ var (
 	codexAppExitTimeout = 5 * time.Second
 )
 
-// CodexApp adds Ollama models to ChatGPT's native catalog using a loopback router.
+// CodexApp adds Rose models to ChatGPT's native catalog using a loopback router.
 type CodexApp struct{}
 
 // ErrCodexAppRestartConfirmationRequired reports that changing the regular
@@ -296,7 +296,7 @@ func codexAppRoutingModels() ([]string, error) {
 		}
 	}
 	if len(models) == 0 {
-		return nil, errors.New("ChatGPT Ollama routing catalog is empty")
+		return nil, errors.New("ChatGPT Rose routing catalog is empty")
 	}
 	return models, nil
 }
@@ -603,7 +603,7 @@ func ensureCodexAppManagedAuth(configPath string) (bool, error) {
 	return true, nil
 }
 
-// Remove only Ollama's exact sentinel, never a user login or API key.
+// Remove only Rose's exact sentinel, never a user login or API key.
 func removeCodexAppManagedAuth(configPath string) error {
 	authPath := filepath.Join(filepath.Dir(configPath), "auth.json")
 	data, err := os.ReadFile(authPath)
@@ -657,7 +657,7 @@ func (c *CodexApp) Run(_ string, _ []LaunchModel, args []string) error {
 	if len(args) > 0 {
 		return fmt.Errorf("chatgpt does not accept extra arguments")
 	}
-	return codexAppLaunchOrRestart("Restart ChatGPT to add Ollama models?", nil)
+	return codexAppLaunchOrRestart("Restart ChatGPT to add Rose models?", nil)
 }
 
 // Installed reports whether ChatGPT can be opened on this host.
@@ -666,7 +666,7 @@ func (c *CodexApp) Installed() bool {
 }
 
 // OllamaConfigured reports whether the regular ChatGPT profile has the
-// additive Ollama catalog and loopback router enabled.
+// additive Rose catalog and loopback router enabled.
 func (c *CodexApp) OllamaConfigured() bool {
 	configPath, err := codexConfigPath()
 	if err == nil {
@@ -685,13 +685,13 @@ func (c *CodexApp) Running() bool {
 	return codexAppIsRunning()
 }
 
-// UseOllamaFromDesktop adds Ollama models to the regular ChatGPT profile.
+// UseOllamaFromDesktop adds Rose models to the regular ChatGPT profile.
 // Its startup-only catalog requires a confirmed restart when running.
 func (c *CodexApp) UseOllamaFromDesktop(primary string, models []LaunchModel, restartConfirmed bool) error {
 	return c.updateOllamaModelsFromDesktop(primary, models, true, restartConfirmed)
 }
 
-// UpdateOllamaModelsFromDesktop changes the Ollama catalog without opening a
+// UpdateOllamaModelsFromDesktop changes the Rose catalog without opening a
 // stopped ChatGPT app. A running app still restarts after confirmation.
 func (c *CodexApp) UpdateOllamaModelsFromDesktop(primary string, models []LaunchModel, restartConfirmed bool) error {
 	return c.updateOllamaModelsFromDesktop(primary, models, false, restartConfirmed)
@@ -733,12 +733,12 @@ func defaultCodexAppRouterHealth() error {
 	}
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return fmt.Errorf("ChatGPT routing is unavailable at %s; restart Ollama and try again: %w", endpoint, err)
+		return fmt.Errorf("ChatGPT routing is unavailable at %s; restart Rose and try again: %w", endpoint, err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusNotFound {
-		return fmt.Errorf("the running Ollama server does not include ChatGPT routing; restart Ollama using this build and try again")
+		return fmt.Errorf("the running Rose server does not include ChatGPT routing; restart Rose using this build and try again")
 	}
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("ChatGPT router health check returned %s", resp.Status)
@@ -751,12 +751,12 @@ func defaultCodexAppRouterHealth() error {
 		return fmt.Errorf("read ChatGPT router health check: %w", err)
 	}
 	if !status.OK {
-		return errors.New("ChatGPT router is not ready; restart Ollama and try again")
+		return errors.New("ChatGPT router is not ready; restart Rose and try again")
 	}
 	return nil
 }
 
-// RestoreFromDesktop removes the additive Ollama catalog and restores the
+// RestoreFromDesktop removes the additive Rose catalog and restores the
 // prior base URL and model settings. A stopped ChatGPT app remains stopped.
 func (c *CodexApp) RestoreFromDesktop(restartConfirmed bool) error {
 	if err := codexAppSupported(); err != nil {
@@ -780,7 +780,7 @@ func (c *CodexApp) RestartFromDesktop(restartConfirmed bool) error {
 		return errors.New("ChatGPT is not installed")
 	}
 	if !c.OllamaConfigured() {
-		return errors.New("ChatGPT is not configured to use Ollama")
+		return errors.New("ChatGPT is not configured to use Rose")
 	}
 	return codexAppApplyProfileFromDesktop(repairCodexAppCatalogAuthVisibility, true, restartConfirmed)
 }
@@ -794,7 +794,7 @@ func stopLegacyCodexAppOllamaProfile() error {
 		return nil
 	}
 	if err := codexAppStopProfile(); err != nil {
-		return fmt.Errorf("close the previous ChatGPT · Ollama profile: %w", err)
+		return fmt.Errorf("close the previous ChatGPT · Rose profile: %w", err)
 	}
 	return nil
 }
@@ -918,7 +918,7 @@ func codexAppOllamaProfileRoot() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return filepath.Join(home, ".ollama", codexAppOllamaProfileDirName), nil
+	return filepath.Join(home, ".rose", codexAppOllamaProfileDirName), nil
 }
 
 func codexAppOllamaProfileUserDataDir() (string, error) {
@@ -1023,7 +1023,7 @@ func codexAppCatalogEntryWithAPISupport(entry json.RawMessage, supported bool) (
 	return json.Marshal(fields)
 }
 
-// Repair legacy visibility using the routing catalog without contacting Ollama.
+// Repair legacy visibility using the routing catalog without contacting Rose.
 func repairCodexAppCatalogAuthVisibility() error {
 	configPath, err := codexConfigPath()
 	if err != nil {
@@ -1031,7 +1031,7 @@ func repairCodexAppCatalogAuthVisibility() error {
 	}
 	routingModels, err := codexAppRoutingModels()
 	if err != nil {
-		return fmt.Errorf("read ChatGPT Ollama routing catalog: %w", err)
+		return fmt.Errorf("read ChatGPT Rose routing catalog: %w", err)
 	}
 	routed := make(map[string]bool, len(routingModels))
 	for _, model := range routingModels {
@@ -1159,7 +1159,7 @@ func codexAppConfiguredAutoReviewModel(primary string, models []LaunchModel) (co
 	switch strings.ToLower(configured) {
 	case "", "selected":
 		return codexAppAutoReviewRoute{Model: "selected", FallbackModel: primary}, nil
-	case "ollama":
+	case "rose":
 		return codexAppAutoReviewRoute{Model: primary}, nil
 	case "native", "chatgpt":
 		return codexAppAutoReviewRoute{}, nil
@@ -1171,7 +1171,7 @@ func codexAppConfiguredAutoReviewModel(primary string, models []LaunchModel) (co
 			return codexAppAutoReviewRoute{Model: model.Name}, nil
 		}
 	}
-	return codexAppAutoReviewRoute{}, fmt.Errorf("%s=%q is not one of the configured Ollama models", codexAppAutoReviewModelEnv, configured)
+	return codexAppAutoReviewRoute{}, fmt.Errorf("%s=%q is not one of the configured Rose models", codexAppAutoReviewModelEnv, configured)
 }
 
 func parseCodexAppModelCatalog(data []byte) (codexAppRawModelCatalog, error) {
@@ -1390,11 +1390,11 @@ func codexAppCatalogEntry(model string, metadata codexAppModelMetadata, priority
 		})
 	}
 
-	// Keep Ollama models visible in API-key sessions.
+	// Keep Rose models visible in API-key sessions.
 	return map[string]any{
 		"slug":                                 model,
 		"display_name":                         model,
-		"description":                          "Ollama model",
+		"description":                          "Rose model",
 		"default_reasoning_level":              defaultReasoningLevel,
 		"supported_reasoning_levels":           supportedReasoningLevels,
 		"shell_type":                           "unified_exec",
@@ -1432,7 +1432,7 @@ func codexAppCatalogEntry(model string, metadata codexAppModelMetadata, priority
 }
 
 func codexAppInstructionsForModel(baseInstructions, model string) string {
-	replacement := fmt.Sprintf("You are Codex, a coding agent powered by %s through Ollama.", model)
+	replacement := fmt.Sprintf("You are Codex, a coding agent powered by %s through Rose.", model)
 	for _, identity := range []string{
 		"You are Codex, an agent based on GPT-5.",
 		"You are Codex, a coding agent based on GPT-5.",
@@ -1482,7 +1482,7 @@ func defaultCodexAppNativeModelCatalog(configPath string) ([]byte, error) {
 	var attempts []error
 	executable, executableErr := codexAppCodexExecutable()
 	if executableErr == nil {
-		scratchHome, err := os.MkdirTemp("", "ollama-codex-models-")
+		scratchHome, err := os.MkdirTemp("", "rose-codex-models-")
 		if err != nil {
 			attempts = append(attempts, fmt.Errorf("create scratch CODEX_HOME: %w", err))
 		} else {
@@ -1919,7 +1919,7 @@ func prepareCodexAppOllamaProfileUserData(userDataDir string) (bool, error) {
 		codexAppSingletonCookieName,
 	} {
 		if err := os.Remove(filepath.Join(userDataDir, name)); err != nil && !os.IsNotExist(err) {
-			return false, fmt.Errorf("clear stale ChatGPT · Ollama %s: %w", name, err)
+			return false, fmt.Errorf("clear stale ChatGPT · Rose %s: %w", name, err)
 		}
 	}
 	return false, nil
@@ -1975,7 +1975,7 @@ func reconcileCodexAppOllamaProfileSingleton() bool {
 
 func writeCodexAppOllamaProfilePID(pid int) error {
 	if pid <= 1 || pid == os.Getpid() {
-		return fmt.Errorf("invalid ChatGPT · Ollama process ID %d", pid)
+		return fmt.Errorf("invalid ChatGPT · Rose process ID %d", pid)
 	}
 	pidPath, err := codexAppOllamaProfilePIDPath()
 	if err != nil {
@@ -2057,14 +2057,14 @@ func defaultCodexAppStopOllamaProfile() error {
 	}
 	if !matches {
 		_ = removeCodexAppOllamaProfilePID()
-		return fmt.Errorf("ChatGPT · Ollama process identity could not be verified")
+		return fmt.Errorf("ChatGPT · Rose process identity could not be verified")
 	}
 	process, err := os.FindProcess(pid)
 	if err != nil {
 		return err
 	}
 	if err := process.Signal(syscall.SIGTERM); err != nil {
-		return fmt.Errorf("stop ChatGPT · Ollama: %w", err)
+		return fmt.Errorf("stop ChatGPT · Rose: %w", err)
 	}
 	deadline := time.Now().Add(codexAppExitTimeout)
 	for time.Now().Before(deadline) {
@@ -2073,7 +2073,7 @@ func defaultCodexAppStopOllamaProfile() error {
 		}
 		codexAppSleep(100 * time.Millisecond)
 	}
-	return fmt.Errorf("ChatGPT · Ollama did not close; quit that window and try again")
+	return fmt.Errorf("ChatGPT · Rose did not close; quit that window and try again")
 }
 
 func defaultCodexAppOpenApp(args []string) error {
@@ -2081,7 +2081,7 @@ func defaultCodexAppOpenApp(args []string) error {
 		cmd := exec.Command("codex", args...)
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
-		cmd.Env = append(os.Environ(), "OPENAI_API_KEY=ollama")
+		cmd.Env = append(os.Environ(), "OPENAI_API_KEY=rose")
 		return cmd.Run()
 	}
 
@@ -2096,7 +2096,7 @@ func defaultCodexAppOpenApp(args []string) error {
 		if appID := codexAppStartID(); appID != "" {
 			return codexAppOpenStart(appID)
 		}
-		return fmt.Errorf("ChatGPT was not found; install it from https://chatgpt.com/download, then re-run 'ollama launch chatgpt'")
+		return fmt.Errorf("ChatGPT was not found; install it from https://chatgpt.com/download, then re-run 'rose launch chatgpt'")
 	case "darwin":
 		cmd := exec.Command("open", codexAppDarwinOpenArgs(codexAppAppPath())...)
 		cmd.Stdout = os.Stdout
@@ -2332,7 +2332,7 @@ func codexAppManagedProxyURL(raw string) bool {
 			return false
 		}
 	}
-	// ConnectableHost preserves proxy path prefixes from OLLAMA_HOST.
+	// ConnectableHost preserves proxy path prefixes from ROSE_HOST.
 	return strings.HasSuffix(strings.TrimSuffix(u.Path, "/"), proxy.CodexDesktopPathPrefix+"/v1")
 }
 
@@ -2449,7 +2449,7 @@ func codexAppRestoreRootValues(text string, state codexAppRestoreState) string {
 }
 
 // codexAppShouldPreserveCurrentModel keeps a native model the user selected
-// while Ollama routing was active. Selected Ollama slugs are launch-owned and
+// while Rose routing was active. Selected Rose slugs are launch-owned and
 // must still be replaced with the pre-integration model during restore.
 func codexAppShouldPreserveCurrentModel(text string) bool {
 	config, err := codexParseConfig(text)
@@ -2648,7 +2648,7 @@ func removeCodexAppRestoreState() error {
 func codexAppRestoreStatePath() string {
 	home, err := os.UserHomeDir()
 	if err != nil {
-		return filepath.Join(os.TempDir(), "ollama-codex-app-restore.json")
+		return filepath.Join(os.TempDir(), "rose-codex-app-restore.json")
 	}
-	return filepath.Join(home, ".ollama", "launch", "codex-app-restore.json")
+	return filepath.Join(home, ".rose", "launch", "codex-app-restore.json")
 }

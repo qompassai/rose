@@ -19,7 +19,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ollama/ollama/manifest"
+	"github.com/qompassai/rose/manifest"
 )
 
 type roundTripFunc func(*http.Request) (*http.Response, error)
@@ -1658,7 +1658,7 @@ func TestManifestPush(t *testing.T) {
 }
 
 func TestPushManifestContentType(t *testing.T) {
-	const mediaType = "application/vnd.ollama.manifest.list.v2+json"
+	const mediaType = "application/vnd.rose.manifest.list.v2+json"
 
 	var gotContentType, gotPath string
 	u := &uploader{

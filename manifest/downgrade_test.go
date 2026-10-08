@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/types/model"
 )
 
 func digestOf(data []byte) string {
@@ -98,7 +98,7 @@ func danglingEntry(t *testing.T, name model.Name) {
 }
 
 func TestResolvePathForNameFallsBackWhenV2EntryDangling(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	name := model.ParseName("example")
 
@@ -124,7 +124,7 @@ func TestResolvePathForNameFallsBackWhenV2EntryDangling(t *testing.T) {
 }
 
 func TestResolvePathForNameDanglingWithoutLegacyIsNotExists(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	name := model.ParseName("example")
 	danglingEntry(t, name)
@@ -150,7 +150,7 @@ func mustMarshal(t *testing.T, m Manifest) []byte {
 // v2 manifest documents must survive a pre-manifest-list daemon's garbage
 // collection when a legacy anchor references them.
 func TestDowngradePruneKeepsManifestListBlobs(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	name := model.ParseName("example")
 
@@ -222,7 +222,7 @@ func TestDowngradePruneKeepsManifestListBlobs(t *testing.T) {
 // TestDowngradePruneKeepsPlainPullBlobs covers plain pulls: the anchor
 // references the model's own manifest document blob.
 func TestDowngradePruneKeepsPlainPullBlobs(t *testing.T) {
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	name := model.ParseName("example")
 

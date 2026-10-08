@@ -15,8 +15,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/types/model"
 )
 
 type Error struct {
@@ -127,7 +127,7 @@ type ChatCompletionRequest struct {
 	Logprobs         *bool           `json:"logprobs"`
 	TopLogprobs      int             `json:"top_logprobs"`
 	DebugRenderOnly  bool            `json:"_debug_render_only"`
-	// Ollama extension: without it an OpenAI-API client cannot release a model.
+	// Rose extension: without it an OpenAI-API client cannot release a model.
 	KeepAlive *api.Duration `json:"keep_alive,omitempty"`
 }
 
@@ -166,7 +166,7 @@ type ChatCompletionChunk struct {
 	Timings           *Timings      `json:"timings,omitempty"`
 }
 
-// TODO (https://github.com/ollama/ollama/issues/5259): support []string, []int and [][]int
+// TODO (https://github.com/qompassai/rose/issues/5259): support []string, []int and [][]int
 type CompletionRequest struct {
 	Model            string         `json:"model"`
 	Prompt           string         `json:"prompt"`

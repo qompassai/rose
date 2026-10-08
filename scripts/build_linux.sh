@@ -29,13 +29,13 @@ if ! command -v zstd >/dev/null 2>&1; then
 fi
 
 rm -rf dist/bin dist/lib dist/linux_amd64 dist/linux_arm64
-rm -f dist/ollama-linux-*.tar.zst
+rm -f dist/rose-linux-*.tar.zst
 mkdir -p dist
 
 docker buildx build \
         --output type=local,dest=./dist/ \
         --platform=${PLATFORM} \
-        ${OLLAMA_COMMON_BUILD_ARGS} \
+        ${ROSE_COMMON_BUILD_ARGS} \
         --target archive \
         -f Dockerfile \
         .
@@ -51,24 +51,24 @@ fi
 # buildx behavior changes for single vs. multiplatform
 echo "Compressing linux tar bundles..."
 if echo $PLATFORM | grep "," > /dev/null ; then
-        tar c -C ./dist/linux_arm64 --exclude cuda_jetpack5 --exclude cuda_jetpack6 . | zstd -9 -T0 >./dist/ollama-linux-arm64.tar.zst
-        tar c -C ./dist/linux_arm64 ./lib/ollama/cuda_jetpack5  | zstd -9 -T0 >./dist/ollama-linux-arm64-jetpack5.tar.zst
-        tar c -C ./dist/linux_arm64 ./lib/ollama/cuda_jetpack6  | zstd -9 -T0 >./dist/ollama-linux-arm64-jetpack6.tar.zst
-        tar c -C ./dist/linux_amd64 --exclude './lib/ollama/rocm*' --exclude './lib/ollama/mlx*' --exclude './lib/ollama/include' . | zstd -9 -T0 >./dist/ollama-linux-amd64.tar.zst
-        ( cd ./dist/linux_amd64 && tar c lib/ollama/rocm_v* ) | zstd -9 -T0 >./dist/ollama-linux-amd64-rocm.tar.zst
-        ( cd ./dist/linux_amd64 && if [ -e lib/ollama/include ]; then tar c lib/ollama/mlx* lib/ollama/include; else tar c lib/ollama/mlx*; fi ) | zstd -9 -T0 >./dist/ollama-linux-amd64-mlx.tar.zst
+        tar c -C ./dist/linux_arm64 --exclude cuda_jetpack5 --exclude cuda_jetpack6 . | zstd -9 -T0 >./dist/rose-linux-arm64.tar.zst
+        tar c -C ./dist/linux_arm64 ./lib/rose/cuda_jetpack5  | zstd -9 -T0 >./dist/rose-linux-arm64-jetpack5.tar.zst
+        tar c -C ./dist/linux_arm64 ./lib/rose/cuda_jetpack6  | zstd -9 -T0 >./dist/rose-linux-arm64-jetpack6.tar.zst
+        tar c -C ./dist/linux_amd64 --exclude './lib/rose/rocm*' --exclude './lib/rose/mlx*' --exclude './lib/rose/include' . | zstd -9 -T0 >./dist/rose-linux-amd64.tar.zst
+        ( cd ./dist/linux_amd64 && tar c lib/rose/rocm_v* ) | zstd -9 -T0 >./dist/rose-linux-amd64-rocm.tar.zst
+        ( cd ./dist/linux_amd64 && if [ -e lib/rose/include ]; then tar c lib/rose/mlx* lib/rose/include; else tar c lib/rose/mlx*; fi ) | zstd -9 -T0 >./dist/rose-linux-amd64-mlx.tar.zst
 elif echo $PLATFORM | grep "arm64" > /dev/null ; then
-        tar c -C ./dist/ --exclude cuda_jetpack5 --exclude cuda_jetpack6 bin lib | zstd -9 -T0 >./dist/ollama-linux-arm64.tar.zst
-        tar c -C ./dist/ ./lib/ollama/cuda_jetpack5  | zstd -9 -T0 >./dist/ollama-linux-arm64-jetpack5.tar.zst
-        tar c -C ./dist/ ./lib/ollama/cuda_jetpack6  | zstd -9 -T0 >./dist/ollama-linux-arm64-jetpack6.tar.zst
+        tar c -C ./dist/ --exclude cuda_jetpack5 --exclude cuda_jetpack6 bin lib | zstd -9 -T0 >./dist/rose-linux-arm64.tar.zst
+        tar c -C ./dist/ ./lib/rose/cuda_jetpack5  | zstd -9 -T0 >./dist/rose-linux-arm64-jetpack5.tar.zst
+        tar c -C ./dist/ ./lib/rose/cuda_jetpack6  | zstd -9 -T0 >./dist/rose-linux-arm64-jetpack6.tar.zst
 elif echo $PLATFORM | grep "amd64" > /dev/null ; then
-        tar c -C ./dist/ --exclude 'lib/ollama/rocm*' --exclude 'lib/ollama/mlx*' --exclude 'lib/ollama/include' bin lib | zstd -9 -T0 >./dist/ollama-linux-amd64.tar.zst
-        ( cd ./dist/ && tar c lib/ollama/rocm_v* ) | zstd -9 -T0 >./dist/ollama-linux-amd64-rocm.tar.zst
-        ( cd ./dist/ && if [ -e lib/ollama/include ]; then tar c lib/ollama/mlx* lib/ollama/include; else tar c lib/ollama/mlx*; fi ) | zstd -9 -T0 >./dist/ollama-linux-amd64-mlx.tar.zst
+        tar c -C ./dist/ --exclude 'lib/rose/rocm*' --exclude 'lib/rose/mlx*' --exclude 'lib/rose/include' bin lib | zstd -9 -T0 >./dist/rose-linux-amd64.tar.zst
+        ( cd ./dist/ && tar c lib/rose/rocm_v* ) | zstd -9 -T0 >./dist/rose-linux-amd64-rocm.tar.zst
+        ( cd ./dist/ && if [ -e lib/rose/include ]; then tar c lib/rose/mlx* lib/rose/include; else tar c lib/rose/mlx*; fi ) | zstd -9 -T0 >./dist/rose-linux-amd64-mlx.tar.zst
 fi
 
 LIMIT=2147483648
-for f in ./dist/ollama-linux-*.tar.zst; do
+for f in ./dist/rose-linux-*.tar.zst; do
     [ -f "$f" ] || continue
     size=$(stat -f%z "$f" 2>/dev/null || stat -c%s "$f")
     if [ "$size" -gt "$LIMIT" ]; then

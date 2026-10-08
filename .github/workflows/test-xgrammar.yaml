@@ -62,7 +62,7 @@ jobs:
       - name: Replace the payload's xgrammar library
         run: |
           set -euo pipefail
-          for variant in build/lib/ollama/mlx_metal_v*; do
+          for variant in build/lib/rose/mlx_metal_v*; do
             cp -f build/xgrammar-standalone/libollama_xgrammar.dylib "${variant}/"
           done
       - name: go test

@@ -14,13 +14,13 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/decision"
-	gguftest "github.com/ollama/ollama/internal/testutil/gguf"
-	"github.com/ollama/ollama/llm"
-	"github.com/ollama/ollama/manifest"
-	"github.com/ollama/ollama/ml"
-	"github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/decision"
+	gguftest "github.com/qompassai/rose/internal/testutil/gguf"
+	"github.com/qompassai/rose/llm"
+	"github.com/qompassai/rose/manifest"
+	"github.com/qompassai/rose/ml"
+	"github.com/qompassai/rose/types/model"
 )
 
 type systemOneTestRunner struct {
@@ -41,7 +41,7 @@ func (r *systemOneTestRunner) Score(ctx context.Context, input llm.ScoreRequest)
 
 func TestDecisionModelRejectsCompletion(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 	// No scheduler: capability rejection must happen before a runner is loaded.
 	s := &Server{}
 	for _, cfg := range []struct {
@@ -75,9 +75,9 @@ func TestDecisionModelRejectsCompletion(t *testing.T) {
 
 func TestSystemOneHandler(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	t.Setenv("OLLAMA_MODELS", t.TempDir())
+	t.Setenv("ROSE_MODELS", t.TempDir())
 	config := model.ConfigV2{ModelFormat: "safetensors", Renderer: "qwen3.5", Capabilities: []string{"completion", "decision"}}
-	params, err := manifest.NewLayer(strings.NewReader(`{"num_ctx":8192}`), "application/vnd.ollama.image.params")
+	params, err := manifest.NewLayer(strings.NewReader(`{"num_ctx":8192}`), "application/vnd.rose.image.params")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -131,10 +131,10 @@ func TestSystemOneHandler(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		layers := []manifest.Layer{{MediaType: "application/vnd.ollama.image.model", Digest: digest}}
+		layers := []manifest.Layer{{MediaType: "application/vnd.rose.image.model", Digest: digest}}
 		for _, layer := range []struct{ content, mediaType string }{
-			{modelConfig.system, "application/vnd.ollama.image.system"},
-			{fmt.Sprintf(`{"num_ctx":%d}`, modelConfig.contextLength), "application/vnd.ollama.image.params"},
+			{modelConfig.system, "application/vnd.rose.image.system"},
+			{fmt.Sprintf(`{"num_ctx":%d}`, modelConfig.contextLength), "application/vnd.rose.image.params"},
 		} {
 			l, err := manifest.NewLayer(strings.NewReader(layer.content), layer.mediaType)
 			if err != nil {
@@ -143,7 +143,7 @@ func TestSystemOneHandler(t *testing.T) {
 			layers = append(layers, l)
 		}
 		if modelConfig.template != "" {
-			l, err := manifest.NewLayer(strings.NewReader(modelConfig.template), "application/vnd.ollama.image.template")
+			l, err := manifest.NewLayer(strings.NewReader(modelConfig.template), "application/vnd.rose.image.template")
 			if err != nil {
 				t.Fatal(err)
 			}

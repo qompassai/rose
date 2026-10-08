@@ -9,14 +9,14 @@ import (
 	"sort"
 	"time"
 
-	"github.com/ollama/ollama/llm"
-	"github.com/ollama/ollama/logutil"
-	"github.com/ollama/ollama/mlx"
-	"github.com/ollama/ollama/mlxrunner/batch"
-	"github.com/ollama/ollama/mlxrunner/cache"
-	"github.com/ollama/ollama/mlxrunner/model"
-	sampler "github.com/ollama/ollama/mlxrunner/sample"
-	"github.com/ollama/ollama/mlxrunner/tokenizer"
+	"github.com/qompassai/rose/llm"
+	"github.com/qompassai/rose/logutil"
+	"github.com/qompassai/rose/mlx"
+	"github.com/qompassai/rose/mlxrunner/batch"
+	"github.com/qompassai/rose/mlxrunner/cache"
+	"github.com/qompassai/rose/mlxrunner/model"
+	sampler "github.com/qompassai/rose/mlxrunner/sample"
+	"github.com/qompassai/rose/mlxrunner/tokenizer"
 )
 
 func prefillChunkSize() int {

@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ollama/ollama/cmd/internal/fileutil"
+	"github.com/qompassai/rose/cmd/internal/fileutil"
 )
 
 // museGeneratedSettings is the launch-owned view of the file muse reads.
@@ -54,7 +54,7 @@ func stubMuseLoadedContext(t *testing.T, n int) {
 
 func TestMuseWriteSettings_BuildsCatalog(t *testing.T) {
 	setTestHome(t, t.TempDir())
-	t.Setenv("OLLAMA_HOST", "127.0.0.1:11434")
+	t.Setenv("ROSE_HOST", "127.0.0.1:11434")
 
 	models := []LaunchModel{
 		{Name: "gpt-oss:20b", ContextLength: 131072, MaxOutputTokens: 32768},
@@ -101,7 +101,7 @@ func TestMuseWriteSettings_BuildsCatalog(t *testing.T) {
 	}
 
 	// Rows that disagree with the session's provider or profile are dropped by
-	// muse, which then falls back to a catalog fetch Ollama cannot serve.
+	// muse, which then falls back to a catalog fetch Rose cannot serve.
 	for _, row := range settings.ModelCatalog {
 		if row.ProviderID != museProviderID {
 			t.Errorf("row %q provider_id = %q, want %q", row.ModelID, row.ProviderID, museProviderID)
@@ -226,7 +226,7 @@ func TestMuseWriteSettings_KeepsUserPreferences(t *testing.T) {
 		t.Errorf("model = %q, want gpt-oss:20b", settings.Model)
 	}
 	if strings.Contains(settings.Transport.BaseURL, "meta.ai") {
-		t.Errorf("base_url = %q, want it repointed at Ollama", settings.Transport.BaseURL)
+		t.Errorf("base_url = %q, want it repointed at Rose", settings.Transport.BaseURL)
 	}
 
 	// The user's own settings must be left exactly as they were.
@@ -370,7 +370,7 @@ func TestMuseRun_PointsMuseAtLaunchConfig(t *testing.T) {
 	tmpDir := t.TempDir()
 	setTestHome(t, tmpDir)
 	stubMuseLoadedContext(t, 0)
-	t.Setenv("OLLAMA_HOST", "127.0.0.1:11434")
+	t.Setenv("ROSE_HOST", "127.0.0.1:11434")
 
 	logPath := filepath.Join(tmpDir, "muse-invocation.log")
 	script := fmt.Sprintf(`#!/bin/sh

@@ -97,9 +97,9 @@ func TestInstallClaudeDesktopZipDoesNotOverwrite(t *testing.T) {
 }
 
 func TestInstallClaudeDesktopZipRealArchive(t *testing.T) {
-	archive := os.Getenv("OLLAMA_TEST_CLAUDE_DESKTOP_ZIP")
+	archive := os.Getenv("ROSE_TEST_CLAUDE_DESKTOP_ZIP")
 	if archive == "" {
-		t.Skip("set OLLAMA_TEST_CLAUDE_DESKTOP_ZIP to a downloaded Claude Desktop ZIP")
+		t.Skip("set ROSE_TEST_CLAUDE_DESKTOP_ZIP to a downloaded Claude Desktop ZIP")
 	}
 	destination := filepath.Join(t.TempDir(), "Applications", "Claude.app")
 	installed, err := installClaudeDesktopZip(

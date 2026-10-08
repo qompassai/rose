@@ -5,8 +5,8 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/ollama/ollama/mlx"
-	"github.com/ollama/ollama/mlx/mlxtest"
+	"github.com/qompassai/rose/mlx"
+	"github.com/qompassai/rose/mlx/mlxtest"
 )
 
 // slotLogits builds a [1, V] logits tensor for a single-slot Sample call.

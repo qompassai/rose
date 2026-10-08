@@ -1,8 +1,8 @@
-# Ollama for macOS and Windows
+# Rose for macOS and Windows
 
 ## Download
 
-- [macOS](https://ollama.com/download/Ollama.dmg)
+- [macOS](https://ollama.com/download/Rose.dmg)
 - [Windows](https://ollama.com/download/OllamaSetup.exe)
 
 ## Development
@@ -34,11 +34,11 @@ npm install
 npm run dev
 ```
 
-2. In a separate terminal, run the Ollama app with the `-dev` flag:
+2. In a separate terminal, run the Rose app with the `-dev` flag:
 
 ```bash
 go generate ./... &&
-OLLAMA_DEBUG=1 go run ./cmd/app -dev
+ROSE_DEBUG=1 go run ./cmd/app -dev
 ```
 
 The `-dev` flag enables:
@@ -56,7 +56,7 @@ The `-dev` flag enables:
 - https://jrsoftware.org/isinfo.php
 
 
-**Dependencies** - either build a local copy of ollama, or use a github release
+**Dependencies** - either build a local copy of rose, or use a github release
 ```powershell
 # Local dependencies
 .\scripts\deps_local.ps1
@@ -82,7 +82,7 @@ export SDKROOT=/Applications/Xcode_14.1.0.app/Contents/Developer/Platforms/MacOS
 export DEVELOPER_DIR=/Applications/Xcode_14.1.0.app/Contents/Developer
 ```
 
-**Dependencies** - either build a local copy of Ollama, or use a GitHub release:
+**Dependencies** - either build a local copy of Rose, or use a GitHub release:
 ```sh
 # Local dependencies
 ./scripts/deps_local.sh

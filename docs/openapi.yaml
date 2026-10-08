@@ -1,15 +1,15 @@
 openapi: 3.1.0
 info:
-  title: Ollama API
+  title: Rose API
   version: 0.1.0
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
   description: |
-    OpenAPI specification for the Ollama HTTP API
+    OpenAPI specification for the Rose HTTP API
 servers:
   - url: http://localhost:11434
-    description: Ollama
+    description: Rose
 security: []
 components:
   securitySchemes:
@@ -549,7 +549,7 @@ components:
           description: Quantization level to apply to draft weights during import
         requires:
           type: string
-          description: Minimum Ollama version required by the model
+          description: Minimum Rose version required by the model
         capabilities:
           type: array
           items:
@@ -657,7 +657,7 @@ components:
           description: Name of the upstream model, if the model is remote
         remote_host:
           type: string
-          description: URL of the upstream Ollama host, if the model is remote
+          description: URL of the upstream Rose host, if the model is remote
         modified_at:
           type: string
           description: Last modified timestamp in ISO 8601 format
@@ -792,7 +792,7 @@ components:
       properties:
         version:
           type: string
-          description: Version of Ollama
+          description: Version of Rose
     TokenLogprob:
       type: object
       description: Log probability information for a single token alternative
@@ -1157,7 +1157,7 @@ paths:
     post:
       summary: Answer typed questions
       description: |
-        Answer choice, yes/no, and scoring questions with a local System One model. Requires Ollama v0.35.0 or later. See the [decision guide](/capabilities/decision) for examples.
+        Answer choice, yes/no, and scoring questions with a local System One model. Requires Rose v0.35.0 or later. See the [decision guide](/capabilities/decision) for examples.
       operationId: systemone
       x-mint:
         href: /api/systemone
@@ -1166,7 +1166,7 @@ paths:
           sidebarTitle: /v1/systemone
         content: |
           <Note>
-          Currently available locally in Ollama.
+          Currently available locally in Rose.
           </Note>
 
           - Returns one JSON response; streaming, video, tools, and generation controls are not supported.
@@ -1836,9 +1836,9 @@ paths:
           label: Create from existing
           source: |
             curl http://localhost:11434/api/create -d '{
-              "model": "ollama",
+              "model": "rose",
               "from": "gemma4",
-              "system": "You are Ollama the llama."
+              "system": "You are Rose the llama."
             }'
         - lang: bash
           label: Create from GGUF
@@ -2092,7 +2092,7 @@ paths:
   /api/version:
     get:
       summary: Get version
-      description: Retrieve the version of the Ollama
+      description: Retrieve the version of the Rose
       operationId: version
       x-mint:
         metadata:
@@ -2118,7 +2118,7 @@ paths:
       operationId: usage
       servers:
         - url: https://ollama.com
-          description: Ollama Cloud
+          description: Rose Cloud
       security:
         - bearerAuth: []
       parameters:
@@ -2186,7 +2186,7 @@ paths:
       operationId: balance
       servers:
         - url: https://ollama.com
-          description: Ollama Cloud
+          description: Rose Cloud
       security:
         - bearerAuth: []
       responses:

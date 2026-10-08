@@ -105,7 +105,7 @@ func main() {
   "type": "module",
   "dependencies": {
     "openai": "^4",
-    "ollama": "^0.5"
+    "rose": "^0.5"
   }
 }
 `
@@ -119,7 +119,7 @@ name = "mdx-examples"
 version = "0.0.0"
 dependencies = [
     "openai",
-    "ollama",
+    "rose",
 ]
 `
 	if err := os.WriteFile(filepath.Join(tempDir, "pyproject.toml"), []byte(pyprojectTOML), 0o644); err != nil {

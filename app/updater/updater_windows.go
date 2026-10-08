@@ -59,9 +59,9 @@ type OSVERSIONINFOEXW struct {
 
 func init() {
 	VerifyDownload = verifyDownload
-	Installer = "Ollama-darwin.zip"
+	Installer = "Rose-darwin.zip"
 	localAppData := os.Getenv("LOCALAPPDATA")
-	appDataDir := filepath.Join(localAppData, "Ollama")
+	appDataDir := filepath.Join(localAppData, "Rose")
 
 	// Use a distinct update staging directory from the old desktop app
 	// to avoid double upgrades on the transition
@@ -102,7 +102,7 @@ func loadOSVersion() {
 func getStagedUpdate() string {
 	// When transitioning from old to new app, cleanup the update from the old staging dir
 	// This can eventually be removed once enough time has passed since the transition
-	cleanupOldDownloads(filepath.Join(os.Getenv("LOCALAPPDATA"), "Ollama", "updates"))
+	cleanupOldDownloads(filepath.Join(os.Getenv("LOCALAPPDATA"), "Rose", "updates"))
 
 	files, err := filepath.Glob(filepath.Join(UpdateStageDir, "*", "*.exe"))
 	if err != nil {
@@ -157,7 +157,7 @@ func DoUpgrade(interactive bool) error {
 	cmd := exec.Command(runningInstaller, installArgs...)
 
 	if err := cmd.Start(); err != nil {
-		return fmt.Errorf("unable to start ollama app %w", err)
+		return fmt.Errorf("unable to start rose app %w", err)
 	}
 
 	if cmd.Process != nil {
@@ -327,7 +327,7 @@ func windowsInstallerSignerSubject(filename string) (string, error) {
 	}
 
 	for _, org := range parsed.Subject.Organization {
-		if org == "Ollama Inc." {
+		if org == "Rose Inc." {
 			return parsed.Subject.String(), nil
 		}
 	}

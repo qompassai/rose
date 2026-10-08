@@ -70,7 +70,7 @@ func (m welcomeModel) View() string {
 
 func (m welcomeModel) introView() string {
 	var s strings.Builder
-	s.WriteString(selectorTitleStyle.Render("Welcome to Ollama!"))
+	s.WriteString(selectorTitleStyle.Render("Welcome to Rose!"))
 	s.WriteString("\n\nRun open models with your coding agents so you can spend less\nwhile keeping your data private.\n\n")
 	s.WriteString(selectorTitleStyle.Render("Connect your apps"))
 	s.WriteString("\nPower your existing coding apps with open models\n\n")
@@ -82,7 +82,7 @@ func (m welcomeModel) introView() string {
 	return s.String()
 }
 
-// RunWelcome introduces Ollama. Returning successfully leads to the regular launcher.
+// RunWelcome introduces Rose. Returning successfully leads to the regular launcher.
 func RunWelcome(options WelcomeOptions) error {
 	finalModel, err := tea.NewProgram(welcomeModel{options: options}).Run()
 	if err != nil {

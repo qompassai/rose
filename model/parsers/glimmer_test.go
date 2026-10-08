@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ollama/ollama/api"
+	"github.com/qompassai/rose/api"
 )
 
 func glimmerTestTool(name string, properties map[string]api.ToolProperty) api.Tool {

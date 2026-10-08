@@ -4,14 +4,14 @@ title: Claude Code
 
 [Claude Code](https://code.claude.com/docs/en/overview) reads your codebase, edits files, and runs commands.
 
-Ollama connects Claude Code to local and cloud models through its Anthropic-compatible API.
+Rose connects Claude Code to local and cloud models through its Anthropic-compatible API.
 
 ## Get started
 
-Launch Claude Code with Ollama:
+Launch Claude Code with Rose:
 
 ```shell
-ollama launch claude
+rose launch claude
 ```
 
 ## Capabilities
@@ -62,7 +62,7 @@ ollama launch claude
       <div className="capability-list-icon"><Icon icon="globe" /></div>
       <div>
         <div className="capability-list-heading">Web search</div>
-        <div className="capability-list-copy">Search the web through Ollama</div>
+        <div className="capability-list-copy">Search the web through Rose</div>
       </div>
     </div>
 
@@ -116,14 +116,14 @@ Choose a model with enough context for your repository.
 Use `--yes` for scripts, Docker, or CI:
 
 ```shell
-ollama launch claude --model gemma4:cloud --yes -- -p "how does this repository work?"
+rose launch claude --model gemma4:cloud --yes -- -p "how does this repository work?"
 ```
 
 The `--yes` flag skips selectors, pulls the model when needed, and requires `--model`. Arguments after `--` are passed directly to Claude Code.
 
 ### Web search
 
-Use Ollama's web search API from Claude Code.
+Use Rose's web search API from Claude Code.
 
 See [Web search](/capabilities/web-search) for setup and usage.
 
@@ -148,22 +148,22 @@ Examples:
 Connect a Telegram bot to your Claude Code session. Install the [Telegram plugin](https://github.com/anthropics/claude-plugins-official), create a bot with [@BotFather](https://t.me/BotFather), then launch Claude Code:
 
 ```shell
-ollama launch claude -- --channels plugin:telegram@claude-plugins-official
+rose launch claude -- --channels plugin:telegram@claude-plugins-official
 ```
 
 Claude Code prompts for permission on most actions. To allow the bot to work autonomously, configure [permission rules](https://code.claude.com/docs/en/permissions) or pass `--dangerously-skip-permissions` in an isolated environment.
 
 See the [plugin README](https://github.com/anthropics/claude-plugins-official/tree/main/external_plugins/telegram) for setup instructions.
 
-## Connect directly to Ollama Cloud
+## Connect directly to Rose Cloud
 
-Install Claude Code, then set your [API key](/quickstart#build-an-application) in `OLLAMA_API_KEY`. No Ollama installation required.
+Install Claude Code, then set your [API key](/quickstart#build-an-application) in `ROSE_API_KEY`. No Rose installation required.
 
 In Bash or Zsh, run:
 
 ```shell
 ANTHROPIC_BASE_URL=https://ollama.com \
-ANTHROPIC_AUTH_TOKEN="$OLLAMA_API_KEY" \
+ANTHROPIC_AUTH_TOKEN="$ROSE_API_KEY" \
 ANTHROPIC_API_KEY="" \
 claude --model glm-5.3-flash
 ```
@@ -191,7 +191,7 @@ irm https://claude.ai/install.ps1 | iex
 <p className="manual-step-title">2. Set the environment variables</p>
 
 ```shell
-export ANTHROPIC_AUTH_TOKEN=ollama
+export ANTHROPIC_AUTH_TOKEN=rose
 export ANTHROPIC_API_KEY=""
 export ANTHROPIC_BASE_URL=http://localhost:11434
 ```
@@ -205,5 +205,5 @@ claude --model qwen3.5
 Or run with environment variables inline:
 
 ```shell
-ANTHROPIC_AUTH_TOKEN=ollama ANTHROPIC_BASE_URL=http://localhost:11434 ANTHROPIC_API_KEY="" claude --model kimi-k2.7-code:cloud
+ANTHROPIC_AUTH_TOKEN=rose ANTHROPIC_BASE_URL=http://localhost:11434 ANTHROPIC_API_KEY="" claude --model kimi-k2.7-code:cloud
 ```

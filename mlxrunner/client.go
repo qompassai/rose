@@ -23,14 +23,14 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/envconfig"
-	"github.com/ollama/ollama/format"
-	"github.com/ollama/ollama/llm"
-	"github.com/ollama/ollama/manifest"
-	"github.com/ollama/ollama/ml"
-	"github.com/ollama/ollama/mlx"
-	"github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/envconfig"
+	"github.com/qompassai/rose/format"
+	"github.com/qompassai/rose/llm"
+	"github.com/qompassai/rose/manifest"
+	"github.com/qompassai/rose/ml"
+	"github.com/qompassai/rose/mlx"
+	"github.com/qompassai/rose/types/model"
 )
 
 // Client wraps an MLX runner subprocess to implement llm.LlamaServer for LLM models.
@@ -447,7 +447,7 @@ func (c *Client) Load(ctx context.Context, systemInfo ml.SystemInfo, gpus []ml.D
 		exe = eval
 	}
 
-	// Spawn subprocess: ollama runner --model <name> --port <port>
+	// Spawn subprocess: rose runner --model <name> --port <port>
 	cmd := exec.Command(exe, "runner", "--model", c.modelName, "--port", strconv.Itoa(port))
 	cmd.Env = os.Environ()
 

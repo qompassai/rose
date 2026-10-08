@@ -14,9 +14,9 @@ import (
 	"time"
 
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/cmd/internal/fileutil"
-	"github.com/ollama/ollama/envconfig"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/cmd/internal/fileutil"
+	"github.com/qompassai/rose/envconfig"
 )
 
 // VSCode implements Runner and Editor for Visual Studio Code integration.
@@ -136,7 +136,7 @@ func (v *VSCode) Run(model string, _ []LaunchModel, args []string) error {
 		models = cfg.Models
 	}
 
-	// VS Code discovers models from ollama ls. Cloud models that pass Show
+	// VS Code discovers models from rose ls. Cloud models that pass Show
 	// (the server knows about them) but aren't in ls need to be pulled to
 	// register them so VS Code can find them.
 	if client, err := api.ClientFromEnvironment(); err == nil {
@@ -186,8 +186,8 @@ func (v *VSCode) Run(model string, _ []LaunchModel, args []string) error {
 }
 
 // ensureModelsRegistered pulls models that the server knows about (Show succeeds)
-// but aren't in ollama ls yet. This is needed for cloud models so that VS Code
-// can discover them from the Ollama API.
+// but aren't in rose ls yet. This is needed for cloud models so that VS Code
+// can discover them from the Rose API.
 func (v *VSCode) ensureModelsRegistered(ctx context.Context, client *api.Client, models []string) {
 	listed, err := client.List(ctx)
 	if err != nil {
@@ -225,9 +225,9 @@ func (v *VSCode) FocusVSCode() {
 	}
 }
 
-// printModelAccessTip shows instructions for finding Ollama models in VS Code.
+// printModelAccessTip shows instructions for finding Rose models in VS Code.
 func (v *VSCode) printModelAccessTip() {
-	fmt.Fprintf(os.Stderr, "\nTip: To use Ollama models, open Copilot Chat and click the model picker.\n")
+	fmt.Fprintf(os.Stderr, "\nTip: To use Rose models, open Copilot Chat and click the model picker.\n")
 	fmt.Fprintf(os.Stderr, "     If you don't see your models, click \"Other models\" to find them.\n\n")
 }
 
@@ -243,7 +243,7 @@ func (v *VSCode) Edit(models []LaunchModel) error {
 		return nil
 	}
 
-	// Write chatLanguageModels.json with Ollama vendor entry
+	// Write chatLanguageModels.json with Rose vendor entry
 	clmPath := v.chatLanguageModelsPath()
 	if err := os.MkdirAll(filepath.Dir(clmPath), 0o755); err != nil {
 		return err
@@ -254,18 +254,18 @@ func (v *VSCode) Edit(models []LaunchModel) error {
 		_ = json.Unmarshal(data, &entries)
 	}
 
-	// Remove any existing Ollama entries, preserve others
+	// Remove any existing Rose entries, preserve others
 	filtered := make([]map[string]any, 0, len(entries))
 	for _, entry := range entries {
-		if vendor, _ := entry["vendor"].(string); vendor != "ollama" {
+		if vendor, _ := entry["vendor"].(string); vendor != "rose" {
 			filtered = append(filtered, entry)
 		}
 	}
 
-	// Add new Ollama entry
+	// Add new Rose entry
 	filtered = append(filtered, map[string]any{
-		"vendor": "ollama",
-		"name":   "Ollama",
+		"vendor": "rose",
+		"name":   "Rose",
 		"url":    envconfig.Host().String(),
 	})
 
@@ -277,7 +277,7 @@ func (v *VSCode) Edit(models []LaunchModel) error {
 		return err
 	}
 
-	// Clean up legacy settings from older Ollama integrations
+	// Clean up legacy settings from older Rose integrations
 	v.updateSettings()
 
 	return nil
@@ -293,7 +293,7 @@ func (v *VSCode) Models() []string {
 	return nil
 }
 
-// hasOllamaVendor checks if chatLanguageModels.json contains an Ollama vendor entry.
+// hasOllamaVendor checks if chatLanguageModels.json contains an Rose vendor entry.
 func (v *VSCode) hasOllamaVendor() bool {
 	data, err := os.ReadFile(v.chatLanguageModelsPath())
 	if err != nil {
@@ -306,7 +306,7 @@ func (v *VSCode) hasOllamaVendor() bool {
 	}
 
 	for _, entry := range entries {
-		if vendor, _ := entry["vendor"].(string); vendor == "ollama" {
+		if vendor, _ := entry["vendor"].(string); vendor == "rose" {
 			return true
 		}
 	}
@@ -321,7 +321,7 @@ func (v *VSCode) settingsPath() string {
 	return v.vscodePath("settings.json")
 }
 
-// updateSettings cleans up legacy settings from older Ollama integrations.
+// updateSettings cleans up legacy settings from older Rose integrations.
 func (v *VSCode) updateSettings() {
 	settingsPath := v.settingsPath()
 	data, err := os.ReadFile(settingsPath)
@@ -335,7 +335,7 @@ func (v *VSCode) updateSettings() {
 	}
 
 	changed := false
-	for _, key := range []string{"github.copilot.chat.byok.ollamaEndpoint", "ollama.launch.configured"} {
+	for _, key := range []string{"github.copilot.chat.byok.ollamaEndpoint", "rose.launch.configured"} {
 		if _, ok := settings[key]; ok {
 			delete(settings, key)
 			changed = true
@@ -360,7 +360,7 @@ func (v *VSCode) statePath() string {
 // ShowInModelPicker ensures the given models are visible in VS Code's Copilot
 // Chat model picker. It sets the configured models to true in the picker
 // preferences so they appear in the dropdown. Models use the VS Code identifier
-// format "ollama/Ollama/<name>".
+// format "rose/Rose/<name>".
 func (v *VSCode) ShowInModelPicker(models []string) error {
 	if len(models) == 0 {
 		return nil
@@ -395,7 +395,7 @@ func (v *VSCode) ShowInModelPicker(models []string) error {
 	}
 
 	// Build name→ID map from VS Code's cached model list.
-	// VS Code uses numeric IDs like "ollama/Ollama/4", not "ollama/Ollama/kimi-k2.5:cloud".
+	// VS Code uses numeric IDs like "rose/Rose/4", not "rose/Rose/kimi-k2.5:cloud".
 	nameToID := make(map[string]string)
 	var cacheJSON string
 	if err := db.QueryRow("SELECT value FROM ItemTable WHERE key = 'chat.cachedLanguageModels.v2'").Scan(&cacheJSON); err == nil {
@@ -406,7 +406,7 @@ func (v *VSCode) ShowInModelPicker(models []string) error {
 				if meta == nil {
 					continue
 				}
-				if vendor, _ := meta["vendor"].(string); vendor == "ollama" {
+				if vendor, _ := meta["vendor"].(string); vendor == "rose" {
 					name, _ := meta["name"].(string)
 					id, _ := entry["identifier"].(string)
 					if name != "" && id != "" {
@@ -417,8 +417,8 @@ func (v *VSCode) ShowInModelPicker(models []string) error {
 		}
 	}
 
-	// Ollama config is authoritative: always show configured models,
-	// hide Ollama models that are no longer in the config.
+	// Rose config is authoritative: always show configured models,
+	// hide Rose models that are no longer in the config.
 	configuredIDs := make(map[string]bool)
 	for _, m := range models {
 		for _, id := range v.modelVSCodeIDs(m, nameToID) {
@@ -427,7 +427,7 @@ func (v *VSCode) ShowInModelPicker(models []string) error {
 		}
 	}
 	for id := range prefs {
-		if strings.HasPrefix(id, "ollama/") && !configuredIDs[id] {
+		if strings.HasPrefix(id, "rose/") && !configuredIDs[id] {
 			prefs[id] = false
 		}
 	}
@@ -450,9 +450,9 @@ func (v *VSCode) modelVSCodeIDs(model string, nameToID map[string]string) []stri
 			ids = append(ids, id)
 		}
 	}
-	ids = append(ids, "ollama/Ollama/"+model)
+	ids = append(ids, "rose/Rose/"+model)
 	if !strings.Contains(model, ":") {
-		ids = append(ids, "ollama/Ollama/"+model+":latest")
+		ids = append(ids, "rose/Rose/"+model+":latest")
 	}
 	return ids
 }

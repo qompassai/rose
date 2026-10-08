@@ -1,6 +1,6 @@
 // llama_server.go wraps the llama-server binary as a subprocess
 //
-// Ollama uses two chat paths with llama-server. Models with explicit Ollama
+// Rose uses two chat paths with llama-server. Models with explicit Rose
 // renderers/parsers, Harmony handling, MLX, or an enabled Go TEMPLATE layer
 // still render prompts in Go and call /completion. Other GGUF chat models use
 // llama-server's chat_template handling through /v1/chat/completions.
@@ -45,10 +45,10 @@ import (
 	"golang.org/x/image/webp"
 	"golang.org/x/sync/semaphore"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/envconfig"
-	"github.com/ollama/ollama/fs/gguf"
-	"github.com/ollama/ollama/ml"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/envconfig"
+	"github.com/qompassai/rose/fs/gguf"
+	"github.com/qompassai/rose/ml"
 )
 
 var grammarJSON = `
@@ -109,7 +109,7 @@ func boundedNumPredict(numPredict, numCtx int) int {
 	if numCtx <= 0 {
 		return numPredict
 	}
-	// Ollama's default num_predict=-1 means "generate until a stop condition".
+	// Rose's default num_predict=-1 means "generate until a stop condition".
 	// llama-server still needs a finite request budget, so keep open-ended
 	// generations bounded while allowing several full context windows.
 	limit := openEndedGenerationContextMultiplier * numCtx
@@ -138,7 +138,7 @@ type llamaServerRunner struct {
 	options            api.Options
 	modelPath          string
 	// mediaMarker must match the LLAMA_MEDIA_MARKER value passed to llama-server.
-	// llama.cpp randomizes this by default; Ollama renders stable [img-N] markers
+	// llama.cpp randomizes this by default; Rose renders stable [img-N] markers
 	// and rewrites them before forwarding the request.
 	mediaMarker string
 
@@ -337,7 +337,7 @@ func (s *llamaServerRunner) ContextLength() int {
 	return s.options.NumCtx
 }
 
-// FindLlamaServer locates the llama-server binary in lib/ollama/.
+// FindLlamaServer locates the llama-server binary in lib/rose/.
 // There is a single binary that dynamically loads GPU backends at runtime.
 func FindLlamaServer() (string, error) {
 	path, candidates, err := findLlamaCppBinary("llama-server", defaultLlamaCppBinarySearch())
@@ -864,13 +864,13 @@ func NewLlamaServerRunner(
 	arch := f.KV().Architecture()
 	isEmbedding := f.KV().Has("pooling_type")
 
-	// Older Ollama-format GGUFs store vision tensors (v.*, mm.*) inline in
+	// Older Rose-format GGUFs store vision tensors (v.*, mm.*) inline in
 	// the main model file rather than in a separate projector layer. When
 	// the arch has a llama/compat clip handler, we can point --mmproj at
 	// the same file and the in-process shim translates the two views.
 	//
 	// If we auto-enable --mmproj for an arch whose clip handler doesn't
-	// exist yet, upstream's clip loader sees un-translated Ollama tensors
+	// exist yet, upstream's clip loader sees un-translated Rose tensors
 	// and aborts model load. So gate on an explicit allowlist that mirrors
 	// the compat layer's clip-side coverage in llama/compat/.
 	compatClipArches := map[string]bool{
@@ -1704,7 +1704,7 @@ func (s *llamaServerRunner) Completion(ctx context.Context, req CompletionReques
 		lsReq.Grammar = thinkingGrammar(req.ThinkingClose, lsReq.Grammar)
 	}
 
-	// Convert media: replace Ollama's stable [img-N] markers with the per-process
+	// Convert media: replace Rose's stable [img-N] markers with the per-process
 	// llama-server media marker and package the matching payloads as base64.
 	if len(req.Media) > 0 {
 		promptStr := lsReq.Prompt.(string)
@@ -1745,9 +1745,9 @@ func (s *llamaServerRunner) Completion(ctx context.Context, req CompletionReques
 		}
 		slog.Error("llama-server completion error", "error", err)
 		if msg := s.lastErrMsg(); msg != "" {
-			return fmt.Errorf("model runner has unexpectedly stopped, this may be due to resource limitations or an internal error, check ollama server logs for details: %s", msg)
+			return fmt.Errorf("model runner has unexpectedly stopped, this may be due to resource limitations or an internal error, check rose server logs for details: %s", msg)
 		}
-		return errors.New("model runner has unexpectedly stopped, this may be due to resource limitations or an internal error, check ollama server logs for details")
+		return errors.New("model runner has unexpectedly stopped, this may be due to resource limitations or an internal error, check rose server logs for details")
 	}
 	defer res.Body.Close()
 
@@ -1899,7 +1899,7 @@ func (s *llamaServerRunner) statusErrorMessage(body []byte) string {
 	return errMsg
 }
 
-// convertLogprobs converts llama-server's completion_probabilities to Ollama's Logprob format.
+// convertLogprobs converts llama-server's completion_probabilities to Rose's Logprob format.
 // includeTop controls whether top alternatives are included in the output.
 func convertLogprobs(probs []llamaServerTokenProb, includeTop bool) []Logprob {
 	if len(probs) == 0 {
@@ -2039,9 +2039,9 @@ func (s *llamaServerRunner) Chat(ctx context.Context, req ChatRequest, fn func(C
 		}
 		slog.Error("llama-server chat error", "error", err)
 		if msg := s.lastErrMsg(); msg != "" {
-			return fmt.Errorf("model runner has unexpectedly stopped, this may be due to resource limitations or an internal error, check ollama server logs for details: %s", msg)
+			return fmt.Errorf("model runner has unexpectedly stopped, this may be due to resource limitations or an internal error, check rose server logs for details: %s", msg)
 		}
-		return errors.New("model runner has unexpectedly stopped, this may be due to resource limitations or an internal error, check ollama server logs for details")
+		return errors.New("model runner has unexpectedly stopped, this may be due to resource limitations or an internal error, check rose server logs for details")
 	}
 	defer res.Body.Close()
 

@@ -99,7 +99,7 @@ func TestEditInExternalEditorWhitespaceOnly(t *testing.T) {
 	}
 	for _, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Setenv("OLLAMA_EDITOR", "")
+			t.Setenv("ROSE_EDITOR", "")
 			t.Setenv("VISUAL", tt.visual)
 			t.Setenv("EDITOR", tt.editor)
 			_, err := editInExternalEditor("content")
@@ -111,7 +111,7 @@ func TestEditInExternalEditorWhitespaceOnly(t *testing.T) {
 func TestEditInExternalEditorParsesEditorWithArgs(t *testing.T) {
 	// A well-formed editor command with arguments must still be parsed so
 	// its binary is looked up (guards the normal path from regressing).
-	t.Setenv("OLLAMA_EDITOR", "definitely-not-a-real-editor arg1")
+	t.Setenv("ROSE_EDITOR", "definitely-not-a-real-editor arg1")
 	t.Setenv("VISUAL", "")
 	t.Setenv("EDITOR", "")
 	_, err := editInExternalEditor("content")

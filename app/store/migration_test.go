@@ -138,7 +138,7 @@ func TestNoConfigToMigrate(t *testing.T) {
 func TestCloudMigrationFromAirplaneMode(t *testing.T) {
 	tmpHome := t.TempDir()
 	setTestHome(t, tmpHome)
-	t.Setenv("OLLAMA_NO_CLOUD", "")
+	t.Setenv("ROSE_NO_CLOUD", "")
 
 	dbPath := filepath.Join(tmpHome, "db.sqlite")
 	db, err := newDatabase(dbPath)
@@ -168,7 +168,7 @@ func TestCloudMigrationFromAirplaneMode(t *testing.T) {
 		t.Fatal("expected cloud to be disabled after migrating airplane_mode=true")
 	}
 
-	configPath := filepath.Join(tmpHome, ".ollama", serverConfigFilename)
+	configPath := filepath.Join(tmpHome, ".rose", serverConfigFilename)
 	data, err := os.ReadFile(configPath)
 	if err != nil {
 		t.Fatalf("failed to read migrated server config: %v", err)

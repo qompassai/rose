@@ -22,7 +22,7 @@ To enable streaming in the SDKs, set the `stream` parameter to `True`.
   <Tab title="Python">
 
     ```python
-    from ollama import chat
+    from rose import chat
 
     stream = chat(
       model='qwen3',
@@ -56,10 +56,10 @@ To enable streaming in the SDKs, set the `stream` parameter to `True`.
   <Tab title="JavaScript">
 
     ```javascript
-    import ollama from 'ollama'
+    import rose from 'rose'
 
     async function main() {
-      const stream = await ollama.chat({
+      const stream = await rose.chat({
         model: 'qwen3',
         messages: [{ role: 'user', content: 'What is 17 × 23?' }],
         stream: true,

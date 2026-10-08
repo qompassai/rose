@@ -6,8 +6,8 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/ollama/ollama/mlx"
-	"github.com/ollama/ollama/mlx/mlxthread"
+	"github.com/qompassai/rose/mlx"
+	"github.com/qompassai/rose/mlx/mlxthread"
 )
 
 var (

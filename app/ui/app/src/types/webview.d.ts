@@ -167,9 +167,9 @@ declare global {
     ) => Promise<ClaudeDesktopActionResult>;
     setOnboardingWindow?: (enabled: boolean) => void;
     menu: (items: MenuItem[]) => Promise<string | null>;
-    OLLAMA_TOOLS?: boolean;
-    OLLAMA_WEBSEARCH?: boolean;
-    OLLAMA_PLATFORM?: "darwin" | "windows";
+    ROSE_TOOLS?: boolean;
+    ROSE_WEBSEARCH?: boolean;
+    ROSE_PLATFORM?: "darwin" | "windows";
   }
 
   namespace JSX {

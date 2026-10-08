@@ -14,10 +14,10 @@ describe("copyTextToClipboard", () => {
       },
     });
 
-    const copied = await copyTextToClipboard("ollama launch claude");
+    const copied = await copyTextToClipboard("rose launch claude");
 
     expect(copied).toBe(true);
-    expect(writeText).toHaveBeenCalledWith("ollama launch claude");
+    expect(writeText).toHaveBeenCalledWith("rose launch claude");
   });
 
   it("falls back to execCommand when Clipboard API fails", async () => {
@@ -47,7 +47,7 @@ describe("copyTextToClipboard", () => {
       execCommand,
     });
 
-    const copied = await copyTextToClipboard("ollama launch openclaw");
+    const copied = await copyTextToClipboard("rose launch openclaw");
 
     expect(copied).toBe(true);
     expect(execCommand).toHaveBeenCalledWith("copy");

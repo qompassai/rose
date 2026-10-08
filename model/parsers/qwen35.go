@@ -6,8 +6,8 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/logutil"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/logutil"
 )
 
 type qwen35ParserState int

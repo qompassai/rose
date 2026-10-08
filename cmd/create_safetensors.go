@@ -10,13 +10,13 @@ import (
 
 	"golang.org/x/mod/semver"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/create"
-	"github.com/ollama/ollama/manifest"
-	"github.com/ollama/ollama/mlx/quant"
-	"github.com/ollama/ollama/parser"
-	"github.com/ollama/ollama/progress"
-	"github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/create"
+	"github.com/qompassai/rose/manifest"
+	"github.com/qompassai/rose/mlx/quant"
+	"github.com/qompassai/rose/parser"
+	"github.com/qompassai/rose/progress"
+	"github.com/qompassai/rose/types/model"
 )
 
 // modelfileConfig holds configuration extracted from a Modelfile.
@@ -281,7 +281,7 @@ func createModelFromBaseWithDraft(ctx context.Context, opts createOptions, draft
 	var configLayer *manifest.Layer
 	for i := range baseManifest.Layers {
 		layer := &baseManifest.Layers[i]
-		if layer.MediaType == "application/vnd.ollama.image.json" && layer.Name == "config.json" {
+		if layer.MediaType == "application/vnd.rose.image.json" && layer.Name == "config.json" {
 			configLayer = layer
 			break
 		}

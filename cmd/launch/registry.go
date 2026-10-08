@@ -57,7 +57,7 @@ var integrationSpecs = []*IntegrationSpec{
 		Runner:      &ClaudeDesktop{},
 		Aliases:     []string{"claude-app"},
 		Hidden:      true,
-		Description: "Use Ollama models in Claude Desktop",
+		Description: "Use Rose models in Claude Desktop",
 		Install: IntegrationInstallSpec{
 			CheckInstalled: func() bool {
 				return ClaudeDesktopInstalled()
@@ -98,7 +98,7 @@ var integrationSpecs = []*IntegrationSpec{
 		Name:        chatGPTIntegrationName,
 		Runner:      &CodexApp{},
 		Aliases:     []string{codexAppIntegrationName, "codex-desktop", "codex-gui"},
-		Description: "Use Ollama models in ChatGPT",
+		Description: "Use Rose models in ChatGPT",
 		Install: IntegrationInstallSpec{
 			CheckInstalled: func() bool {
 				return codexAppInstalled()
@@ -478,7 +478,7 @@ func IntegrationSelectionItems() ([]ModelItem, error) {
 func IsIntegrationInstalled(name string) bool {
 	integration, err := integrationFor(name)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Ollama couldn't find integration %q, so it'll show up as not installed.\n", name)
+		fmt.Fprintf(os.Stderr, "Rose couldn't find integration %q, so it'll show up as not installed.\n", name)
 		return false
 	}
 	return integration.installed

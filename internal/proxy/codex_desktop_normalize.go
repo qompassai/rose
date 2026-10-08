@@ -7,7 +7,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/ollama/ollama/openai"
+	"github.com/qompassai/rose/openai"
 )
 
 func extractModel(body []byte) (string, bool) {
@@ -37,7 +37,7 @@ func replaceRequestModel(body []byte, model string) ([]byte, error) {
 	return json.Marshal(payload)
 }
 
-// normalizeOllamaRequestBody removes incompatible provider state while preserving Ollama tool history.
+// normalizeOllamaRequestBody removes incompatible provider state while preserving Rose tool history.
 func normalizeOllamaRequestBody(body []byte, model routingModel) ([]byte, error) {
 	normalized, _, err := normalizeRequestInput(body, normalizeOllamaInputItem)
 	if err != nil || model.Thinking == nil {
@@ -47,7 +47,7 @@ func normalizeOllamaRequestBody(body []byte, model routingModel) ([]byte, error)
 }
 
 // normalizeFullAccessExecTool removes escalation-only arguments from the tool
-// contract when Codex is already running without a sandbox. If an Ollama model
+// contract when Codex is already running without a sandbox. If an Rose model
 // redundantly emits require_escalated in this mode, Codex rejects the entire
 // command because its approval policy is Never. Keeping those arguments out of
 // the advertised schema makes the only representable call the direct one that
@@ -309,7 +309,7 @@ func normalizeThinkingEffort(effort string, metadata routingThinkingMetadata) st
 	return ""
 }
 
-// normalizeNativeRequestBody strips Ollama state that OpenAI cannot decrypt,
+// normalizeNativeRequestBody strips Rose state that OpenAI cannot decrypt,
 // preserving visible messages and tool history.
 func normalizeNativeRequestBody(body []byte) ([]byte, bool, error) {
 	return normalizeRequestInput(body, normalizeChatGPTInputItem)
@@ -376,7 +376,7 @@ func normalizeOllamaInputItem(item json.RawMessage) (json.RawMessage, bool, erro
 		return nil, false, fmt.Errorf("decode input item: %w", err)
 	}
 
-	// Ollama accepts message shorthand without an explicit type as well as
+	// Rose accepts message shorthand without an explicit type as well as
 	// the supported Responses item types below.
 	itemType := header.Type
 	if itemType == "" && header.Role != "" {
@@ -472,7 +472,7 @@ func normalizeOllamaInputItem(item json.RawMessage) (json.RawMessage, bool, erro
 		// Preserve client-executed control items for the Responses adapter.
 		return item, true, nil
 	case "compaction":
-		// Only Ollama compaction state can be expanded by the server middleware.
+		// Only Rose compaction state can be expanded by the server middleware.
 		return item, isOllamaCompactionItem(item), nil
 	case "reasoning":
 		var reasoning struct {
@@ -481,7 +481,7 @@ func normalizeOllamaInputItem(item json.RawMessage) (json.RawMessage, bool, erro
 		if err := json.Unmarshal(item, &reasoning); err != nil {
 			return nil, false, fmt.Errorf("decode reasoning item: %w", err)
 		}
-		// Keep Ollama reasoning for tool loops, but omit native encrypted state.
+		// Keep Rose reasoning for tool loops, but omit native encrypted state.
 		return item, isOllamaReasoningItemID(reasoning.ID), nil
 	case "custom_tool_call":
 		var call struct {
@@ -551,7 +551,7 @@ func normalizeChatGPTInputItem(item json.RawMessage) (json.RawMessage, bool, err
 		return nil, false, nil
 	}
 	if header.Type == "compaction" && isOllamaCompactionItem(item) {
-		// OpenAI cannot decrypt Ollama compaction state; omit it when switching providers.
+		// OpenAI cannot decrypt Rose compaction state; omit it when switching providers.
 		return nil, false, nil
 	}
 	return item, true, nil

@@ -18,10 +18,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ollama/ollama/api"
-	"github.com/ollama/ollama/app/store"
-	"github.com/ollama/ollama/cmd/launch"
-	"github.com/ollama/ollama/internal/proxy"
+	"github.com/qompassai/rose/api"
+	"github.com/qompassai/rose/app/store"
+	"github.com/qompassai/rose/cmd/launch"
+	"github.com/qompassai/rose/internal/proxy"
 )
 
 func TestMain(m *testing.M) {
@@ -1303,7 +1303,7 @@ func TestSetClaudeDesktopAutoModeRejectsUnsupportedSelection(t *testing.T) {
 	t.Cleanup(func() { claudeAvailableModels = previousAvailable })
 
 	err := setClaudeDesktopAutoMode(true, true)
-	if err == nil || !strings.Contains(err.Error(), "cloud model available to your Ollama.com account") {
+	if err == nil || !strings.Contains(err.Error(), "cloud model available to your Rose.com account") {
 		t.Fatalf("setClaudeDesktopAutoMode() error = %v", err)
 	}
 	enabled, loadErr := launch.ClaudeDesktopAutoModeEnabled()
@@ -1347,7 +1347,7 @@ func TestApplyClaudeDesktopMappingsPersistsSelection(t *testing.T) {
 		t.Fatal("expected the account cloud model to keep Auto mode enabled")
 	}
 	if got, want := launch.ClaudeDesktopModels(), []string{"kimi-k3:cloud", "kimi-k3:cloud", "kimi-k3:cloud", "kimi-k3:cloud", "kimi-k3:cloud"}; !slices.Equal(got, want) {
-		t.Fatalf("persisted models = %v, want Ollama routes %v", got, want)
+		t.Fatalf("persisted models = %v, want Rose routes %v", got, want)
 	}
 }
 
@@ -1916,7 +1916,7 @@ func TestClaudeDesktopIntegrationHistoryPersists(t *testing.T) {
 
 func TestPrepareClaudeDesktopConnectionPreservesFirstUseIntro(t *testing.T) {
 	t.Setenv("HOME", t.TempDir())
-	t.Setenv("OLLAMA_HOST", "127.0.0.1:11434")
+	t.Setenv("ROSE_HOST", "127.0.0.1:11434")
 	if err := launch.SaveClaudeDesktopModels([]string{"qwen3:8b"}); err != nil {
 		t.Fatal(err)
 	}
@@ -2144,7 +2144,7 @@ func TestValidateClaudeDesktopModels(t *testing.T) {
 			models:         free,
 			state:          proxy.ClaudeDesktopAccessState{Cloud: proxy.ClaudeDesktopCloudOn, Account: proxy.ClaudeDesktopAccountSignedOut},
 			inventoryKnown: true,
-			wantError:      "Sign in to Ollama",
+			wantError:      "Sign in to Rose",
 		},
 		{
 			name:           "plan upgrade required",
@@ -2322,10 +2322,10 @@ func TestSetClaudeGatewayInstalledRejectsEmptyUsableCatalog(t *testing.T) {
 				Cloud:   proxy.ClaudeDesktopCloudOn,
 				Account: proxy.ClaudeDesktopAccountSignedOut,
 			},
-			wantError: "Sign in to Ollama",
+			wantError: "Sign in to Rose",
 		},
 		{
-			name:      "OLLAMA_NO_CLOUD or Cloud setting disabled",
+			name:      "ROSE_NO_CLOUD or Cloud setting disabled",
 			state:     proxy.ClaudeDesktopAccessState{Cloud: proxy.ClaudeDesktopCloudOff},
 			wantError: "Cloud models are off",
 		},
@@ -2435,7 +2435,7 @@ func TestClaudeLocalModels(t *testing.T) {
 
 func TestClaudeGatewayStartupWithLocalSelectionSkipsCloudLookupsButSettingsLoadsCatalog(t *testing.T) {
 	t.Setenv("HOME", t.TempDir())
-	t.Setenv("OLLAMA_HOST", "127.0.0.1:11434")
+	t.Setenv("ROSE_HOST", "127.0.0.1:11434")
 	if err := launch.SaveClaudeDesktopModels([]string{"qwen3:8b"}); err != nil {
 		t.Fatal(err)
 	}
@@ -2654,7 +2654,7 @@ func TestClaudeGatewayLocalSelectionCatalogPolicy(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Setenv("HOME", t.TempDir())
-			t.Setenv("OLLAMA_HOST", "127.0.0.1:11434")
+			t.Setenv("ROSE_HOST", "127.0.0.1:11434")
 			if err := launch.SaveClaudeDesktopModels([]string{"qwen3:8b"}); err != nil {
 				t.Fatal(err)
 			}
@@ -2900,7 +2900,7 @@ func TestContinueAfterBarrierErrorOnlyBlocksNewerInstance(t *testing.T) {
 		want bool
 	}{
 		{name: "success", err: nil, want: true},
-		{name: "discovery failure", err: errors.New("discover other Ollama app processes"), want: true},
+		{name: "discovery failure", err: errors.New("discover other Rose app processes"), want: true},
 		{name: "handoff timeout", err: errors.New("timed out waiting for app instances to exit"), want: true},
 		{name: "newer instance", err: fmt.Errorf("%w: pid 2", errNewerAppInstance), want: false},
 		{name: "wrapped newer instance", err: fmt.Errorf("barrier: %w", fmt.Errorf("%w: pid 2", errNewerAppInstance)), want: false},
@@ -3102,7 +3102,7 @@ func TestCodexDesktopInstallResultFromCode(t *testing.T) {
 }
 
 func TestClaudeGatewayRejectsOllamaHostPortConflict(t *testing.T) {
-	t.Setenv("OLLAMA_HOST", "0.0.0.0:11435")
+	t.Setenv("ROSE_HOST", "0.0.0.0:11435")
 
 	previousInstalled := claudeDesktopInstalled
 	previousAddr := claudeProxyListenAddr
@@ -3119,7 +3119,7 @@ func TestClaudeGatewayRejectsOllamaHostPortConflict(t *testing.T) {
 		t.Fatalf("startClaudeAppProxy error = %v, want reserved-port error", err)
 	}
 	if claudeAppProxy != nil {
-		t.Fatal("Claude gateway started with a conflicting OLLAMA_HOST")
+		t.Fatal("Claude gateway started with a conflicting ROSE_HOST")
 	}
 	if !claudeGatewayStartFailed() {
 		t.Fatal("expected the port conflict to remain visible to the menu")
@@ -3146,7 +3146,7 @@ func TestClaudeGatewayPortTracksListenAddress(t *testing.T) {
 }
 
 func TestClaudeGatewayDoesNotReportPortConflictWithoutClaude(t *testing.T) {
-	t.Setenv("OLLAMA_HOST", "0.0.0.0:11435")
+	t.Setenv("ROSE_HOST", "0.0.0.0:11435")
 
 	previousInstalled := claudeDesktopInstalled
 	previousAddr := claudeProxyListenAddr
@@ -3218,7 +3218,7 @@ func TestClaudeGatewayRejectsSpoofedExistingGateway(t *testing.T) {
 	t.Setenv("HOME", t.TempDir())
 	setClaudeProxyRetry(t, 20*time.Millisecond, 5*time.Millisecond)
 	spoof := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-		w.Header().Set("X-Ollama-Claude-Gateway", "1")
+		w.Header().Set("X-Rose-Claude-Gateway", "1")
 		w.WriteHeader(http.StatusNoContent)
 	}))
 	defer spoof.Close()

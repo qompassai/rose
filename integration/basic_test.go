@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ollama/ollama/api"
+	"github.com/qompassai/rose/api"
 )
 
 func runBlueSky(t *testing.T) {
@@ -44,7 +44,7 @@ func runUnicode(t *testing.T, model string) {
 	// Set up the test data
 	req := api.ChatRequest{
 		// DeepSeek has a Unicode tokenizer regex, making it a unicode torture test
-		Model: model, // TODO is there an ollama-engine model we can switch to and keep the coverage?
+		Model: model, // TODO is there an rose-engine model we can switch to and keep the coverage?
 		Messages: []api.Message{
 			{
 				Role:    "user",
@@ -110,7 +110,7 @@ func runUnicodeModelDir(t *testing.T) {
 		t.Skip("Unicode test only applicable to windows")
 	}
 	// Only works for local testing
-	if os.Getenv("OLLAMA_TEST_EXISTING") != "" {
+	if os.Getenv("ROSE_TEST_EXISTING") != "" {
 		t.Skip("runUnicodeModelDir only works for local testing, skipping")
 	}
 
@@ -119,9 +119,9 @@ func runUnicodeModelDir(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer os.RemoveAll(modelDir)
-	slog.Info("unicode", "OLLAMA_MODELS", modelDir)
+	slog.Info("unicode", "ROSE_MODELS", modelDir)
 
-	t.Setenv("OLLAMA_MODELS", modelDir)
+	t.Setenv("ROSE_MODELS", modelDir)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 4*time.Minute)
 	defer cancel()

@@ -92,9 +92,9 @@ func TestCodexDesktopBundleOnVolumeRejectsSymlink(t *testing.T) {
 }
 
 func TestInstallCodexDesktopDiskImageRealArchive(t *testing.T) {
-	image := os.Getenv("OLLAMA_TEST_CODEX_DESKTOP_DMG")
+	image := os.Getenv("ROSE_TEST_CODEX_DESKTOP_DMG")
 	if image == "" {
-		t.Skip("set OLLAMA_TEST_CODEX_DESKTOP_DMG to the official ChatGPT DMG")
+		t.Skip("set ROSE_TEST_CODEX_DESKTOP_DMG to the official ChatGPT DMG")
 	}
 	destination := filepath.Join(t.TempDir(), "Applications", "ChatGPT.app")
 	installed, err := installCodexDesktopDiskImage(image, []string{destination}, verifyCodexDesktopBundle)

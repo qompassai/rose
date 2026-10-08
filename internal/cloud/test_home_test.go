@@ -3,7 +3,7 @@ package cloud
 import (
 	"testing"
 
-	"github.com/ollama/ollama/envconfig"
+	"github.com/qompassai/rose/envconfig"
 )
 
 func setTestHome(t *testing.T, home string) {

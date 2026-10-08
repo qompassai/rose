@@ -20,9 +20,9 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/ollama/ollama/app/dialog"
-	"github.com/ollama/ollama/app/store"
-	"github.com/ollama/ollama/app/webview"
+	"github.com/qompassai/rose/app/dialog"
+	"github.com/qompassai/rose/app/store"
+	"github.com/qompassai/rose/app/webview"
 )
 
 const (
@@ -65,7 +65,7 @@ func (w *Webview) Run(path string) unsafe.Pointer {
 		wv := webview.New(debug)
 		// start the window hidden
 		hideWindow(wv.Window())
-		wv.SetTitle("Ollama")
+		wv.SetTitle("Rose")
 
 		// TODO (jmorganca): this isn't working yet since it needs to be set
 		// on the first page load, ideally in an interstitial page like `/token`
@@ -152,8 +152,8 @@ func (w *Webview) Run(path string) unsafe.Pointer {
 		}
 
 		init += fmt.Sprintf(`
-			window.OLLAMA_PLATFORM = %q;
-			window.OLLAMA_WEBSEARCH = true;
+			window.ROSE_PLATFORM = %q;
+			window.ROSE_WEBSEARCH = true;
 		`, runtime.GOOS)
 
 		wv.Init(init)

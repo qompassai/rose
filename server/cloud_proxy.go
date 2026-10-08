@@ -18,19 +18,19 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/klauspost/compress/zstd"
 
-	"github.com/ollama/ollama/auth"
-	"github.com/ollama/ollama/envconfig"
-	internalcloud "github.com/ollama/ollama/internal/cloud"
-	"github.com/ollama/ollama/openai"
-	"github.com/ollama/ollama/version"
+	"github.com/qompassai/rose/auth"
+	"github.com/qompassai/rose/envconfig"
+	internalcloud "github.com/qompassai/rose/internal/cloud"
+	"github.com/qompassai/rose/openai"
+	"github.com/qompassai/rose/version"
 )
 
 const (
 	defaultCloudProxyBaseURL       = "https://ollama.com:443"
 	defaultCloudProxySigningHost   = "ollama.com"
-	cloudProxyBaseURLEnv           = "OLLAMA_CLOUD_BASE_URL"
+	cloudProxyBaseURLEnv           = "ROSE_CLOUD_BASE_URL"
 	cloudWebSearchOrchestrationKey = "cloud_web_search_orchestration"
-	cloudProxyClientVersionHeader  = "X-Ollama-Client-Version"
+	cloudProxyClientVersionHeader  = "X-Rose-Client-Version"
 
 	// maxDecompressedBodySize limits the size of a decompressed request body
 	maxDecompressedBodySize = 20 << 20
@@ -122,7 +122,7 @@ func cloudPassthroughMiddleware(disabledOperation string) gin.HandlerFunc {
 		}
 
 		// Keep server-side web search on the local compatibility middleware path.
-		// The converted model requests use Ollama's /api/chat contract, including
+		// The converted model requests use Rose's /api/chat contract, including
 		// for cloud models; all other cloud compatibility traffic remains raw
 		// passthrough.
 		if hasWebSearchTool(c.Request.URL.Path, body) {

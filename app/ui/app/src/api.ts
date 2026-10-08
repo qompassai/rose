@@ -12,9 +12,9 @@ import {
   User,
 } from "@/gotypes";
 import { parseJsonlFromResponse } from "./util/jsonl-parsing";
-import { ollamaClient as ollama } from "./lib/ollama-client";
-import type { ModelResponse } from "ollama/browser";
-import { API_BASE, OLLAMA_DOT_COM } from "./lib/config";
+import { ollamaClient as rose } from "./lib/rose-client";
+import type { ModelResponse } from "rose/browser";
+import { API_BASE, ROSE_DOT_COM } from "./lib/config";
 import type {
   ClaudeDesktopStatus,
   CodexDesktopModelsSettingsResult,
@@ -119,7 +119,7 @@ export async function fetchUser(): Promise<User | null> {
     const userData: User = await response.json();
 
     if (userData.avatarurl && !userData.avatarurl.startsWith("http")) {
-      userData.avatarurl = `${OLLAMA_DOT_COM}${userData.avatarurl}`;
+      userData.avatarurl = `${ROSE_DOT_COM}${userData.avatarurl}`;
     }
 
     return userData;
@@ -179,7 +179,7 @@ export async function getChat(chatId: string): Promise<ChatResponse> {
 
 export async function getModels(query?: string): Promise<Model[]> {
   try {
-    const { models: modelsResponse } = await ollama.list();
+    const { models: modelsResponse } = await rose.list();
 
     let models: Model[] = modelsResponse
       .filter((m: ModelResponse) => {
@@ -245,7 +245,7 @@ export async function getClaudeDesktopAvailableModels(
 ): Promise<Model[]> {
   try {
     const [localResult, cloudResult] = await Promise.all([
-      ollama.list(),
+      rose.list(),
       includeCloudModels
         ? fetch(`${API_BASE}/api/v1/models/cloud`)
             .then(async (response) => {
@@ -314,7 +314,7 @@ export async function getClaudeDesktopAvailableModels(
           }),
       );
   } catch (err) {
-    throw new Error(`Failed to fetch Ollama models: ${err}`);
+    throw new Error(`Failed to fetch Rose models: ${err}`);
   }
 }
 
@@ -322,7 +322,7 @@ export async function getModelCapabilities(
   modelName: string,
 ): Promise<ModelCapabilitiesResponse> {
   try {
-    const showResponse = await ollama.show({ model: modelName });
+    const showResponse = await rose.show({ model: modelName });
 
     return new ModelCapabilitiesResponse({
       capabilities: Array.isArray(showResponse.capabilities)

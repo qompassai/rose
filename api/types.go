@@ -14,9 +14,9 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/ollama/ollama/envconfig"
-	"github.com/ollama/ollama/internal/orderedmap"
-	"github.com/ollama/ollama/types/model"
+	"github.com/qompassai/rose/envconfig"
+	"github.com/qompassai/rose/internal/orderedmap"
+	"github.com/qompassai/rose/types/model"
 )
 
 // StatusError is an error with an HTTP status code and message.
@@ -36,7 +36,7 @@ func (e StatusError) Error() string {
 		return e.ErrorMessage
 	default:
 		// this should not happen
-		return "something went wrong, please see the ollama server logs for details"
+		return "something went wrong, please see the rose server logs for details"
 	}
 }
 
@@ -50,7 +50,7 @@ func (e AuthorizationError) Error() string {
 	if e.Status != "" {
 		return e.Status
 	}
-	return "something went wrong, please see the ollama server logs for details"
+	return "something went wrong, please see the rose server logs for details"
 }
 
 // ImageData represents the raw binary data of an image file.
@@ -60,7 +60,7 @@ type ImageData []byte
 // have to specify the Model and Prompt fields, all the other fields have
 // reasonable defaults for basic uses.
 type GenerateRequest struct {
-	// Model is the model name; it should be a name familiar to Ollama from
+	// Model is the model name; it should be a name familiar to Rose from
 	// the library at https://ollama.com/library
 	Model string `json:"model"`
 
@@ -529,7 +529,7 @@ type ChatResponse struct {
 	// RemoteModel is the name of the upstream model that generated the response.
 	RemoteModel string `json:"remote_model,omitempty"`
 
-	// RemoteHost is the URL of the upstream Ollama host that generated the response.
+	// RemoteHost is the URL of the upstream Rose host that generated the response.
 	RemoteHost string `json:"remote_host,omitempty"`
 
 	// CreatedAt is the timestamp of the response.
@@ -685,7 +685,7 @@ type CreateRequest struct {
 	// List is the list of local model tags to include in a manifest list.
 	List []string `json:"list,omitempty"`
 
-	// RemoteHost is the URL of the upstream ollama API for the model (if any).
+	// RemoteHost is the URL of the upstream rose API for the model (if any).
 	RemoteHost string `json:"remote_host,omitempty"`
 
 	// Files maps source file names to their SHA-256 digests.
@@ -720,7 +720,7 @@ type CreateRequest struct {
 	// Parser is the name of the parser used to parse the output of the request.
 	Parser string `json:"parser,omitempty"`
 
-	// Requires is the minimum version of Ollama required by the model.
+	// Requires is the minimum version of Rose required by the model.
 	Requires string `json:"requires,omitempty"`
 
 	// Capabilities adds to the model's inherited or inferred capabilities.
@@ -962,7 +962,7 @@ type GenerateResponse struct {
 	// RemoteModel is the name of the upstream model that generated the response.
 	RemoteModel string `json:"remote_model,omitempty"`
 
-	// RemoteHost is the URL of the upstream Ollama host that generated the response.
+	// RemoteHost is the URL of the upstream Rose host that generated the response.
 	RemoteHost string `json:"remote_host,omitempty"`
 
 	// CreatedAt is the timestamp of the response.

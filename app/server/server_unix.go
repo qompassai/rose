@@ -16,8 +16,8 @@ import (
 )
 
 var (
-	pidFile       = filepath.Join(os.Getenv("HOME"), "Library", "Application Support", "Ollama", "ollama.pid")
-	serverLogPath = filepath.Join(os.Getenv("HOME"), ".ollama", "logs", "server.log")
+	pidFile       = filepath.Join(os.Getenv("HOME"), "Library", "Application Support", "Rose", "rose.pid")
+	serverLogPath = filepath.Join(os.Getenv("HOME"), ".rose", "logs", "server.log")
 )
 
 func commandContext(ctx context.Context, name string, arg ...string) *exec.Cmd {
@@ -49,26 +49,26 @@ func terminated(pid int) (bool, error) {
 func ollamaServeProcess(pid int) bool {
 	output, err := exec.Command("ps", "-p", strconv.Itoa(pid), "-o", "args=").Output()
 	if err != nil {
-		slog.Debug("failed to inspect ollama process", "pid", pid, "err", err)
+		slog.Debug("failed to inspect rose process", "pid", pid, "err", err)
 		return false
 	}
 
 	return ollamaServeArgs(strings.Fields(strings.TrimSpace(string(output))))
 }
 
-// reapServers kills external ollama serve processes except our own.
+// reapServers kills external rose serve processes except our own.
 func reapServers() error {
 	// Get our own PID to avoid killing ourselves
 	currentPID := os.Getpid()
 
-	// Use pkill to kill ollama processes
+	// Use pkill to kill rose processes
 	// -x matches the whole command name exactly
 	// We'll get the list first, then kill selectively
-	cmd := exec.Command("pgrep", "-x", "ollama")
+	cmd := exec.Command("pgrep", "-x", "rose")
 	output, err := cmd.Output()
 	if err != nil {
-		// No ollama processes found
-		slog.Debug("no ollama processes found")
+		// No rose processes found
+		slog.Debug("no rose processes found")
 		return nil //nolint:nilerr
 	}
 
@@ -105,12 +105,12 @@ func reapServers() error {
 		if err := proc.Signal(syscall.SIGTERM); err != nil {
 			// Try SIGKILL if SIGTERM fails
 			if err := proc.Signal(syscall.SIGKILL); err != nil {
-				slog.Warn("failed to stop external ollama process", "pid", pid, "err", err)
+				slog.Warn("failed to stop external rose process", "pid", pid, "err", err)
 				continue
 			}
 		}
 
-		slog.Info("stopped external ollama process", "pid", pid)
+		slog.Info("stopped external rose process", "pid", pid)
 	}
 
 	return nil

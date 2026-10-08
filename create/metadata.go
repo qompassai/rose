@@ -8,9 +8,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	modelparsers "github.com/ollama/ollama/model/parsers"
-	"github.com/ollama/ollama/thinking"
-	"github.com/ollama/ollama/types/model"
+	modelparsers "github.com/qompassai/rose/model/parsers"
+	"github.com/qompassai/rose/thinking"
+	"github.com/qompassai/rose/types/model"
 )
 
 // inferSafetensorsConfig derives the manifest config shared by local and

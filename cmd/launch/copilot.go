@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"github.com/ollama/ollama/envconfig"
+	"github.com/qompassai/rose/envconfig"
 )
 
 // Copilot implements Runner for GitHub Copilot CLI integration.
@@ -60,7 +60,7 @@ func (c *Copilot) Run(model string, _ []LaunchModel, args []string) error {
 }
 
 // envVars returns the environment variables that configure Copilot CLI
-// to use Ollama as its model provider.
+// to use Rose as its model provider.
 func (c *Copilot) envVars(model string) []string {
 	env := []string{
 		"COPILOT_PROVIDER_BASE_URL=" + envconfig.Host().String() + "/v1",
