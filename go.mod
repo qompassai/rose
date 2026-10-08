@@ -1,6 +1,6 @@
 module github.com/qompassai/rose
 
-go 1.26.0
+go 1.27.0
 
 require (
 	github.com/TheTitanrain/w32 v0.0.0-20180517000239-4f5cfb03fabf
