@@ -30,7 +30,7 @@ var (
 
 const (
 	MediaTypeManifest     = "application/vnd.docker.distribution.manifest.v2+json"
-	MediaTypeManifestList = "application/vnd.rose.manifest.list.v2+json"
+	MediaTypeManifestList = "application/vnd.ollama.manifest.list.v2+json"
 
 	RunnerMLX      = "mlx"
 	RunnerGGML     = "ggml"
@@ -197,7 +197,7 @@ func (m *Manifest) FileInfo() os.FileInfo {
 // ConfigLayer returns the JSON layer stored under configPath.
 func (m *Manifest) ConfigLayer(configPath string) (Layer, bool) {
 	for _, layer := range m.Layers {
-		if layer.MediaType == "application/vnd.rose.image.json" && layer.Name == configPath {
+		if layer.MediaType == "application/vnd.ollama.image.json" && layer.Name == configPath {
 			return layer, true
 		}
 	}

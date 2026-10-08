@@ -221,7 +221,7 @@ func TestLayerInfo(t *testing.T) {
 	layer := LayerInfo{
 		Digest:    "sha256:abc123",
 		Size:      1024,
-		MediaType: "application/vnd.rose.image.tensor",
+		MediaType: "application/vnd.ollama.image.tensor",
 		Name:      "model.weight",
 	}
 
@@ -231,8 +231,8 @@ func TestLayerInfo(t *testing.T) {
 	if layer.Size != 1024 {
 		t.Errorf("Size = %d, want %d", layer.Size, 1024)
 	}
-	if layer.MediaType != "application/vnd.rose.image.tensor" {
-		t.Errorf("MediaType = %q, want %q", layer.MediaType, "application/vnd.rose.image.tensor")
+	if layer.MediaType != "application/vnd.ollama.image.tensor" {
+		t.Errorf("MediaType = %q, want %q", layer.MediaType, "application/vnd.ollama.image.tensor")
 	}
 	if layer.Name != "model.weight" {
 		t.Errorf("Name = %q, want %q", layer.Name, "model.weight")

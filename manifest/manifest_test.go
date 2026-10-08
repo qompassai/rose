@@ -54,7 +54,7 @@ func createManifestForTest(configDigest, layerDigest, runner string) Manifest {
 		},
 		Layers: []Layer{
 			{
-				MediaType: "application/vnd.rose.image.model",
+				MediaType: "application/vnd.ollama.image.model",
 				Digest:    layerDigest,
 				Size:      34,
 			},
@@ -705,12 +705,12 @@ func TestTotalSizeForNameIncludesAllManifestListChildren(t *testing.T) {
 		},
 		Layers: []Layer{
 			{
-				MediaType: "application/vnd.rose.image.model",
+				MediaType: "application/vnd.ollama.image.model",
 				Digest:    sharedLayerDigest,
 				Size:      int64(len(sharedLayerData)),
 			},
 			{
-				MediaType: "application/vnd.rose.image.model",
+				MediaType: "application/vnd.ollama.image.model",
 				Digest:    ggufLayerDigest,
 				Size:      int64(len(ggufLayerData)),
 			},
@@ -796,7 +796,7 @@ func TestPartialManifestListTracksPresentAndMissingChildren(t *testing.T) {
 		},
 		Layers: []Layer{
 			{
-				MediaType: "application/vnd.rose.image.model",
+				MediaType: "application/vnd.ollama.image.model",
 				Digest:    layerDigest,
 				Size:      int64(len(layerData)),
 			},
@@ -1254,19 +1254,19 @@ func TestFindName(t *testing.T) {
 		{name: "corrupt v2 shadows legacy", legacy: `{}`, v2: `{`},
 		{
 			name: "manifest list", found: true,
-			v2: `{"mediaType":"application/vnd.rose.manifest.list.v2+json","manifests":[{"runner":"llamacpp","config":{"digest":"sha256:abc"}}]}`,
+			v2: `{"mediaType":"application/vnd.ollama.manifest.list.v2+json","manifests":[{"runner":"llamacpp","config":{"digest":"sha256:abc"}}]}`,
 		},
 		{
 			name: "manifest list with missing child",
-			v2:   `{"mediaType":"application/vnd.rose.manifest.list.v2+json","manifests":[{"runner":"llamacpp","digest":"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}]}`,
+			v2:   `{"mediaType":"application/vnd.ollama.manifest.list.v2+json","manifests":[{"runner":"llamacpp","digest":"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}]}`,
 		},
 		{
 			name: "unsupported runner",
-			v2:   `{"mediaType":"application/vnd.rose.manifest.list.v2+json","manifests":[{"runner":"unsupported","config":{"digest":"sha256:abc"}}]}`,
+			v2:   `{"mediaType":"application/vnd.ollama.manifest.list.v2+json","manifests":[{"runner":"unsupported","config":{"digest":"sha256:abc"}}]}`,
 		},
 		{
 			name: "nested manifest list",
-			v2:   `{"mediaType":"application/vnd.rose.manifest.list.v2+json","manifests":[{"runner":"llamacpp","mediaType":"application/vnd.rose.manifest.list.v2+json","manifests":[{"runner":"llamacpp"}]}]}`,
+			v2:   `{"mediaType":"application/vnd.ollama.manifest.list.v2+json","manifests":[{"runner":"llamacpp","mediaType":"application/vnd.ollama.manifest.list.v2+json","manifests":[{"runner":"llamacpp"}]}]}`,
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {

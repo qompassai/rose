@@ -195,7 +195,7 @@ func groupSplitGGUFLayers(layers []*modelLayer) (*modelLayer, error) {
 	architecture := layers[0].GGUF.Architecture()
 	fileType := layers[0].GGUF.FileType()
 	mediaType := layers[0].MediaType
-	if mediaType != "application/vnd.rose.image.model" && mediaType != manifest.MediaTypeImageDraft {
+	if mediaType != "application/vnd.ollama.image.model" && mediaType != manifest.MediaTypeImageDraft {
 		return nil, fmt.Errorf("split GGUF %q has unsupported media type %q", layers[0].From, mediaType)
 	}
 	var expectedTensors uint64

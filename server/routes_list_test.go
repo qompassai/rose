@@ -243,11 +243,11 @@ func TestListIncludesManifestListChildrenAsSeparateRows(t *testing.T) {
 	ggufConfig := makeManifestListConfig(t, manifest.FormatGGUF)
 	mlxConfig := makeManifestListConfig(t, manifest.FormatSafetensors)
 
-	sharedBlob, err := manifest.NewLayer(bytes.NewReader([]byte("shared-weights")), "application/vnd.rose.image.model")
+	sharedBlob, err := manifest.NewLayer(bytes.NewReader([]byte("shared-weights")), "application/vnd.ollama.image.model")
 	if err != nil {
 		t.Fatal(err)
 	}
-	ggufBlob, err := manifest.NewLayer(bytes.NewReader([]byte("gguf-weights")), "application/vnd.rose.image.model")
+	ggufBlob, err := manifest.NewLayer(bytes.NewReader([]byte("gguf-weights")), "application/vnd.ollama.image.model")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -346,7 +346,7 @@ func TestBuildModelListSummaryRejectsInvalidRunner(t *testing.T) {
 	t.Setenv("ROSE_MODELS", t.TempDir())
 
 	cfg := makeManifestListConfig(t, manifest.FormatGGUF)
-	layer, err := manifest.NewLayer(bytes.NewReader([]byte("weights")), "application/vnd.rose.image.model")
+	layer, err := manifest.NewLayer(bytes.NewReader([]byte("weights")), "application/vnd.ollama.image.model")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -372,7 +372,7 @@ func TestCopyManifestListByNameAndChildDigest(t *testing.T) {
 	ggufConfig := makeManifestListConfig(t, manifest.FormatGGUF)
 	mlxConfig := makeManifestListConfig(t, manifest.FormatSafetensors)
 
-	ggufBlob, err := manifest.NewLayer(bytes.NewReader([]byte("gguf-weights")), "application/vnd.rose.image.model")
+	ggufBlob, err := manifest.NewLayer(bytes.NewReader([]byte("gguf-weights")), "application/vnd.ollama.image.model")
 	if err != nil {
 		t.Fatal(err)
 	}

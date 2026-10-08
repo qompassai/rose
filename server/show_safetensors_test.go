@@ -471,7 +471,7 @@ func TestGetTensorInfoFromManifest(t *testing.T) {
 
 	// Add a non-tensor layer (should be skipped)
 	layers = append(layers, manifest.Layer{
-		MediaType: "application/vnd.rose.image.json",
+		MediaType: "application/vnd.ollama.image.json",
 		Digest:    "sha256:0000000000000000000000000000000000000000000000000000000000000000",
 		Size:      100,
 		Name:      "config.json",

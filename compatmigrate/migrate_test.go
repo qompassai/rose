@@ -1250,18 +1250,18 @@ func writeSourceManifest(t *testing.T, name model.Name, input sourceManifestInpu
 	layers := []manifest.Layer{modelLayer}
 	if len(input.projectorTensors) > 0 {
 		projectorLayer := writeFixtureGGUFLayer(t, input.projectorKV, input.projectorTensors)
-		projectorLayer.MediaType = "application/vnd.rose.image.projector"
+		projectorLayer.MediaType = "application/vnd.ollama.image.projector"
 		layers = append(layers, projectorLayer)
 	}
 	if input.template != "" {
-		layer, err := manifest.NewLayer(strings.NewReader(input.template), "application/vnd.rose.image.template")
+		layer, err := manifest.NewLayer(strings.NewReader(input.template), "application/vnd.ollama.image.template")
 		if err != nil {
 			t.Fatalf("manifest.NewLayer(template) error = %v", err)
 		}
 		layers = append(layers, layer)
 	}
 	if input.adapter != "" {
-		layer, err := manifest.NewLayer(strings.NewReader(input.adapter), "application/vnd.rose.image.adapter")
+		layer, err := manifest.NewLayer(strings.NewReader(input.adapter), "application/vnd.ollama.image.adapter")
 		if err != nil {
 			t.Fatalf("manifest.NewLayer(adapter) error = %v", err)
 		}
@@ -1294,7 +1294,7 @@ func writeFixtureGGUFLayer(t *testing.T, kv outKV, tensors []*outTensor) manifes
 		t.Fatalf("Seek() error = %v", err)
 	}
 
-	layer, err := manifest.NewLayer(f, "application/vnd.rose.image.model")
+	layer, err := manifest.NewLayer(f, "application/vnd.ollama.image.model")
 	if err != nil {
 		t.Fatalf("manifest.NewLayer(model) error = %v", err)
 	}

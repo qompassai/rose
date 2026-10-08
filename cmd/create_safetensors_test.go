@@ -494,7 +494,7 @@ func TestNewManifestWriterPreservesMultipleLicenses(t *testing.T) {
 	}
 	var licenses []string
 	for _, layer := range mf.Layers {
-		if layer.MediaType != "application/vnd.rose.image.license" {
+		if layer.MediaType != "application/vnd.ollama.image.license" {
 			continue
 		}
 		f, err := layer.Open()
@@ -586,9 +586,9 @@ func TestCreateModelFromBaseReplacesDraftLayers(t *testing.T) {
 	config := newLayer("application/vnd.docker.container.image.v1+json", "", `{"model_format":"safetensors","capabilities":["completion"]}`)
 	baseLayers := []manifest.Layer{
 		newLayer(manifest.MediaTypeImageTensor, "model.embed_tokens.weight", "base"),
-		newLayer("application/vnd.rose.image.json", "config.json", `{}`),
+		newLayer("application/vnd.ollama.image.json", "config.json", `{}`),
 		newLayer(manifest.MediaTypeImageTensor, "draft.model.embed_tokens.weight", "old tensor draft"),
-		newLayer("application/vnd.rose.image.json", "draft/config.json", "old config draft"),
+		newLayer("application/vnd.ollama.image.json", "draft/config.json", "old config draft"),
 		newLayer(manifest.MediaTypeImageDraft, "", "old GGUF draft"),
 		newLayer(manifest.MediaTypeImageTensor, "drafting.weight", "not a draft"),
 	}

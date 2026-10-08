@@ -351,7 +351,7 @@ func TestCreateModelInfersGGUFFileTypesWithoutRewrite(t *testing.T) {
 			}
 			var found bool
 			for _, layer := range mf.Layers {
-				if layer.MediaType == "application/vnd.rose.image.model" {
+				if layer.MediaType == "application/vnd.ollama.image.model" {
 					found = true
 				}
 			}
@@ -426,7 +426,7 @@ func TestCreateModelRetainsSplitGGUF(t *testing.T) {
 	}
 	var modelLayers []manifest.Layer
 	for _, layer := range mf.Layers {
-		if layer.MediaType == "application/vnd.rose.image.model" {
+		if layer.MediaType == "application/vnd.ollama.image.model" {
 			modelLayers = append(modelLayers, layer)
 		}
 	}
@@ -693,7 +693,7 @@ func TestGGUFLayersClassifiesMMProjAsProjector(t *testing.T) {
 	if len(layers) != 1 {
 		t.Fatalf("layers = %d, want 1", len(layers))
 	}
-	if got := layers[0].MediaType; got != "application/vnd.rose.image.projector" {
+	if got := layers[0].MediaType; got != "application/vnd.ollama.image.projector" {
 		t.Fatalf("media type = %q, want projector", got)
 	}
 }
@@ -1037,7 +1037,7 @@ func writeManifestListVariant(t *testing.T, name, modelFormat string) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	modelLayer, err := manifest.NewLayer(strings.NewReader(name+" layer"), "application/vnd.rose.image.license")
+	modelLayer, err := manifest.NewLayer(strings.NewReader(name+" layer"), "application/vnd.ollama.image.license")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2509,8 +2509,8 @@ func TestWriteSafetensorsManifestPreservesRequestMetadata(t *testing.T) {
 	tokenizerData := []byte(`{"version":"1.0"}`)
 	info := create.ManifestInfo{Layers: []create.LayerInfo{
 		createTestLayerInfo(t, "model.embed_tokens.weight", manifest.MediaTypeImageTensor, tensorData),
-		createTestLayerInfo(t, "config.json", "application/vnd.rose.image.json", configData),
-		createTestLayerInfo(t, "tokenizer.json", "application/vnd.rose.image.json", tokenizerData),
+		createTestLayerInfo(t, "config.json", "application/vnd.ollama.image.json", configData),
+		createTestLayerInfo(t, "tokenizer.json", "application/vnd.ollama.image.json", tokenizerData),
 	}}
 	info.ModelConfig = *config
 	if err := writeSafetensorsManifest(r, "", func(api.ProgressResponse) {})(context.Background(), r.Model, info); err != nil {
@@ -2543,12 +2543,12 @@ func TestWriteSafetensorsManifestPreservesRequestMetadata(t *testing.T) {
 		t.Fatalf("tensor layer media type = %q, want %q", got, manifest.MediaTypeImageTensor)
 	}
 	for _, name := range []string{"config.json", "tokenizer.json"} {
-		if layerNames[name] != "application/vnd.rose.image.json" {
+		if layerNames[name] != "application/vnd.ollama.image.json" {
 			t.Fatalf("layer %q media type = %q, want image json", name, layerNames[name])
 		}
 	}
 	for _, l := range mf.Layers {
-		if l.MediaType == "application/vnd.rose.image.system" {
+		if l.MediaType == "application/vnd.ollama.image.system" {
 			return
 		}
 	}
@@ -2618,7 +2618,7 @@ func TestWriteSafetensorsManifestIncludesDraft(t *testing.T) {
 	info := create.ManifestInfo{Layers: []create.LayerInfo{
 		createTestLayerInfo(t, "model.embed_tokens.weight", manifest.MediaTypeImageTensor, mainData),
 		createTestLayerInfo(t, "draft.model.embed_tokens.weight", manifest.MediaTypeImageTensor, draftData),
-		createTestLayerInfo(t, "draft/config.json", "application/vnd.rose.image.json", draftConfig),
+		createTestLayerInfo(t, "draft/config.json", "application/vnd.ollama.image.json", draftConfig),
 	}}
 	name := "uploaded-safetensors-with-draft"
 	if err := writeSafetensorsManifest(api.CreateRequest{Model: name}, draftDir, func(api.ProgressResponse) {})(context.Background(), name, info); err != nil {
@@ -2940,7 +2940,7 @@ func TestCreateFromSafetensorsModel_PreservesConfig(t *testing.T) {
 	// Verify system prompt was added
 	var hasSystem bool
 	for _, l := range mf.Layers {
-		if l.MediaType == "application/vnd.rose.image.system" {
+		if l.MediaType == "application/vnd.ollama.image.system" {
 			hasSystem = true
 			break
 		}
@@ -3092,7 +3092,7 @@ func TestCreateFromSafetensorsModel_OverrideSystem(t *testing.T) {
 	t.Setenv("ROSE_MODELS", p)
 	var s Server
 
-	systemLayer, err := manifest.NewLayer(strings.NewReader("Original system prompt"), "application/vnd.rose.image.system")
+	systemLayer, err := manifest.NewLayer(strings.NewReader("Original system prompt"), "application/vnd.ollama.image.system")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -3124,7 +3124,7 @@ func TestCreateFromSafetensorsModel_OverrideSystem(t *testing.T) {
 
 	var systems []string
 	for _, layer := range mf.Layers {
-		if layer.MediaType != "application/vnd.rose.image.system" {
+		if layer.MediaType != "application/vnd.ollama.image.system" {
 			continue
 		}
 		f, err := layer.Open()
@@ -3184,13 +3184,13 @@ func TestCreateFromSafetensorsModel_PreservesLayerNames(t *testing.T) {
 
 	extraLayers := []manifest.Layer{
 		{
-			MediaType: "application/vnd.rose.image.json",
+			MediaType: "application/vnd.ollama.image.json",
 			Digest:    configDigest,
 			Size:      int64(len(configJSON)),
 			Name:      "config.json",
 		},
 		{
-			MediaType: "application/vnd.rose.image.json",
+			MediaType: "application/vnd.ollama.image.json",
 			Digest:    tokenizerDigest,
 			Size:      int64(len(tokenizerJSON)),
 			Name:      "tokenizer.json",
@@ -3229,7 +3229,7 @@ func TestCreateFromSafetensorsModel_PreservesLayerNames(t *testing.T) {
 	// Check JSON layer names are preserved
 	jsonNames := make(map[string]bool)
 	for _, l := range mf.Layers {
-		if l.MediaType == "application/vnd.rose.image.json" && l.Name != "" {
+		if l.MediaType == "application/vnd.ollama.image.json" && l.Name != "" {
 			jsonNames[l.Name] = true
 		}
 	}
@@ -3268,7 +3268,7 @@ func writeDriftVariant(t *testing.T, name, format string, config model.ConfigV2)
 	switch format {
 	case manifest.FormatGGUF:
 		_, digest := createBinFile(t, map[string]any{"general.architecture": "test"}, nil)
-		modelLayer, err := manifest.NewLayerFromLayer(digest, "application/vnd.rose.image.model", name)
+		modelLayer, err := manifest.NewLayerFromLayer(digest, "application/vnd.ollama.image.model", name)
 		if err != nil {
 			t.Fatal(err)
 		}

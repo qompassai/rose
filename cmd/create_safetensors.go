@@ -281,7 +281,7 @@ func createModelFromBaseWithDraft(ctx context.Context, opts createOptions, draft
 	var configLayer *manifest.Layer
 	for i := range baseManifest.Layers {
 		layer := &baseManifest.Layers[i]
-		if layer.MediaType == "application/vnd.rose.image.json" && layer.Name == "config.json" {
+		if layer.MediaType == "application/vnd.ollama.image.json" && layer.Name == "config.json" {
 			configLayer = layer
 			break
 		}

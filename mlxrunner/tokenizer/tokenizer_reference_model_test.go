@@ -152,8 +152,8 @@ func TestTokenizerReferenceFetch(t *testing.T) {
 			MediaType:     manifest.MediaTypeManifest,
 			Runner:        manifest.RunnerMLX,
 			Layers: []manifest.Layer{
-				{MediaType: "application/vnd.rose.image.json", Name: "tokenizer.json", Digest: digests[i], Size: int64(len(data))},
-				{MediaType: "application/vnd.rose.image.tensor", Digest: "sha256:" + strings.Repeat("1", 64), Size: 1 << 30},
+				{MediaType: "application/vnd.ollama.image.json", Name: "tokenizer.json", Digest: digests[i], Size: int64(len(data))},
+				{MediaType: "application/vnd.ollama.image.tensor", Digest: "sha256:" + strings.Repeat("1", 64), Size: 1 << 30},
 			},
 		}
 		var err error

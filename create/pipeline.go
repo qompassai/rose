@@ -132,7 +132,7 @@ func checkContext(ctx context.Context) error {
 	return ctx.Err()
 }
 
-const mediaTypeImageJSON = "application/vnd.rose.image.json"
+const mediaTypeImageJSON = "application/vnd.ollama.image.json"
 
 // importConfigBlobs writes every .json in modelDir (except the shard index) as an
 // image.json blob, prefixing each blob name with namePrefix, and returns the

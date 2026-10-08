@@ -859,7 +859,7 @@ func TestGetModelInfoRepairsUnknownGGUFFileType(t *testing.T) {
 		"general.architecture": "llama",
 		"general.file_type":    uint32(gguf.FileTypeQ4_K_M),
 	}, nil)
-	modelLayer, err := manifest.NewLayerFromLayer(digest, "application/vnd.rose.image.model", "")
+	modelLayer, err := manifest.NewLayerFromLayer(digest, "application/vnd.ollama.image.model", "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1181,7 +1181,7 @@ func writeShowManifestVariant(t *testing.T, name, runner, format string, cfg mod
 	switch format {
 	case manifest.FormatGGUF:
 		_, digest := createBinFile(t, kv, nil)
-		modelLayer, err := manifest.NewLayerFromLayer(digest, "application/vnd.rose.image.model", name)
+		modelLayer, err := manifest.NewLayerFromLayer(digest, "application/vnd.ollama.image.model", name)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1237,7 +1237,7 @@ func TestShowAllManifestsNonListReturnsSingleManifest(t *testing.T) {
 func TestShowAllManifestsManifestListDedupesLicenses(t *testing.T) {
 	t.Setenv("ROSE_MODELS", t.TempDir())
 
-	licenseLayer, err := manifest.NewLayer(bytes.NewReader([]byte("Apache-2.0")), "application/vnd.rose.image.license")
+	licenseLayer, err := manifest.NewLayer(bytes.NewReader([]byte("Apache-2.0")), "application/vnd.ollama.image.license")
 	if err != nil {
 		t.Fatal(err)
 	}

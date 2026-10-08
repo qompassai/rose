@@ -494,7 +494,7 @@ func changeShowCacheManifest(t *testing.T, name string) {
 	if err != nil {
 		t.Fatalf("parse manifest: %v", err)
 	}
-	layer, err := manifest.NewLayer(strings.NewReader("changed"), "application/vnd.rose.image.system")
+	layer, err := manifest.NewLayer(strings.NewReader("changed"), "application/vnd.ollama.image.system")
 	if err != nil {
 		t.Fatalf("new layer: %v", err)
 	}

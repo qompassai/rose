@@ -764,7 +764,7 @@ func GetModelForRunner(name, runner string) (*Model, error) {
 		}
 
 		switch layer.MediaType {
-		case "application/vnd.rose.image.model":
+		case "application/vnd.ollama.image.model":
 			if m.ModelPath != "" {
 				m.ModelShardPaths = append(m.ModelShardPaths, filename)
 				break
@@ -789,21 +789,21 @@ func GetModelForRunner(name, runner string) (*Model, error) {
 			} else {
 				m.DraftShardPaths = append(m.DraftShardPaths, filename)
 			}
-		case "application/vnd.rose.image.embed":
+		case "application/vnd.ollama.image.embed":
 			// Deprecated in versions  > 0.1.2
 			// TODO: remove this warning in a future version
 			slog.Info("WARNING: model contains embeddings, but embeddings in modelfiles have been deprecated and will be ignored.")
-		case "application/vnd.rose.image.adapter":
+		case "application/vnd.ollama.image.adapter":
 			m.AdapterPaths = append(m.AdapterPaths, filename)
-		case "application/vnd.rose.image.projector":
+		case "application/vnd.ollama.image.projector":
 			m.ProjectorPaths = append(m.ProjectorPaths, filename)
 			if md, err := readGGUFMetadata(layer.Digest); err != nil {
 				slog.Error("couldn't read projector metadata", "error", err)
 			} else {
 				m.projectorMetadata = append(m.projectorMetadata, md)
 			}
-		case "application/vnd.rose.image.prompt",
-			"application/vnd.rose.image.template":
+		case "application/vnd.ollama.image.prompt",
+			"application/vnd.ollama.image.template":
 			m.HasGoTemplate = true
 			m.templateDigest = layer.Digest
 			bts, err := os.ReadFile(filename)
@@ -815,14 +815,14 @@ func GetModelForRunner(name, runner string) (*Model, error) {
 			if err != nil {
 				return nil, err
 			}
-		case "application/vnd.rose.image.system":
+		case "application/vnd.ollama.image.system":
 			bts, err := os.ReadFile(filename)
 			if err != nil {
 				return nil, err
 			}
 
 			m.System = string(bts)
-		case "application/vnd.rose.image.params":
+		case "application/vnd.ollama.image.params":
 			params, err := os.Open(filename)
 			if err != nil {
 				return nil, err
@@ -833,7 +833,7 @@ func GetModelForRunner(name, runner string) (*Model, error) {
 			if err = json.NewDecoder(params).Decode(&m.Options); err != nil {
 				return nil, err
 			}
-		case "application/vnd.rose.image.messages":
+		case "application/vnd.ollama.image.messages":
 			msgs, err := os.Open(filename)
 			if err != nil {
 				return nil, err
@@ -843,7 +843,7 @@ func GetModelForRunner(name, runner string) (*Model, error) {
 			if err = json.NewDecoder(msgs).Decode(&m.Messages); err != nil {
 				return nil, err
 			}
-		case "application/vnd.rose.image.license":
+		case "application/vnd.ollama.image.license":
 			bts, err := os.ReadFile(filename)
 			if err != nil {
 				return nil, err

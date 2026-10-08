@@ -137,13 +137,13 @@ func TestDecisionPublicCapabilities(t *testing.T) {
 						t.Fatal(err)
 					}
 					if err := manifest.WriteManifest(model.ParseName(name), *config, []manifest.Layer{{
-						MediaType: "application/vnd.rose.image.model", Digest: digest,
+						MediaType: "application/vnd.ollama.image.model", Digest: digest,
 					}}); err != nil {
 						t.Fatal(err)
 					}
 				} else {
 					createSafetensorsTestModel(t, name, cfg, []manifest.Layer{{
-						MediaType: "application/vnd.rose.image.projector", Digest: digest,
+						MediaType: "application/vnd.ollama.image.projector", Digest: digest,
 					}})
 				}
 				m, err := GetModel(name)

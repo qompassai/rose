@@ -367,11 +367,11 @@ func TestGetModelTemplateMetadata(t *testing.T) {
 func writeTestModelManifest(t *testing.T, name, digest, tmpl string) {
 	t.Helper()
 
-	modelLayer, err := manifest.NewLayerFromLayer(digest, "application/vnd.rose.image.model", "")
+	modelLayer, err := manifest.NewLayerFromLayer(digest, "application/vnd.ollama.image.model", "")
 	if err != nil {
 		t.Fatal(err)
 	}
-	templateLayer, err := manifest.NewLayer(strings.NewReader(tmpl), "application/vnd.rose.image.template")
+	templateLayer, err := manifest.NewLayer(strings.NewReader(tmpl), "application/vnd.ollama.image.template")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -437,7 +437,7 @@ func TestPushLayersForManifestListIncludesChildManifests(t *testing.T) {
 	}
 
 	mlx, mlxConfig, mlxLayer := writeChild("library/push-mlx:latest", manifest.RunnerMLX, manifest.FormatSafetensors, manifest.MediaTypeImageTensor)
-	ggml, ggmlConfig, ggmlLayer := writeChild("library/push-ggml:latest", manifest.RunnerGGML, manifest.FormatGGUF, "application/vnd.rose.image.model")
+	ggml, ggmlConfig, ggmlLayer := writeChild("library/push-ggml:latest", manifest.RunnerGGML, manifest.FormatGGUF, "application/vnd.ollama.image.model")
 
 	mlxRef, err := manifest.NewManifestReference(mlx.BlobDigest(), mlx.Runner, mlx.Format)
 	if err != nil {
@@ -493,7 +493,7 @@ func TestCopyModelNarrowsManifestListToLocalChildren(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		layer, err := manifest.NewLayer(strings.NewReader(name+" layer"), "application/vnd.rose.image.model")
+		layer, err := manifest.NewLayer(strings.NewReader(name+" layer"), "application/vnd.ollama.image.model")
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1209,12 +1209,12 @@ func TestPullModelManifest(t *testing.T) {
 			name: "pretty printed",
 			manifest: `{  "schemaVersion": 2,  "mediaType": "application/vnd.docker.distribution.manifest.v2+json",
   "config": { "digest": "sha256:abc", "mediaType": "application/vnd.docker.container.image.v1+json", "size": 50 },
-  "layers": [{ "digest": "sha256:t1", "mediaType": "application/vnd.rose.image.tensor", "size": 1024, "name": "model.weight" }]
+  "layers": [{ "digest": "sha256:t1", "mediaType": "application/vnd.ollama.image.tensor", "size": 1024, "name": "model.weight" }]
 }`,
 		},
 		{
 			name:     "non-standard field order",
-			manifest: `{"layers":[{"size":999,"digest":"sha256:def","mediaType":"application/vnd.rose.image.model"}],"schemaVersion":2,"config":{"size":50,"digest":"sha256:abc","mediaType":"application/vnd.docker.container.image.v1+json"},"mediaType":"application/vnd.docker.distribution.manifest.v2+json"}`,
+			manifest: `{"layers":[{"size":999,"digest":"sha256:def","mediaType":"application/vnd.ollama.image.model"}],"schemaVersion":2,"config":{"size":50,"digest":"sha256:abc","mediaType":"application/vnd.docker.container.image.v1+json"},"mediaType":"application/vnd.docker.distribution.manifest.v2+json"}`,
 		},
 	}
 
@@ -1278,12 +1278,12 @@ func TestPullModelDuplicateDigestVerifiesBlob(t *testing.T) {
 				"schemaVersion": 2,
 				"mediaType": "application/vnd.docker.distribution.manifest.v2+json",
 				"config": {
-					"mediaType": "application/vnd.rose.image.config",
+					"mediaType": "application/vnd.ollama.image.config",
 					"digest": %q,
 					"size": 5
 				},
 				"layers": [{
-					"mediaType": "application/vnd.rose.image.model",
+					"mediaType": "application/vnd.ollama.image.model",
 					"digest": %q,
 					"size": 5
 				}]

@@ -77,7 +77,7 @@ func TestSystemOneHandler(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	t.Setenv("ROSE_MODELS", t.TempDir())
 	config := model.ConfigV2{ModelFormat: "safetensors", Renderer: "qwen3.5", Capabilities: []string{"completion", "decision"}}
-	params, err := manifest.NewLayer(strings.NewReader(`{"num_ctx":8192}`), "application/vnd.rose.image.params")
+	params, err := manifest.NewLayer(strings.NewReader(`{"num_ctx":8192}`), "application/vnd.ollama.image.params")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -131,10 +131,10 @@ func TestSystemOneHandler(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		layers := []manifest.Layer{{MediaType: "application/vnd.rose.image.model", Digest: digest}}
+		layers := []manifest.Layer{{MediaType: "application/vnd.ollama.image.model", Digest: digest}}
 		for _, layer := range []struct{ content, mediaType string }{
-			{modelConfig.system, "application/vnd.rose.image.system"},
-			{fmt.Sprintf(`{"num_ctx":%d}`, modelConfig.contextLength), "application/vnd.rose.image.params"},
+			{modelConfig.system, "application/vnd.ollama.image.system"},
+			{fmt.Sprintf(`{"num_ctx":%d}`, modelConfig.contextLength), "application/vnd.ollama.image.params"},
 		} {
 			l, err := manifest.NewLayer(strings.NewReader(layer.content), layer.mediaType)
 			if err != nil {
@@ -143,7 +143,7 @@ func TestSystemOneHandler(t *testing.T) {
 			layers = append(layers, l)
 		}
 		if modelConfig.template != "" {
-			l, err := manifest.NewLayer(strings.NewReader(modelConfig.template), "application/vnd.rose.image.template")
+			l, err := manifest.NewLayer(strings.NewReader(modelConfig.template), "application/vnd.ollama.image.template")
 			if err != nil {
 				t.Fatal(err)
 			}

@@ -845,7 +845,7 @@ func createModel(ctx context.Context, r api.CreateRequest, name model.Name, base
 
 		if layer.GGUF != nil {
 			switch layer.MediaType {
-			case "application/vnd.rose.image.model", manifest.MediaTypeImageDraft:
+			case "application/vnd.ollama.image.model", manifest.MediaTypeImageDraft:
 				rewritten, changed, err := compatmigrate.RewriteLlama3MetadataLayer(layer.Layer)
 				if err != nil {
 					return err
@@ -856,7 +856,7 @@ func createModel(ctx context.Context, r api.CreateRequest, name model.Name, base
 			}
 
 			switch layer.MediaType {
-			case "application/vnd.rose.image.model":
+			case "application/vnd.ollama.image.model":
 				config.ModelFormat = cmp.Or(config.ModelFormat, "gguf")
 				config.ModelFamily = cmp.Or(config.ModelFamily, layer.GGUF.Architecture())
 				config.ModelType = cmp.Or(config.ModelType, format.HumanNumber(layer.parameterCount))
@@ -1099,9 +1099,9 @@ func ggufLayersWithMediaType(digest, sourceName, mediaType string, fn func(resp 
 		return nil, fmt.Errorf("%w: %s is a LoRA adapter", errAdaptersUnsupported, sourceName)
 	}
 	if mediaType == "" {
-		mediaType = "application/vnd.rose.image.model"
+		mediaType = "application/vnd.ollama.image.model"
 		if isProjectorGGUF(metadata) {
-			mediaType = "application/vnd.rose.image.projector"
+			mediaType = "application/vnd.ollama.image.projector"
 		}
 	}
 

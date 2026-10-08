@@ -135,7 +135,7 @@ func TestListModelsKeepsUnloadableModel(t *testing.T) {
 	}
 	var corrupted bool
 	for _, layer := range mf.Layers {
-		if layer.MediaType != "application/vnd.rose.image.template" {
+		if layer.MediaType != "application/vnd.ollama.image.template" {
 			continue
 		}
 		path, err := manifest.BlobsPath(layer.Digest)
