@@ -222,3 +222,51 @@ format shared with the registry protocol, not a user-facing alias.
   returned HTTP 400 for the base model in 2026-10.
 
 </details>
+
+<details>
+<summary>Validation record (2026-10-08, primo)</summary>
+
+All gates ran on primo (Go 1.27.1) against a copy of this worktree in
+`/home/phaedrus/rose-build/rose-jinja`:
+
+- `gofmt -l` on `template`, `create`, `manifest`, `llm`, `server`:
+  clean. `go vet` on the same packages: clean.
+- `go test`: `template`, `create`, `manifest`, `llm` pass; full
+  `server` suite passes (6.0 s); `go test -race` passes for
+  `template` and `create`. `go build ./...` succeeds (one pre-existing
+  cgo warning in the sqlite3 binding, unrelated).
+- Live probe, after the CUDA-perf marker cleared: this build served
+  on `127.0.0.1:11436` with
+  `ROSE_MODELS=/home/phaedrus/.ollama/models`. The runner was the CPU
+  llama-server build already present on primo, so timings are
+  CPU-bound and say nothing about GPU performance.
+  - `POST /api/create` for `hf-granite-4.2-8b-jinja` (base
+    granite-4.2-8b Q4_K_M GGUF, digest
+    `sha256:fee3f831…`, plus the upstream 9,013-byte
+    `chat_template.jinja` as `template`): HTTP 200.
+  - Tool chat (one `get_weather` schema, "What is the weather in
+    Paris?"): **HTTP 200** with a parsed
+    `tool_calls: [{name: "get_weather", arguments: {"city": "Paris"}}]`
+    and a separate `thinking` field — the granite behaviour the
+    GGUF-splice cure produced in 2026-10, now with no splice. The
+    llama-server command line shows the mechanism:
+    `--chat-template-file /home/phaedrus/.ollama/models/blobs/sha256-f0ba43f7…`
+    (the supplied template's blob).
+  - Control: the same GGUF created with no template
+    (`hf-granite-4.2-8b-notmpl`) answered the identical request with
+    **HTTP 400** `does not support tools` — the supplied template is
+    what flipped the outcome.
+  - Plain chat on the jinja model: HTTP 200, content `pong` for an
+    exact-reply prompt. `/api/show`: capabilities
+    `[tools, thinking, completion]`, template reported verbatim.
+  - Both probe models were deleted and the probe server stopped
+    afterwards; stock ollama on 11434 was never touched. Full logs:
+    `/home/phaedrus/rose-build/rose-jinja/probe/` on primo.
+
+Not covered by the probe: devstral, gpt-oss (harmony), and phi-4
+templates (unit tests cover their shapes in miniature; only granite
+ran live), multi-turn tool-result round-trips, and the CUDA
+llama-server build (the probe used the CPU build because the CUDA
+build tree was another workstream's in-progress artifact).
+
+</details>
