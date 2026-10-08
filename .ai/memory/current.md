@@ -1,29 +1,20 @@
-# Current Work
+# Current state — 2026-10-07
 
-Rose (qompassai/rose) — Matt's fork of Ollama, the local model server
-phlow talks to. Not rose.nvim (the plugin); this is the Go server.
-
-## Status (2026-10-07, sync branch `sync/upstream-v0.40.1`)
-
-- `main` is a v0.6.3-era (Mar 2025) snapshot series — the fork fell
-  ~1,731 upstream commits behind. It cannot load the current specialist
-  architectures (Qwen3, Gemma-4, Nemotron-3); it is the rollback point,
-  not the future.
-- This branch re-imports upstream **v0.40.1** and re-applies the fork
-  delta as a patch series: mechanical rebrand
-  (`scripts/rebrand-rose.pl`, rerunnable), `ROSE_*` → `OLLAMA_*` env
-  alias fallback, existing-`~/.ollama/models` store preference, default
-  registry host `harbor.qompass.ai`, fork licenses.
-- The hybrid-TLS security layer still lives only on
-  `rose-default-hybrid-security-20260908` (based on the old tree).
-  Porting it onto this base is the next workstream; do not assume it is
-  in this branch.
-- Full recon + plan: `~/workspace/rose-fork/UPDATE-PLAN.md` (workspace,
-  not committed); identity notes in `docs/rose.md`.
-
-## Standing rules
-
-- Local commits on branches; pushes only per Matt's explicit
-  authorization, and only for builds that pass the primo parity check
-  (specialists serve, phlow probe answers, structured tool call works).
-- Never force-push. `main` is not promoted without Matt's call.
+- `main` is the v0.6.3-based snapshot line (2025-04 import). It does not
+  build with current toolchains and cannot load current model
+  architectures (Qwen3, Gemma-4, Nemotron-3). Do not build on it.
+- `sync/upstream-v0.40.1` is the maintained line: a fresh root import of
+  upstream Ollama v0.40.1 plus the fork patch series (rebrand, ROSE_*
+  env fallback to OLLAMA_*, stock-store preference, harbor default
+  registry with a public-host union so stock stores resolve, paper).
+  Validated on primo (Arch, Go 1.27.1): full cmake build OK; server,
+  manifest, types, envconfig, api, create, transfer tests pass; live
+  parity against stock Ollama 0.40.0 on a shared store PASSED
+  (specialists serve, tool call completes). See docs/rose.md.
+- Format rule learned the hard way: application/vnd.ollama.* media
+  types are a storage format, never rebrand them. The rebrand script
+  protects them.
+- The hybrid-TLS security branch (rose-default-hybrid-security-20260908)
+  is unported; it targets the old tree. Port deliberately, not by merge.
+- Next: promote sync/upstream-v0.40.1 to main (owner decision); CUDA
+  build for a GPU perf table; security-transport port.
