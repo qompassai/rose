@@ -294,8 +294,8 @@ func TestDisplayShortest(t *testing.T) {
 		"harbor.qompass.ai/library/model:latest": "model:latest",
 		"harbor.qompass.ai/library/model:tag":    "model:tag",
 		"harbor.qompass.ai/namespace/model:tag":  "namespace/model:tag",
-		"host/namespace/model:tag":                "host/namespace/model:tag",
-		"host/library/model:tag":                  "host/library/model:tag",
+		"host/namespace/model:tag":               "host/namespace/model:tag",
+		"host/library/model:tag":                 "host/library/model:tag",
 	}
 
 	for in, want := range cases {
