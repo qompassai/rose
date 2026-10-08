@@ -1,13 +1,15 @@
 # Upstream re-import cadence
 
-Rose stays current by repeating the method that produced the v0.40.1 line: import a selected upstream Ollama tag as a fresh line, re-apply the fork as a reviewable patch series, build it, and pass the phlow parity gate before promotion. The standing cadence is **monthly**. A security release, a model-architecture requirement from phlow, or a material upstream defect can justify an out-of-cycle import.
+Rose is Qompass AI's own product. It loosely follows upstream Ollama, but upstream is an input to Rose's design—not a specification Rose must match. Intake is therefore **selective**: adopt upstream changes that fit Rose's identity, hardware, security posture, and phlow use cases, and deliberately deviate where an Ollama-specific choice does not.
 
-The parity script is a standing gate, not a one-time migration check. A candidate that does not build and pass parity remains a local or branch candidate; it does not become Rose's maintained line.
+The monthly cadence repeats the method that produced the v0.40.1 line: evaluate a selected upstream tag, import what Rose accepts as a fresh line, re-apply Rose's decisions as a reviewable patch series, build it, and pass the phlow acceptance gate before promotion. A security release, a model-architecture requirement from phlow, or a material upstream defect can justify an out-of-cycle review.
+
+The parity script is a standing acceptance gate for the behavior phlow consumes, not a requirement of lockstep parity with Ollama. A candidate that does not build and pass that gate remains a local or branch candidate; it does not become Rose's maintained line.
 
 <details>
 <summary>Monthly selection and preparation</summary>
 
-1. Select the newest suitable upstream release tag and record its tag, commit, release date, and any security or compatibility reason for choosing it.
+1. Evaluate the newest suitable upstream release tag and record its tag, commit, release date, and any security or compatibility reason for accepting it. Record material upstream changes Rose deliberately rejects or defers, with the reason.
 2. Preserve the current maintained line and the prior import line as named references before starting.
 3. Create a new sync branch for the selected tag, using the established naming pattern `sync/upstream-vX.Y.Z`.
 4. Import the upstream tree verbatim as the first commit. Do not mix local fixes into the import commit; keeping it pristine makes every later difference attributable to Rose.
@@ -20,9 +22,9 @@ The parity script is a standing gate, not a one-time migration check. A candidat
 After the pristine import, apply the fork delta in small, ordered commits:
 
 1. Run `scripts/rebrand-rose.pl` to apply the mechanical Rose identity. The script is the reusable source of this layer; improve the script when a new mechanical case is found rather than hand-editing hundreds of files.
-2. Re-apply or verify the environment compatibility behavior: `ROSE_*` variables take precedence, with their `OLLAMA_*` counterparts accepted as fallbacks.
-3. Re-apply or verify the model-store preference: an existing `~/.ollama/models` store is used when present, `~/.rose/models` is the fresh-install default, and an explicit `ROSE_MODELS` setting wins.
-4. Re-apply or verify the default registry behavior and the public-host compatibility that lets stock-written model stores resolve under Rose.
+2. Verify Rose's identity rule: the command is `rose` and configuration uses `ROSE_*` variables only. Do not introduce an `ollama` command alias, `OLLAMA_*` environment alias, or an Ollama-first default.
+3. Preserve the current model-store behavior during intake, but treat the stock-store preference as a **compat shim pending Matt's deviation ruling**, not settled design. Do not expand it, and do not change the default store without a separate migration plan that avoids stranding existing local stores.
+4. Re-apply Rose's default registry behavior. Preserve the existing public-host union during intake only as a **compat shim pending Matt's deviation ruling**, not settled design; any change belongs in a separate compatibility and migration decision.
 5. Carry forward Rose's paper and repository documentation, including the AGPL and Q-CDA licenses and the protected storage-format namespaces. Manifest media types are a storage and wire format, not branding, and must remain compatible.
 6. Port functional fork features only as separate commits, each with its own tests and rationale. Do not fold security, template, or integration changes into the rebrand commit.
 
@@ -45,9 +47,9 @@ A build produced through a different backend or runtime configuration must be la
 </details>
 
 <details>
-<summary>Parity gate</summary>
+<summary>Phlow acceptance gate</summary>
 
-Run `parity_check.py` against the candidate Rose server on port `11435`, with the stock Ollama service on port `11434` left untouched. The candidate must use the same model store and pass the script's gates:
+Run `parity_check.py` against the candidate Rose server on port `11435`, with the stock Ollama service on port `11434` left untouched. Configure Rose explicitly with `ROSE_*` variables. The candidate must use the designated model store and pass the script's gates:
 
 - `/api/version` answers;
 - `/api/tags` includes the complete model set phlow relies on;
@@ -68,7 +70,7 @@ For each monthly cycle, record:
 
 - upstream tag and commit selected;
 - sync branch and final commit;
-- fork patches re-applied, dropped, or deferred, with reasons;
+- fork patches and upstream changes accepted, rejected, dropped, or deferred, with reasons;
 - build and test evidence;
 - parity output and any performance table, with build configuration labeled; and
 - remaining conflicts or follow-up work, assigned to a specific future branch or cycle.

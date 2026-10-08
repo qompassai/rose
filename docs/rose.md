@@ -16,15 +16,21 @@ delta re-applied as discrete commits:
    variables, Rose product strings. Real service domains
    (`registry.ollama.ai`, `cdn.ollama.com`, `ollama.com`) are kept
    verbatim — they are live services, not brand text.
-2. **Env compat** — `envconfig.Var`: a `ROSE_*` variable that is unset
-   falls back to its legacy `OLLAMA_*` twin, so existing scripts and
-   service units keep working. `ROSE_*` wins when both are set.
-3. **Store compat** — `envconfig.Models`: an existing stock
-   `~/.ollama/models` store is served in place; fresh installs use
-   `~/.rose/models`. `ROSE_MODELS` always wins when set.
+2. **Environment identity** — Rose configuration uses `ROSE_*`
+   variables only. `OLLAMA_*` variables are not aliases.
+3. **Store compat shim (pending deviation ruling)** — `envconfig.Models`
+   currently serves an existing stock `~/.ollama/models` store in place;
+   fresh installs use `~/.rose/models`, and `ROSE_MODELS` always wins
+   when set. This behavior is retained pending a separate ruling and
+   migration plan; it is not settled Rose design.
 4. **Default registry** — unqualified model names resolve against
    `harbor.qompass.ai` (Matt's registry), not `registry.ollama.ai`.
-5. **Paper** — `LICENSE-AGPL` and `LICENSE-QCDA` carried from the
+5. **Host compat shim (pending deviation ruling)** — manifest handling
+   currently recognizes the harbor, Ollama registry, and ollama.com
+   public hosts as one identity so existing stock-written stores resolve.
+   This behavior is retained pending a separate ruling; it is not
+   settled Rose design.
+6. **Paper** — `LICENSE-AGPL` and `LICENSE-QCDA` carried from the
    fork's main branch (upstream's MIT `LICENSE` is retained for the
    upstream code); `.cache/` and `.zig-cache/` are gitignored.
 

@@ -313,28 +313,16 @@ func TestVar(t *testing.T) {
 	}
 }
 
-func TestVarLegacyAlias(t *testing.T) {
-	t.Run("legacy OLLAMA_ twin is honored when ROSE_ is unset", func(t *testing.T) {
-		t.Setenv("OLLAMA_ALIAS_PROBE", "legacy")
-		if s := Var("ROSE_ALIAS_PROBE"); s != "legacy" {
-			t.Errorf("expected %q, got %q", "legacy", s)
-		}
-	})
+func TestVarIgnoresOllamaNamespace(t *testing.T) {
+	t.Setenv("OLLAMA_ALIAS_PROBE", "legacy")
+	if s := Var("ROSE_ALIAS_PROBE"); s != "" {
+		t.Errorf("expected empty, got %q", s)
+	}
 
-	t.Run("ROSE_ wins over the legacy twin", func(t *testing.T) {
-		t.Setenv("OLLAMA_ALIAS_PROBE", "legacy")
-		t.Setenv("ROSE_ALIAS_PROBE", "rose")
-		if s := Var("ROSE_ALIAS_PROBE"); s != "rose" {
-			t.Errorf("expected %q, got %q", "rose", s)
-		}
-	})
-
-	t.Run("non-ROSE keys have no alias", func(t *testing.T) {
-		t.Setenv("OLLAMA_ALIAS_PROBE", "legacy")
-		if s := Var("OTHER_ALIAS_PROBE"); s != "" {
-			t.Errorf("expected empty, got %q", s)
-		}
-	})
+	t.Setenv("ROSE_ALIAS_PROBE", "rose")
+	if s := Var("ROSE_ALIAS_PROBE"); s != "rose" {
+		t.Errorf("expected %q, got %q", "rose", s)
+	}
 }
 
 func TestContextLength(t *testing.T) {
