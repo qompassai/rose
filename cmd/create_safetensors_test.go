@@ -283,7 +283,7 @@ func TestSafetensorsCreateOptionsRejectsAdapters(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	modelfile, err := parser.ParseFile(strings.NewReader("FROM "+dir+"\nADAPTER ./adapter.gguf\n"))
+	modelfile, err := parser.ParseFile(strings.NewReader("FROM " + dir + "\nADAPTER ./adapter.gguf\n"))
 	if err != nil {
 		t.Fatal(err)
 	}
