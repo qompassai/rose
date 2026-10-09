@@ -1002,6 +1002,11 @@ func PruneLayers() error {
 
 func PushModel(ctx context.Context, name string, regOpts *registryOptions, fn func(api.ProgressResponse)) error {
 	n := model.ParseName(name)
+
+	// Pushes never use the union: a union name is pushed to Harbor
+	// only, and no push failure falls through to another host.
+	target := pushTargetName(n)
+
 	fn(api.ProgressResponse{Status: "retrieving manifest"})
 
 	if n.ProtocolScheme == "http" && !regOpts.Insecure {
@@ -1051,7 +1056,7 @@ func PushModel(ctx context.Context, name string, regOpts *registryOptions, fn fu
 
 	// Use fast transfer for models with tensor layers (many small blobs)
 	if hasTensorLayers(layers) {
-		if err := pushWithTransfer(ctx, n, layers, manifestJSON, manifestMediaType, regOpts, fn); err != nil {
+		if err := pushWithTransfer(ctx, target, layers, manifestJSON, manifestMediaType, regOpts, fn); err != nil {
 			return err
 		}
 		fn(api.ProgressResponse{Status: "success"})
@@ -1059,15 +1064,15 @@ func PushModel(ctx context.Context, name string, regOpts *registryOptions, fn fu
 	}
 
 	for _, layer := range layers {
-		if err := uploadBlob(ctx, n, layer, regOpts, fn); err != nil {
+		if err := uploadBlob(ctx, target, layer, regOpts, fn); err != nil {
 			slog.Info(fmt.Sprintf("error uploading blob: %v", err))
 			return err
 		}
 	}
 
 	fn(api.ProgressResponse{Status: "pushing manifest"})
-	requestURL := n.BaseURL()
-	requestURL = requestURL.JoinPath("v2", n.DisplayNamespaceModel(), "manifests", n.Tag)
+	requestURL := target.BaseURL()
+	requestURL = requestURL.JoinPath("v2", target.DisplayNamespaceModel(), "manifests", target.Tag)
 
 	headers := make(http.Header)
 	headers.Set("Content-Type", manifestMediaType)
@@ -1172,14 +1177,14 @@ func PullModel(ctx context.Context, name string, runner string, regOpts *registr
 
 	fn(api.ProgressResponse{Status: "pulling manifest"})
 
-	mf, manifestData, err := pullModelManifest(ctx, n, regOpts)
+	mf, manifestData, resolvedName, err := resolvePullManifest(ctx, n, regOpts)
 	if err != nil {
 		return fmt.Errorf("pull model manifest: %s", err)
 	}
 	selectedChildDigest := ""
 	if mf.MediaType == manifest.MediaTypeManifestList {
 		var childDigest string
-		mf, childDigest, err = pullSelectedManifest(ctx, n, mf, runner, regOpts, fn)
+		mf, childDigest, err = pullSelectedManifest(ctx, resolvedName, mf, runner, regOpts, fn)
 		if err != nil {
 			return err
 		}
@@ -1204,7 +1209,7 @@ func PullModel(ctx context.Context, name string, runner string, regOpts *registr
 		}
 	}
 
-	if err := checkModelRequires(ctx, n, mf, regOpts); err != nil {
+	if err := checkModelRequires(ctx, resolvedName, mf, regOpts); err != nil {
 		return err
 	}
 
@@ -1216,7 +1221,7 @@ func PullModel(ctx context.Context, name string, runner string, regOpts *registr
 
 	// Use fast transfer for models with tensor layers (many small blobs)
 	if hasTensorLayers(layers) {
-		if err := pullWithTransfer(ctx, n, layers, manifestData, regOpts, fn); err != nil {
+		if err := pullWithTransfer(ctx, resolvedName, n, layers, manifestData, regOpts, fn); err != nil {
 			return err
 		}
 		writePullDowngradeAnchor(n, mf, manifestData, selectedChildDigest)
@@ -1227,7 +1232,7 @@ func PullModel(ctx context.Context, name string, runner string, regOpts *registr
 	skipVerify := make(map[string]bool)
 	for _, layer := range layers {
 		cacheHit, err := downloadBlob(ctx, downloadOpts{
-			n:       n,
+			n:       resolvedName,
 			digest:  layer.Digest,
 			regOpts: regOpts,
 			fn:      fn,
@@ -1531,19 +1536,22 @@ func writePullDowngradeAnchor(n model.Name, mf *manifest.Manifest, manifestData 
 }
 
 // pullWithTransfer uses the simplified x/transfer package for downloading blobs.
-func pullWithTransfer(ctx context.Context, n model.Name, layers []manifest.Layer, manifestData []byte, regOpts *registryOptions, fn func(api.ProgressResponse)) error {
-	if err := downloadWithTransfer(ctx, n, layers, regOpts, fn); err != nil {
+// Blobs are downloaded from remoteName's host (the host union resolution
+// resolved the manifest from) while the manifest is written locally
+// under localName, the name the user asked for.
+func pullWithTransfer(ctx context.Context, remoteName, localName model.Name, layers []manifest.Layer, manifestData []byte, regOpts *registryOptions, fn func(api.ProgressResponse)) error {
+	if err := downloadWithTransfer(ctx, remoteName, layers, regOpts, fn); err != nil {
 		return err
 	}
 
 	// Write manifest
 	fn(api.ProgressResponse{Status: "writing manifest"})
 
-	if err := manifest.WriteManifestData(n, manifestData); err != nil {
+	if err := manifest.WriteManifestData(localName, manifestData); err != nil {
 		return err
 	}
 
-	slog.Debug("manifest written", "name", n.DisplayShortest(), "sha256", fmt.Sprintf("%x", sha256.Sum256(manifestData)), "size", len(manifestData))
+	slog.Debug("manifest written", "name", localName.DisplayShortest(), "sha256", fmt.Sprintf("%x", sha256.Sum256(manifestData)), "size", len(manifestData))
 	return nil
 }
 
@@ -1609,7 +1617,17 @@ func pushWithTransfer(ctx context.Context, n model.Name, layers []manifest.Layer
 }
 
 func pullModelManifest(ctx context.Context, n model.Name, regOpts *registryOptions) (*manifest.Manifest, []byte, error) {
-	requestURL := n.BaseURL().JoinPath("v2", n.DisplayNamespaceModel(), "manifests", n.Tag)
+	return pullModelManifestByRef(ctx, n, n.Tag, regOpts)
+}
+
+// pullModelManifestByDigest fetches a manifest by digest instead of by
+// tag. Union resolution uses it to serve pulls from a recorded pin.
+func pullModelManifestByDigest(ctx context.Context, n model.Name, digest string, regOpts *registryOptions) (*manifest.Manifest, []byte, error) {
+	return pullModelManifestByRef(ctx, n, digest, regOpts)
+}
+
+func pullModelManifestByRef(ctx context.Context, n model.Name, ref string, regOpts *registryOptions) (*manifest.Manifest, []byte, error) {
+	requestURL := n.BaseURL().JoinPath("v2", n.DisplayNamespaceModel(), "manifests", ref)
 
 	headers := make(http.Header)
 	headers.Set("Accept", strings.Join([]string{manifest.MediaTypeManifestList, manifest.MediaTypeManifest}, ", "))
