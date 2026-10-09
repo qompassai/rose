@@ -835,18 +835,53 @@ func TestCreateFromBin(t *testing.T) {
 	})
 
 	t.Run("adapters", func(t *testing.T) {
+		_, adapterDigest := createBinFile(t, map[string]any{"general.type": "adapter"}, nil)
 		w := createRequest(t, s.CreateHandler, api.CreateRequest{
 			Name:     "my-gguf-model",
+			Files:    map[string]string{"0.gguf": digest},
+			Adapters: map[string]string{"adapter.gguf": adapterDigest},
+			Stream:   &stream,
+		})
+
+		if w.Code != http.StatusOK {
+			t.Fatalf("expected status 200, got %d: %s", w.Code, w.Body.String())
+		}
+
+		m, err := GetModel("my-gguf-model")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(m.AdapterPaths) != 1 {
+			t.Fatalf("expected 1 adapter path, got %v", m.AdapterPaths)
+		}
+	})
+
+	t.Run("adapters must be adapter GGUFs", func(t *testing.T) {
+		w := createRequest(t, s.CreateHandler, api.CreateRequest{
+			Name:     "my-gguf-model-bad-adapter",
+			Files:    map[string]string{"0.gguf": digest},
+			Adapters: map[string]string{"adapter.gguf": digest},
+			Stream:   &stream,
+		})
+
+		if w.Code != http.StatusBadRequest {
+			t.Fatalf("expected status 400, got %d: %s", w.Code, w.Body.String())
+		}
+		if !strings.Contains(w.Body.String(), errNotAnAdapter.Error()) {
+			t.Errorf("expected not-an-adapter error, got:\n%s", w.Body.String())
+		}
+	})
+
+	t.Run("adapters with missing blob", func(t *testing.T) {
+		w := createRequest(t, s.CreateHandler, api.CreateRequest{
+			Name:     "my-gguf-model-missing-adapter",
 			Files:    map[string]string{"0.gguf": digest},
 			Adapters: map[string]string{"adapter.gguf": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"},
 			Stream:   &stream,
 		})
 
 		if w.Code != http.StatusBadRequest {
-			t.Fatalf("expected status 400, got %d", w.Code)
-		}
-		if !strings.Contains(w.Body.String(), errAdaptersUnsupported.Error()) {
-			t.Errorf("expected adapters unsupported error, got:\n%s", w.Body.String())
+			t.Fatalf("expected status 400, got %d: %s", w.Code, w.Body.String())
 		}
 	})
 
@@ -2736,8 +2771,8 @@ func TestCreateSafetensorsRejectsUnsupportedInputs(t *testing.T) {
 		if w.Code != http.StatusBadRequest {
 			t.Fatalf("expected status 400, got %d: %s", w.Code, w.Body.String())
 		}
-		if !strings.Contains(w.Body.String(), errAdaptersUnsupported.Error()) {
-			t.Fatalf("expected adapters error, got %s", w.Body.String())
+		if !strings.Contains(w.Body.String(), errAdaptersOnMLX.Error()) {
+			t.Fatalf("expected adapters-on-MLX error, got %s", w.Body.String())
 		}
 	})
 }
@@ -2769,7 +2804,7 @@ func TestCreateRejectsInvalidLicense(t *testing.T) {
 	}
 }
 
-func TestCreateRejectsAdapterGGUF(t *testing.T) {
+func TestCreateRejectsAdapterAsBaseModel(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	t.Setenv("ROSE_MODELS", t.TempDir())
 	var s Server
@@ -2783,8 +2818,71 @@ func TestCreateRejectsAdapterGGUF(t *testing.T) {
 	if w.Code != http.StatusBadRequest {
 		t.Fatalf("status = %d, want %d: %s", w.Code, http.StatusBadRequest, w.Body.String())
 	}
-	if !strings.Contains(w.Body.String(), errAdaptersUnsupported.Error()) {
-		t.Fatalf("response = %s, want adapters unsupported error", w.Body.String())
+	if !strings.Contains(w.Body.String(), errAdapterAsModel.Error()) {
+		t.Fatalf("response = %s, want adapter-as-model error", w.Body.String())
+	}
+}
+
+func TestCreateFromModelWithAdapter(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	t.Setenv("ROSE_MODELS", t.TempDir())
+	var s Server
+
+	_, digest := createBinFile(t, nil, nil)
+	w := createRequest(t, s.CreateHandler, api.CreateRequest{
+		Name:   "adapter-base",
+		Files:  map[string]string{"base.gguf": digest},
+		Stream: &stream,
+	})
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected status 200 creating base, got %d: %s", w.Code, w.Body.String())
+	}
+
+	_, adapterDigest := createBinFile(t, map[string]any{"general.type": "adapter"}, nil)
+	w = createRequest(t, s.CreateHandler, api.CreateRequest{
+		Name:     "adapter-child",
+		From:     "adapter-base",
+		Adapters: map[string]string{"adapter.gguf": adapterDigest},
+		Stream:   &stream,
+	})
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected status 200 creating adapted model, got %d: %s", w.Code, w.Body.String())
+	}
+
+	m, err := GetModel("adapter-child")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(m.AdapterPaths) != 1 {
+		t.Fatalf("expected 1 adapter path, got %v", m.AdapterPaths)
+	}
+	if _, err := os.Stat(m.AdapterPaths[0]); err != nil {
+		t.Fatalf("adapter path does not exist: %v", err)
+	}
+}
+
+func TestCreateFromSafetensorsModelRejectsAdapters(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	t.Setenv("ROSE_MODELS", t.TempDir())
+	var s Server
+
+	createSafetensorsTestModel(t, "mlx-base", model.ConfigV2{
+		ModelFormat: "safetensors",
+		ModelFamily: "test",
+	}, nil)
+
+	_, adapterDigest := createBinFile(t, map[string]any{"general.type": "adapter"}, nil)
+	w := createRequest(t, s.CreateHandler, api.CreateRequest{
+		Name:     "mlx-child",
+		From:     "mlx-base",
+		Adapters: map[string]string{"adapter.gguf": adapterDigest},
+		Stream:   &stream,
+	})
+	if w.Code != http.StatusBadRequest {
+		t.Fatalf("status = %d, want %d: %s", w.Code, http.StatusBadRequest, w.Body.String())
+	}
+	if !strings.Contains(w.Body.String(), errAdaptersOnMLX.Error()) {
+		t.Fatalf("response = %s, want adapters-on-MLX error", w.Body.String())
 	}
 }
 

@@ -82,7 +82,9 @@ func configFromModelfile(modelfile *parser.Modelfile) (string, *modelfileConfig,
 			}
 			mfConfig.Requires = strings.TrimPrefix(requires, "v")
 		case "adapter":
-			return "", nil, errAdaptersUnsupported
+			// LoRA adapters belong to the GGUF create path and carry no
+			// safetensors config. safetensorsCreateOptions rejects them
+			// once a create is known to target the MLX engine.
 		case "message":
 			role, content, _ := strings.Cut(cmd.Args, ": ")
 			mfConfig.Messages = append(mfConfig.Messages, api.Message{Role: role, Content: content})

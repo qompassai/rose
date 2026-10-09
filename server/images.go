@@ -99,6 +99,18 @@ func (m *Model) IsMLX() bool {
 	return m.Config.ModelFormat == "safetensors"
 }
 
+// adapterEngineError reports models that carry LoRA adapter layers but
+// would be served by an engine that cannot apply them. Adapters are GGUF
+// files applied by llama-server at load time; the MLX engine has no
+// adapter path, so loading must fail explicitly instead of silently
+// serving the un-adapted base model.
+func (m *Model) adapterEngineError() error {
+	if m.IsMLX() && len(m.AdapterPaths) > 0 {
+		return fmt.Errorf("model %s has LoRA adapters, which are only supported by the llama.cpp (GGUF) engine; safetensors (MLX) models cannot run adapters", m.ShortName)
+	}
+	return nil
+}
+
 func (m *Model) isGGUF() bool {
 	return m.Config.ModelFormat == "" || m.Config.ModelFormat == "gguf"
 }

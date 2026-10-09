@@ -2004,8 +2004,12 @@ func TestCreateBlob(t *testing.T) {
 	})
 }
 
-func TestCreateHandlerRejectsAdaptersBeforeUpload(t *testing.T) {
+func TestCreateHandlerDoesNotRejectAdapters(t *testing.T) {
+	t.Setenv("ROSE_HOST", "127.0.0.1:0")
 	dir := t.TempDir()
+	if err := os.WriteFile(filepath.Join(dir, "adapter.gguf"), []byte("gguf"), 0o644); err != nil {
+		t.Fatal(err)
+	}
 	modelfile := filepath.Join(dir, "Modelfile")
 	if err := os.WriteFile(modelfile, []byte("FROM base\nADAPTER ./adapter.gguf\n"), 0o644); err != nil {
 		t.Fatal(err)
@@ -2018,8 +2022,15 @@ func TestCreateHandlerRejectsAdaptersBeforeUpload(t *testing.T) {
 	cmd.Flags().Bool("force", false, "")
 	cmd.SetContext(t.Context())
 
-	if err := CreateHandler(cmd, []string{"test-model"}); !errors.Is(err, errAdaptersUnsupported) {
-		t.Fatalf("error = %v, want %v", err, errAdaptersUnsupported)
+	// Adapters are a supported create surface now: the CLI must not reject
+	// the Modelfile itself. With no server listening, the failure has to
+	// come from a later stage than adapter validation.
+	err := CreateHandler(cmd, []string{"test-model"})
+	if err == nil {
+		t.Fatal("expected an error from the unreachable server, got nil")
+	}
+	if errors.Is(err, errAdaptersSafetensors) || strings.Contains(err.Error(), "LoRA adapters") {
+		t.Fatalf("error = %v, want a non-adapter error (adapters must not be rejected by the CLI)", err)
 	}
 }
 

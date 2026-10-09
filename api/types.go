@@ -695,8 +695,10 @@ type CreateRequest struct {
 	DraftFiles map[string]string `json:"draft_files,omitempty"`
 
 	// Adapters is a map of LoRA adapters to include when creating the model.
-	//
-	// Deprecated: LoRA adapters are no longer supported.
+	// Keys are file names and values are blob digests of GGUF adapter files
+	// (general.type "adapter"), applied by the llama.cpp engine at load
+	// time. Adapters require a GGUF base model; safetensors (MLX) models
+	// cannot use them.
 	Adapters map[string]string `json:"adapters,omitempty"`
 
 	// Template is the template used when constructing a request to the model.
