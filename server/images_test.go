@@ -27,6 +27,25 @@ import (
 	"github.com/qompassai/rose/version"
 )
 
+func TestAdapterEngineError(t *testing.T) {
+	adapterPaths := []string{"/models/blobs/sha256-adapter"}
+
+	mlx := &Model{ShortName: "mlx-model", Config: model.ConfigV2{ModelFormat: "safetensors"}, AdapterPaths: adapterPaths}
+	if err := mlx.adapterEngineError(); err == nil || !strings.Contains(err.Error(), "llama.cpp") {
+		t.Fatalf("MLX model with adapters: error = %v, want explicit llama.cpp engine error", err)
+	}
+
+	gguf := &Model{ShortName: "gguf-model", Config: model.ConfigV2{ModelFormat: "gguf"}, AdapterPaths: adapterPaths}
+	if err := gguf.adapterEngineError(); err != nil {
+		t.Fatalf("GGUF model with adapters: error = %v, want nil", err)
+	}
+
+	mlxNoAdapters := &Model{ShortName: "mlx-plain", Config: model.ConfigV2{ModelFormat: "safetensors"}}
+	if err := mlxNoAdapters.adapterEngineError(); err != nil {
+		t.Fatalf("MLX model without adapters: error = %v, want nil", err)
+	}
+}
+
 func TestPruneLayersSkipsRecentOrphans(t *testing.T) {
 	t.Setenv("ROSE_MODELS", t.TempDir())
 

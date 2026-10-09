@@ -387,7 +387,7 @@ func startLlamaServer(launch llamaServerLaunchConfig, out io.Writer) (cmd *exec.
 	params = append(params, qwenVLServerArgs(launch.modelArch)...)
 
 	for _, adapter := range launch.adapters {
-		slog.Warn("LoRA adapters are deprecated and will be removed in a future release", "adapter", adapter)
+		slog.Debug("applying LoRA adapter", "adapter", adapter)
 		params = append(params, "--lora", adapter)
 	}
 

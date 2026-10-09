@@ -39,7 +39,10 @@ import (
 
 var (
 	errNoFilesProvided        = errors.New("no files provided to convert")
-	errAdaptersUnsupported    = errors.New("LoRA adapters are no longer supported")
+	errAdaptersOnMLX          = errors.New("LoRA adapters are only supported on GGUF models served by the llama.cpp engine; safetensors (MLX) models cannot use adapters")
+	errAdaptersRemote         = errors.New("LoRA adapters cannot be used with remote models")
+	errAdapterAsModel         = errors.New("LoRA adapters cannot be used as a base model; attach the file with the ADAPTER directive instead")
+	errNotAnAdapter           = errors.New("file is not a LoRA adapter GGUF")
 	errOnlyGGUFSupported      = errors.New("supplied file was not in GGUF format")
 	errUnknownType            = errors.New("unknown type")
 	errNeitherFromOrFiles     = errors.New("neither 'from' or 'files' was specified")
@@ -55,6 +58,7 @@ var (
 const (
 	maxSafetensorsMetadataSize = 64 << 20
 	maxCreateFiles             = 1024
+	maxCreateAdapters          = 32
 )
 
 type manifestListRequestError struct {
@@ -104,8 +108,12 @@ func (s *Server) CreateHandler(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	if len(r.Adapters) > 0 {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": errAdaptersUnsupported.Error()})
+	if err := validateCreateFiles(r.Adapters); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if len(r.Adapters) > maxCreateAdapters {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("too many adapters: %d exceeds maximum %d", len(r.Adapters), maxCreateAdapters)})
 		return
 	}
 	if _, err := create.LicenseStrings(r.License); err != nil {
@@ -142,6 +150,13 @@ func (s *Server) CreateHandler(c *gin.Context) {
 	}
 	if err := validateCreateOptions(r, fileType); err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if len(r.Adapters) > 0 && fileType == "safetensors" {
+		// Adapters are GGUF files applied by the llama.cpp engine; a
+		// safetensors upload becomes an MLX model, which has no adapter
+		// path. Fail here rather than inside the safetensors pipeline.
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": errAdaptersOnMLX.Error()})
 		return
 	}
 
@@ -245,6 +260,11 @@ func (s *Server) CreateHandler(c *gin.Context) {
 					return
 				}
 
+				if len(r.Adapters) > 0 && baseConfig.ModelFormat == "safetensors" {
+					send(gin.H{"error": errAdaptersOnMLX.Error(), "status": http.StatusBadRequest})
+					return
+				}
+
 				requestConfig := *config
 				*config = baseConfig
 				if requestConfig.Renderer != "" {
@@ -260,7 +280,7 @@ func (s *Server) CreateHandler(c *gin.Context) {
 		} else if r.Files != nil {
 			baseLayers, err = convertModelFromFiles(reqCtx, r.Files, fn)
 			if err != nil {
-				for _, badReq := range []error{errNoFilesProvided, errOnlyGGUFSupported, errUnknownType, errInvalidSplitGGUF, errMixedModelTypes, errAdaptersUnsupported} {
+				for _, badReq := range []error{errNoFilesProvided, errOnlyGGUFSupported, errUnknownType, errInvalidSplitGGUF, errMixedModelTypes, errAdapterAsModel} {
 					if errors.Is(err, badReq) {
 						send(gin.H{"error": err.Error(), "status": http.StatusBadRequest})
 						return
@@ -279,11 +299,16 @@ func (s *Server) CreateHandler(c *gin.Context) {
 			return
 		}
 
+		if remote && len(r.Adapters) > 0 {
+			send(gin.H{"error": errAdaptersRemote.Error(), "status": http.StatusBadRequest})
+			return
+		}
+
 		var draftLayers []*modelLayer
 		if !remote && r.DraftFiles != nil {
 			draftLayers, err = convertDraftModelFromFiles(reqCtx, r.DraftFiles, fn)
 			if err != nil {
-				for _, badReq := range []error{errNoFilesProvided, errOnlyGGUFSupported, errUnknownType, errFilePath, errInvalidSplitGGUF, errMixedModelTypes, errAdaptersUnsupported} {
+				for _, badReq := range []error{errNoFilesProvided, errOnlyGGUFSupported, errUnknownType, errFilePath, errInvalidSplitGGUF, errMixedModelTypes, errAdapterAsModel} {
 					if errors.Is(err, badReq) {
 						send(gin.H{"error": err.Error(), "status": http.StatusBadRequest})
 						return
@@ -296,6 +321,19 @@ func (s *Server) CreateHandler(c *gin.Context) {
 
 		if len(draftLayers) > 0 {
 			baseLayers = append(baseLayers, draftLayers...)
+		}
+
+		if len(r.Adapters) > 0 {
+			adapterLayers, err := convertAdaptersToLayers(r.Adapters, fn)
+			if err != nil {
+				status := http.StatusInternalServerError
+				if errors.Is(err, errNotAnAdapter) || errors.Is(err, fs.ErrNotExist) {
+					status = http.StatusBadRequest
+				}
+				send(gin.H{"error": err.Error(), "status": status})
+				return
+			}
+			baseLayers = append(baseLayers, adapterLayers...)
 		}
 
 		// Info is not currently exposed by Modelfiles, but allows overriding various
@@ -1068,7 +1106,7 @@ func validateCreateManifestListRequest(r api.CreateRequest) error {
 	}
 
 	switch {
-	case r.From != "", r.RemoteHost != "", len(r.Files) > 0, len(r.DraftFiles) > 0:
+	case r.From != "", r.RemoteHost != "", len(r.Files) > 0, len(r.DraftFiles) > 0, len(r.Adapters) > 0:
 		return newManifestListRequestError("manifest list creation cannot be combined with model creation options")
 	case r.Template != "", r.System != "", r.License != nil, len(r.Parameters) > 0, len(r.Messages) > 0:
 		return newManifestListRequestError("manifest list creation cannot be combined with model creation options")
@@ -1096,7 +1134,7 @@ func ggufLayersWithMediaType(digest, sourceName, mediaType string, fn func(resp 
 	}
 
 	if metadata.Kind() == "adapter" {
-		return nil, fmt.Errorf("%w: %s is a LoRA adapter", errAdaptersUnsupported, sourceName)
+		return nil, fmt.Errorf("%w: %s", errAdapterAsModel, sourceName)
 	}
 	if mediaType == "" {
 		mediaType = "application/vnd.ollama.image.model"
@@ -1117,6 +1155,51 @@ func ggufLayersWithMediaType(digest, sourceName, mediaType string, fn func(resp 
 		parameterCount: metadata.ParameterCount(),
 		splitFile:      sourceName,
 	})
+
+	return layers, nil
+}
+
+// convertAdaptersToLayers validates the adapter blobs named by a create
+// request's Adapters map (source name -> digest) and returns them as
+// manifest layers. Every blob must be a GGUF whose general.type is
+// "adapter" — the files llama-server applies with --lora at load time.
+// Source names are processed in sorted order so the layer order in the
+// manifest is deterministic for a given request.
+func convertAdaptersToLayers(adapters map[string]string, fn func(resp api.ProgressResponse)) ([]*modelLayer, error) {
+	sourceNames := make([]string, 0, len(adapters))
+	for sourceName := range adapters {
+		sourceNames = append(sourceNames, sourceName)
+	}
+	slices.Sort(sourceNames)
+
+	fn(api.ProgressResponse{Status: "parsing adapters"})
+	layers := make([]*modelLayer, 0, len(adapters))
+	for _, sourceName := range sourceNames {
+		digest := adapters[sourceName]
+		blobPath, err := manifest.BlobsPath(digest)
+		if err != nil {
+			return nil, err
+		}
+
+		metadata, err := gguf.ReadFileMetadata(blobPath, 1)
+		if err != nil {
+			return nil, err
+		}
+		if metadata.Kind() != "adapter" {
+			return nil, fmt.Errorf("%w: %s has general.type %q", errNotAnAdapter, sourceName, metadata.Kind())
+		}
+
+		layer, err := manifest.NewLayerFromLayer(digest, manifest.MediaTypeImageAdapter, sourceName)
+		if err != nil {
+			return nil, err
+		}
+
+		layers = append(layers, &modelLayer{
+			Layer:          layer,
+			GGUF:           metadata,
+			parameterCount: metadata.ParameterCount(),
+		})
+	}
 
 	return layers, nil
 }

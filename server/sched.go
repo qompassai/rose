@@ -593,6 +593,11 @@ func (s *Scheduler) load(req *LlmRequest, systemInfo ml.SystemInfo, gpus []ml.De
 					err = fmt.Errorf("%v: this model may be incompatible with your version of Rose. If you previously pulled this model, try updating it by running `rose pull %s`", err, req.model.ShortName)
 				}
 			}
+		} else if err := req.model.adapterEngineError(); err != nil {
+			slog.Info("failed to load model", "model", req.model.ShortName, "error", err)
+			req.errCh <- err
+			s.loadedMu.Unlock()
+			return false
 		} else {
 			modelName := req.model.ShortName
 			llama, err = mlxrunner.NewClient(modelName, req.opts.NumCtx)

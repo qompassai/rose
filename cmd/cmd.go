@@ -253,6 +253,10 @@ func safetensorsCreateOptions(modelfile *parser.Modelfile, filename, modelName s
 		return createOptions{}, false, nil
 	}
 
+	if slices.ContainsFunc(modelfile.Commands, func(c parser.Command) bool { return c.Name == "adapter" }) {
+		return createOptions{}, false, errAdaptersSafetensors
+	}
+
 	if mfConfig.Draft != "" {
 		draftDir, err := resolveCreateDraftDir(mfConfig.Draft, filename)
 		if err != nil {
@@ -290,7 +294,7 @@ func safetensorsCreateOptions(modelfile *parser.Modelfile, filename, modelName s
 }
 
 var (
-	errAdaptersUnsupported = errors.New("LoRA adapters are no longer supported")
+	errAdaptersSafetensors = errors.New("LoRA adapters are only supported for GGUF models; safetensors (MLX) imports cannot use adapters")
 	errForceLocalOnly      = errors.New("--force is only supported for local MLX safetensors imports")
 	errTypicalPDeprecated  = errors.New("typical_p is deprecated and cannot be set as a model parameter; pass it as a request option instead")
 )
@@ -368,9 +372,6 @@ func CreateHandler(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	if slices.ContainsFunc(modelfile.Commands, func(c parser.Command) bool { return c.Name == "adapter" }) {
-		return errAdaptersUnsupported
-	}
 	if slices.ContainsFunc(modelfile.Commands, func(c parser.Command) bool { return c.Name == "typical_p" }) {
 		return errTypicalPDeprecated
 	}
@@ -418,7 +419,7 @@ func CreateHandler(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	// A FROM-only create has nothing to transfer, so skip the store probe.
-	local := len(req.Files)+len(req.DraftFiles) > 0 && sharedBlobStore(cmd.Context(), client)
+	local := len(req.Files)+len(req.DraftFiles)+len(req.Adapters) > 0 && sharedBlobStore(cmd.Context(), client)
 
 	var g errgroup.Group
 	g.SetLimit(max(runtime.GOMAXPROCS(0)-1, 1))
@@ -449,12 +450,26 @@ func CreateHandler(cmd *cobra.Command, args []string) error {
 		})
 	}
 
+	adapterFiles := syncmap.NewSyncMap[string, string]()
+	adapterFileNames := createRequestFileNames(req.Adapters)
+	for f, digest := range req.Adapters {
+		g.Go(func() error {
+			if _, err := createBlob(cmd, client, f, digest, p, local); err != nil {
+				return err
+			}
+
+			adapterFiles.Store(adapterFileNames[f], digest)
+			return nil
+		})
+	}
+
 	if err := g.Wait(); err != nil {
 		return err
 	}
 
 	req.Files = files.Items()
 	req.DraftFiles = draftFiles.Items()
+	req.Adapters = adapterFiles.Items()
 
 	bars := make(map[string]*progress.Bar)
 	fn := func(resp api.ProgressResponse) error {

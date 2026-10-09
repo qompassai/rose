@@ -274,13 +274,26 @@ func TestCreateModel_NotSafetensorsDir(t *testing.T) {
 	}
 }
 
-func TestConfigFromModelfileRejectsAdapters(t *testing.T) {
-	modelfile, err := parser.ParseFile(strings.NewReader("FROM ./model\nADAPTER ./adapter.gguf\n"))
+func TestSafetensorsCreateOptionsRejectsAdapters(t *testing.T) {
+	dir := t.TempDir()
+	if err := os.WriteFile(filepath.Join(dir, "config.json"), []byte(`{}`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "model.safetensors"), nil, 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	modelfile, err := parser.ParseFile(strings.NewReader("FROM "+dir+"\nADAPTER ./adapter.gguf\n"))
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, _, err := configFromModelfile(modelfile); !errors.Is(err, errAdaptersUnsupported) {
-		t.Fatalf("configFromModelfile() error = %v, want %v", err, errAdaptersUnsupported)
+	// configFromModelfile itself is engine-agnostic: the adapter rejection
+	// fires only once the create is known to target the MLX engine.
+	if _, _, err := configFromModelfile(modelfile); err != nil {
+		t.Fatalf("configFromModelfile() error = %v, want nil", err)
+	}
+	if _, _, err := safetensorsCreateOptions(modelfile, filepath.Join(dir, "Modelfile"), "test-model"); !errors.Is(err, errAdaptersSafetensors) {
+		t.Fatalf("safetensorsCreateOptions() error = %v, want %v", err, errAdaptersSafetensors)
 	}
 }
 
