@@ -12,37 +12,58 @@ import (
 	"testing"
 )
 
+// TestClientFromEnvironment pins the strict D2/D8 contract: the environment
+// client accepts only literal-loopback plaintext endpoints; hostnames,
+// non-loopback addresses and HTTPS without client identity files are
+// rejected. (This replaces the pre-port lenient parsing expectations.)
 func TestClientFromEnvironment(t *testing.T) {
 	type testCase struct {
-		value  string
-		expect string
-		err    error
+		value   string
+		expect  string
+		wantErr bool
 	}
 
 	testCases := map[string]*testCase{
-		"empty":                      {value: "", expect: "http://127.0.0.1:11434"},
-		"only address":               {value: "1.2.3.4", expect: "http://1.2.3.4:11434"},
-		"only port":                  {value: ":1234", expect: "http://:1234"},
-		"address and port":           {value: "1.2.3.4:1234", expect: "http://1.2.3.4:1234"},
-		"scheme http and address":    {value: "http://1.2.3.4", expect: "http://1.2.3.4:80"},
-		"scheme https and address":   {value: "https://1.2.3.4", expect: "https://1.2.3.4:443"},
-		"scheme, address, and port":  {value: "https://1.2.3.4:1234", expect: "https://1.2.3.4:1234"},
-		"hostname":                   {value: "example.com", expect: "http://example.com:11434"},
-		"hostname and port":          {value: "example.com:1234", expect: "http://example.com:1234"},
-		"scheme http and hostname":   {value: "http://example.com", expect: "http://example.com:80"},
-		"scheme https and hostname":  {value: "https://example.com", expect: "https://example.com:443"},
-		"scheme, hostname, and port": {value: "https://example.com:1234", expect: "https://example.com:1234"},
-		"trailing slash":             {value: "example.com/", expect: "http://example.com:11434"},
-		"trailing slash port":        {value: "example.com:1234/", expect: "http://example.com:1234"},
+		"empty":                        {value: "", expect: "http://127.0.0.1:11434"},
+		"loopback address":             {value: "127.0.0.1", expect: "http://127.0.0.1:11434"},
+		"loopback address and port":    {value: "127.0.0.1:1234", expect: "http://127.0.0.1:1234"},
+		"scheme http and loopback":     {value: "http://127.0.0.1", expect: "http://127.0.0.1:80"},
+		"ipv6 loopback":                {value: "[::1]:1234", expect: "http://[::1]:1234"},
+		"only address":                 {value: "1.2.3.4", wantErr: true},
+		"only port":                    {value: ":1234", wantErr: true},
+		"address and port":             {value: "1.2.3.4:1234", wantErr: true},
+		"scheme http and address":      {value: "http://1.2.3.4", wantErr: true},
+		"scheme https and address":     {value: "https://1.2.3.4", wantErr: true},
+		"scheme, address, and port":    {value: "https://1.2.3.4:1234", wantErr: true},
+		"hostname":                     {value: "example.com", wantErr: true},
+		"hostname and port":            {value: "example.com:1234", wantErr: true},
+		"scheme http and hostname":     {value: "http://example.com", wantErr: true},
+		"scheme https and hostname":    {value: "https://example.com", wantErr: true},
+		"scheme, hostname, and port":   {value: "https://example.com:1234", wantErr: true},
+		"localhost hostname":           {value: "http://localhost:11434", wantErr: true},
+		"wildcard address":             {value: "http://0.0.0.0:11434", wantErr: true},
+		"trailing slash":               {value: "example.com/", wantErr: true},
+		"trailing slash port":          {value: "example.com:1234/", wantErr: true},
+		"trailing slash loopback port": {value: "127.0.0.1:1234/", expect: "http://127.0.0.1:1234"},
 	}
 
 	for k, v := range testCases {
 		t.Run(k, func(t *testing.T) {
+			clearTLSEnvironment(t)
 			t.Setenv("ROSE_HOST", v.value)
 
 			client, err := ClientFromEnvironment()
-			if err != v.err {
-				t.Fatalf("expected %s, got %s", v.err, err)
+			if v.wantErr {
+				if err == nil {
+					t.Fatalf("expected error for %q, got client %v", v.value, client.base)
+				}
+				if client != nil {
+					t.Fatalf("expected nil client on error for %q", v.value)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("expected no error for %q, got %s", v.value, err)
 			}
 
 			if client.base.String() != v.expect {
