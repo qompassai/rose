@@ -307,20 +307,20 @@ if(GGML_HIP)
     find_package(hip)
 endif()
 
-# Install layout under lib/ollama/:
+# Install layout under lib/rose/:
 #
 # CPU build (OLLAMA_RUNNER_DIR=""):
-#   lib/ollama/llama-server
-#   lib/ollama/libggml-base.so
-#   lib/ollama/libggml.so
-#   lib/ollama/libllama.so
-#   lib/ollama/libggml-cpu*.so  (all CPU variants)
+#   lib/rose/llama-server
+#   lib/rose/libggml-base.so
+#   lib/rose/libggml.so
+#   lib/rose/libllama.so
+#   lib/rose/libggml-cpu*.so  (all CPU variants)
 #
 # GPU build (OLLAMA_RUNNER_DIR="cuda_v12" etc.):
-#   lib/ollama/cuda_v12/libggml-cuda.so  (GPU backend only)
+#   lib/rose/cuda_v12/libggml-cuda.so  (GPU backend only)
 
-set(OLLAMA_LIB_DIR "lib/ollama" CACHE STRING "Install destination for Ollama runtime payloads")
-set(_base_dest "${OLLAMA_LIB_DIR}")
+set(ROSE_LIB_DIR "lib/rose" CACHE STRING "Install destination for Rose runtime payloads")
+set(_base_dest "${ROSE_LIB_DIR}")
 
 function(ollama_append_newest_windows_runtime_family output)
     set(_runtime_dirs)
@@ -624,17 +624,17 @@ else()
     get_filename_component(_llama_cpp_license_root "${_llama_cpp_license_source}/.." ABSOLUTE)
     install(FILES
         "${_llama_cpp_license_root}/LICENSE"
-        DESTINATION ${OLLAMA_LIB_DIR}
+        DESTINATION ${ROSE_LIB_DIR}
         RENAME LLAMA_CPP_LICENSE
         COMPONENT llama-server)
     install(FILES
         "${_llama_cpp_license_root}/vendor/cpp-httplib/LICENSE"
-        DESTINATION ${OLLAMA_LIB_DIR}
+        DESTINATION ${ROSE_LIB_DIR}
         RENAME CPP_HTTPLIB_LICENSE
         COMPONENT llama-server)
     install(FILES
         "${CMAKE_BINARY_DIR}/ollama-vendor-licenses/LLAMA_CPP_VENDORS_LICENSE"
-        DESTINATION ${OLLAMA_LIB_DIR}
+        DESTINATION ${ROSE_LIB_DIR}
         COMPONENT llama-server)
     # Bundle Windows CRT DLLs alongside the executables so zip installs
     # do not depend on host-global redistributables.
