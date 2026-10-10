@@ -30,6 +30,7 @@ import (
 	"github.com/qompassai/rose/auth"
 	"github.com/qompassai/rose/envconfig"
 	"github.com/qompassai/rose/format"
+	"github.com/qompassai/rose/internal/transport"
 	"github.com/qompassai/rose/version"
 )
 
@@ -70,14 +71,25 @@ func checkError(resp *http.Response, body []byte) error {
 //	<scheme>://<host>:<port>
 //
 // If the variable is not specified, a default rose host and port will be
-// used.
+// used. Plaintext requires a literal loopback IP. Explicit HTTPS requires
+// ROSE_TLS_CERT and ROSE_TLS_KEY, with optional ROSE_TLS_CA server roots.
+// Redirects and environment proxies are disabled. Use request contexts to bound
+// overall duration; streaming responses and blob uploads have no total size cap.
 func ClientFromEnvironment() (*Client, error) {
-	return &Client{
-		base: envconfig.Host(),
-		http: http.DefaultClient,
-	}, nil
+	base, err := envconfig.HostURL()
+	if err != nil {
+		return nil, err
+	}
+	client, err := transport.NewHTTPClient(base, envconfig.TLSFiles())
+	if err != nil {
+		return nil, err
+	}
+	return NewClient(base, client), nil
 }
 
+// NewClient is an explicit integration API. The caller owns the supplied HTTP
+// client's TLS, authentication, proxy, redirect and timeout policy; unlike
+// ClientFromEnvironment, this function does not harden or validate it.
 func NewClient(base *url.URL, http *http.Client) *Client {
 	return &Client{
 		base: base,
@@ -148,7 +160,7 @@ func (c *Client) do(ctx context.Context, method, path string, reqData, respData 
 	}
 	defer respObj.Body.Close()
 
-	respBody, err := io.ReadAll(respObj.Body)
+	respBody, err := readJSONResponse(respObj.Body)
 	if err != nil {
 		return err
 	}
@@ -163,6 +175,19 @@ func (c *Client) do(ctx context.Context, method, path string, reqData, respData 
 		}
 	}
 	return nil
+}
+
+// readJSONResponse bounds an ordinary (non-streaming) JSON response body.
+// Streaming responses and blob transfers are deliberately not capped here.
+func readJSONResponse(body io.Reader) ([]byte, error) {
+	data, err := io.ReadAll(io.LimitReader(body, transport.MaxJSONResponseBytes+1))
+	if err != nil {
+		return nil, err
+	}
+	if len(data) > transport.MaxJSONResponseBytes {
+		return nil, fmt.Errorf("API JSON response exceeds %d bytes", transport.MaxJSONResponseBytes)
+	}
+	return data, nil
 }
 
 const maxBufferSize = 8 * format.MegaByte
@@ -218,7 +243,9 @@ func (c *Client) stream(ctx context.Context, method, path string, data any, fn f
 	// increase the buffer size to avoid running out of space
 	scanBuf := make([]byte, 0, maxBufferSize)
 	scanner.Buffer(scanBuf, maxBufferSize)
+	scanned := false
 	for scanner.Scan() {
+		scanned = true
 		var errorResponse struct {
 			Error     string `json:"error,omitempty"`
 			SigninURL string `json:"signin_url,omitempty"`
@@ -261,6 +288,16 @@ func (c *Client) stream(ctx context.Context, method, path string, data any, fn f
 
 	if err := scanner.Err(); err != nil {
 		return err
+	}
+
+	// An error response with an empty body yields no scanned lines; surface it
+	// as an error instead of reporting success.
+	if !scanned && response.StatusCode >= http.StatusBadRequest {
+		return StatusError{
+			StatusCode:   response.StatusCode,
+			Status:       response.Status,
+			ErrorMessage: response.Status,
+		}
 	}
 
 	return nil
@@ -480,17 +517,39 @@ func (c *Client) HeadBlob(ctx context.Context, digest string) (bool, error) {
 	return true, nil
 }
 
+// Listener protocol identifiers reported by /api/version. Under decision D4
+// the server fills Protocol from the mode of the listener that served the
+// request, so these values attest to that listener's actual transport mode.
+const (
+	ProtocolPlaintext  = "rose-plaintext-v1"
+	ProtocolTLS        = "rose-tls-v1"
+	ProtocolHybridMTLS = "rose-hybrid-mtls-v1"
+)
+
+type VersionResponse struct {
+	Version  string `json:"version"`
+	Backend  string `json:"backend,omitempty"`
+	Protocol string `json:"protocol,omitempty"`
+}
+
 // Version returns the Rose server version as a string.
 func (c *Client) Version(ctx context.Context) (string, error) {
-	var version struct {
-		Version string `json:"version"`
-	}
-
-	if err := c.do(ctx, http.MethodGet, "/api/version", nil, &version); err != nil {
+	info, err := c.VersionInfo(ctx)
+	if err != nil {
 		return "", err
 	}
+	return info.Version, nil
+}
 
-	return version.Version, nil
+// VersionInfo returns the typed /api/version metadata. Protocol names the
+// transport mode of the serving listener (decision D4); servers predating the
+// field leave it empty, and the client does not infer it.
+func (c *Client) VersionInfo(ctx context.Context) (VersionResponse, error) {
+	var info VersionResponse
+	if err := c.do(ctx, http.MethodGet, "/api/version", nil, &info); err != nil {
+		return VersionResponse{}, err
+	}
+	return info, nil
 }
 
 // CloudStatusExperimental returns whether cloud features are disabled on the server.
