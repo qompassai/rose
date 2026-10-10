@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"cmp"
 	"context"
+	"crypto/tls"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -41,6 +42,7 @@ import (
 	"github.com/qompassai/rose/fs/gguf"
 	internalcloud "github.com/qompassai/rose/internal/cloud"
 	"github.com/qompassai/rose/internal/proxy"
+	"github.com/qompassai/rose/internal/transport"
 	"github.com/qompassai/rose/llm"
 	"github.com/qompassai/rose/logutil"
 	"github.com/qompassai/rose/manifest"
@@ -104,6 +106,10 @@ type Server struct {
 	defaultNumCtx int
 	requestLogger *inferenceRequestLogger
 	modelCaches   *modelCaches
+	// protocol is the transport mode of the listener Serve bound, reported
+	// by /api/version (decision D4). Empty means no listener was bound
+	// through Serve and the handler reports the plaintext protocol.
+	protocol string
 }
 
 func init() {
@@ -2291,8 +2297,8 @@ func (s *Server) GenerateRoutes() (http.Handler, error) {
 	// General
 	r.HEAD("/", func(c *gin.Context) { c.String(http.StatusOK, "Rose is running") })
 	r.GET("/", func(c *gin.Context) { c.String(http.StatusOK, "Rose is running") })
-	r.HEAD("/api/version", func(c *gin.Context) { c.JSON(http.StatusOK, gin.H{"version": version.Version}) })
-	r.GET("/api/version", func(c *gin.Context) { c.JSON(http.StatusOK, gin.H{"version": version.Version}) })
+	r.HEAD("/api/version", s.versionHandler)
+	r.GET("/api/version", s.versionHandler)
 	r.GET("/api/status", s.StatusHandler)
 	// Codex uses this existing Rose listener for both native and Rose
 	// models. The proxy selects the upstream per request.
@@ -2368,7 +2374,35 @@ func (s *Server) ModelRecommendationsExperimentalHandler(c *gin.Context) {
 	})
 }
 
+// Serve validates the configured endpoint and TLS files and wraps the
+// listener in the transport policy before any storage or model
+// initialization runs, so a refused configuration leaves no filesystem side
+// effects. It owns ln on every return path. Plaintext is accepted only when
+// the listener is actually bound to a literal loopback IP (decision D2);
+// there is no insecure opt-out.
 func Serve(ln net.Listener) error {
+	if ln == nil {
+		return errors.New("server listener is nil")
+	}
+	defer ln.Close()
+
+	host, err := envconfig.HostURL()
+	if err != nil {
+		return err
+	}
+	config, err := transport.ServerTLSConfig(host, envconfig.TLSFiles())
+	if err != nil {
+		return err
+	}
+	listener, err := transport.WrapListener(ln, config)
+	if err != nil {
+		return err
+	}
+	defer listener.Close()
+	return serve(listener, listenerProtocol(config))
+}
+
+func serve(ln net.Listener, protocol string) error {
 	slog.SetDefault(logutil.NewLogger(os.Stderr, envconfig.LogLevel()))
 	slog.Info("server config", "env", envconfig.Values())
 	cloudDisabled, _ := internalcloud.Status()
@@ -2410,6 +2444,7 @@ func Serve(ln net.Listener) error {
 	s := &Server{
 		addr:        ln.Addr(),
 		modelCaches: newModelCaches(),
+		protocol:    protocol,
 	}
 	if err := s.initRequestLogging(); err != nil {
 		return err
@@ -2424,8 +2459,6 @@ func Serve(ln net.Listener) error {
 		return err
 	}
 
-	http.Handle("/", h)
-
 	ctx, done := context.WithCancel(context.Background())
 	schedCtx, schedDone := context.WithCancel(ctx)
 	sched := InitScheduler(schedCtx)
@@ -2433,17 +2466,10 @@ func Serve(ln net.Listener) error {
 	s.modelCaches.Start(ctx)
 
 	slog.Info(fmt.Sprintf("Listening on %s (version %s)", ln.Addr(), version.Version))
-	srvr := &http.Server{
-		// Use http.DefaultServeMux so we get net/http/pprof for
-		// free.
-		//
-		// TODO(bmizerany): Decide if we want to make this
-		// configurable so it is not exposed by default, or allow
-		// users to bind it to a different port. This was a quick
-		// and easy way to get pprof, but it may not be the best
-		// way.
-		Handler: nil,
-	}
+	// The route handler is served explicitly on this bounded server, never
+	// registered on http.DefaultServeMux (decision D7): the global mux also
+	// carries net/http/pprof, which must not be exposed on this listener.
+	srvr := newHTTPServer(h, ctx)
 
 	// listen for a ctrl+c and stop any loaded llm
 	signals := make(chan os.Signal, 1)
@@ -2484,14 +2510,76 @@ func Serve(ln net.Listener) error {
 	}
 	slog.Info("vram-based default context", "total_vram", format.HumanBytes2(totalVRAM), "default_num_ctx", s.defaultNumCtx)
 
-	err = srvr.Serve(ln)
-	// If server is closed from the signal handler, wait for the ctx to be done
-	// otherwise error out quickly
-	if !errors.Is(err, http.ErrServerClosed) {
+	if err := serveHTTP(ctx, srvr, ln); err != nil {
 		return err
 	}
+	// If server is closed from the signal handler, wait for the ctx to be done
+	// otherwise error out quickly
 	<-ctx.Done()
 	return nil
+}
+
+func newHTTPServer(handler http.Handler, ctx context.Context) *http.Server {
+	return &http.Server{
+		Handler:           handler,
+		ReadHeaderTimeout: transport.ReadHeaderTimeout,
+		IdleTimeout:       transport.IdleTimeout,
+		MaxHeaderBytes:    transport.MaxHeaderBytes,
+		BaseContext:       func(net.Listener) context.Context { return ctx },
+	}
+}
+
+// serveHTTP serves until the server is closed or ctx is cancelled, so
+// teardown never depends on receiving an OS signal.
+func serveHTTP(ctx context.Context, srvr *http.Server, ln net.Listener) error {
+	stopped := make(chan struct{})
+	watcherDone := make(chan struct{})
+	defer func() {
+		close(stopped)
+		<-watcherDone
+		srvr.Close()
+	}()
+	go func() {
+		defer close(watcherDone)
+		select {
+		case <-ctx.Done():
+			srvr.Close()
+		case <-stopped:
+		}
+	}()
+	if err := srvr.Serve(ln); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		return err
+	}
+	return nil
+}
+
+// versionHandler reports the server version and, per decision D4, the
+// transport mode of the listener this server is bound to. A Server whose
+// routes were generated without Serve has no listener bound through the
+// transport policy, so it reports the plaintext protocol.
+func (s *Server) versionHandler(c *gin.Context) {
+	protocol := s.protocol
+	if protocol == "" {
+		protocol = api.ProtocolPlaintext
+	}
+	c.JSON(http.StatusOK, api.VersionResponse{
+		Version:  version.Version,
+		Backend:  "rose",
+		Protocol: protocol,
+	})
+}
+
+// listenerProtocol names the transport mode a validated TLS configuration
+// produces, for /api/version reporting (decision D4).
+func listenerProtocol(config *tls.Config) string {
+	switch {
+	case config == nil:
+		return api.ProtocolPlaintext
+	case config.ClientAuth == tls.RequireAndVerifyClientCert:
+		return api.ProtocolHybridMTLS
+	default:
+		return api.ProtocolTLS
+	}
 }
 
 func waitForStream(c *gin.Context, ch chan any) {
