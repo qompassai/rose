@@ -1,0 +1,88 @@
+---
+title: "Certificates for hybrid TLS"
+---
+
+# Certificates for hybrid TLS
+
+Rose's hybrid-TLS transport takes operator-supplied PEM files through
+`ROSE_TLS_CERT`, `ROSE_TLS_KEY`, `ROSE_TLS_CLIENT_CA`, and the optional
+`ROSE_TLS_CA`. The `rose cert` helper provisions those files: a local
+certificate authority plus the server and client identities it signs,
+stored under `~/.rose/tls` by default.
+
+The helper never overwrites an existing identity and never starts a
+server. Keys are Ed25519, written as single unencrypted PKCS#8 PEM
+files with mode `0600` in owner-only (`0700`) directories — the exact
+shape the transport's hardened loaders require.
+
+<details>
+<summary>Provision a deployment</summary>
+
+```sh
+rose cert init-ca                              # once per deployment
+rose cert issue-server --host rose.example.com # DNS name or IP, repeatable
+rose cert issue-client laptop                  # one per client identity
+rose cert list                                 # inspect what exists
+rose cert env --role server                    # print the ROSE_TLS_* settings
+rose cert env --role client --name laptop
+```
+
+Defaults are short-lived by design: the CA is valid 365 days and each
+identity 90 days. Override per command with `--validity-days`
+(1–3650). Server certificates carry the `--host` values as subject
+alternative names; at least one is required.
+
+Use `--dir` (before the subcommand) to keep a separate store, e.g.
+one per deployment: `rose cert --dir ~/.rose/tls-lan init-ca`.
+
+</details>
+
+<details>
+<summary>Rotation is the revocation mechanism</summary>
+
+There is no CRL or OCSP in this design. A compromised or retired
+identity is revoked by rotating the CA and re-issuing:
+
+```sh
+rose cert rotate-ca
+```
+
+Rotation archives the old CA under `~/.rose/tls/archive/<timestamp>/`,
+installs a new CA, and writes `trust-bundle.crt` containing both.
+Then:
+
+1. Distribute `trust-bundle.crt` as the `ROSE_TLS_CLIENT_CA` /
+   `ROSE_TLS_CA` file. Peers now trust both CAs, so old identities
+   keep working during the transition.
+2. Re-issue the server and client identities under the new CA
+   (remove the old identity files first; the helper refuses to
+   overwrite them).
+3. Once every peer runs new-CA identities, replace the bundle with
+   the new `ca.crt` alone. From that moment every old-CA identity is
+   revoked.
+
+Skipping step 3 leaves the old CA trusted indefinitely — the bundle
+is a transition tool, not a steady state.
+
+</details>
+
+<details>
+<summary>Store layout and file contract</summary>
+
+```
+~/.rose/tls/
+  ca.crt                 CA certificate (0644)
+  ca.key                 CA private key (0600)
+  server.crt             server leaf + CA chain (0644)
+  server.key             server private key (0600)
+  trust-bundle.crt       new + old CA, present only after a rotation
+  clients/<name>.crt     client leaf + CA chain (0644)
+  clients/<name>.key     client private key (0600)
+  archive/<timestamp>/   previous CA cert + key after rotation
+```
+
+Identity certificate files hold the leaf first, then the issuing CA —
+the chain order the transport validates. Trust files (`ca.crt`,
+`trust-bundle.crt`) hold CA certificates only, each able to sign.
+
+</details>

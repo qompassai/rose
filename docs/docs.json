@@ -139,6 +139,7 @@
             "group": "More information",
             "pages": [
               "/cli",
+              "/certificates",
               "/modelfile",
               "/context-length",
               "/linux",
