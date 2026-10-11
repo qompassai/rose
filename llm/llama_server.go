@@ -782,6 +782,12 @@ func appendJinjaArgs(params []string, config LlamaServerConfig) []string {
 		return append(params, "--no-jinja", "--chat-template", "chatml")
 	}
 
+	// A chat template supplied at model-create time overrides the
+	// GGUF-embedded one for every native chat request on this runner.
+	if config.ChatTemplateFile != "" {
+		return append(params, "--chat-template-file", config.ChatTemplateFile)
+	}
+
 	return params
 }
 

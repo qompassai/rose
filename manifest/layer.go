@@ -28,10 +28,14 @@ const (
 	MediaTypeImageAdapter   = "application/vnd.ollama.image.adapter"
 	MediaTypeImageEmbed     = "application/vnd.ollama.image.embed"
 	MediaTypeImageTemplate  = "application/vnd.ollama.image.template"
-	MediaTypeImageSystem    = "application/vnd.ollama.image.system"
-	MediaTypeImageLicense   = "application/vnd.ollama.image.license"
-	MediaTypeImageParams    = "application/vnd.ollama.image.params"
-	MediaTypeImageMessages  = "application/vnd.ollama.image.messages"
+	// MediaTypeImageChatTemplate carries a jinja chat template supplied
+	// at create time, rendered by the native (llama-server) chat path
+	// in place of any GGUF-embedded tokenizer.chat_template.
+	MediaTypeImageChatTemplate = "application/vnd.ollama.image.chat_template"
+	MediaTypeImageSystem       = "application/vnd.ollama.image.system"
+	MediaTypeImageLicense      = "application/vnd.ollama.image.license"
+	MediaTypeImageParams       = "application/vnd.ollama.image.params"
+	MediaTypeImageMessages     = "application/vnd.ollama.image.messages"
 
 	MediaTypeImageConfig = "application/vnd.docker.container.image.v1+json"
 )

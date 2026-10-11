@@ -2050,6 +2050,9 @@ func getModelData(paths []string, verbose bool) (*gguf.Metadata, gguf.Tensors, e
 
 func selectedModelTemplate(m *Model, kv *gguf.Metadata) string {
 	if m.HasChatTemplate && chatModeForModel(m) == chatExecutionModeNative {
+		if m.chatTemplate != "" {
+			return m.chatTemplate
+		}
 		if chatTemplate := kv.ChatTemplate(); chatTemplate != "" {
 			return chatTemplate
 		}
@@ -2923,6 +2926,7 @@ func chatModeForModel(m *Model) chatExecutionMode {
 func llamaServerConfigForModel(m *Model) llm.LlamaServerConfig {
 	return llm.LlamaServerConfig{
 		DisableJinja:         usesOllamaRenderedChat(m),
+		ChatTemplateFile:     m.chatTemplatePath,
 		ManifestDigest:       m.Digest,
 		DraftModelPath:       m.DraftPath,
 		DraftModelShardPaths: slices.Clone(m.DraftShardPaths),
