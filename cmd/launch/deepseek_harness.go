@@ -74,7 +74,7 @@ func validateDeepSeekHarnessArgs(args []string) error {
 }
 
 func deepSeekHarnessLaunchEnv(env []string) []string {
-	return deepSeekHarnessUpsertEnv(env, deepSeekHarnessAPIKeyEnv, "rose")
+	return deepSeekHarnessUpsertEnv(env, deepSeekHarnessAPIKeyEnv, deepSeekHarnessProvider)
 }
 
 func deepSeekHarnessUpsertEnv(env []string, key, value string) []string {

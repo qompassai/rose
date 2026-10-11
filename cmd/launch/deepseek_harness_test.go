@@ -318,7 +318,7 @@ func TestDeepSeekHarnessRunUsesManagedPatchAndCredential(t *testing.T) {
 		t.Fatal(err)
 	}
 	patchPath, _ := deepSeekHarnessPatchPath()
-	want := "web\n--patch\n" + patchPath + "\n--port\n0\nollama\n"
+	want := "web\n--patch\n" + patchPath + "\n--port\n0\n" + deepSeekHarnessProvider + "\n"
 	if string(data) != want {
 		t.Fatalf("invocation = %q, want %q", data, want)
 	}
@@ -406,7 +406,7 @@ func TestDeepSeekHarnessFallsBackToNpxAfterGlobalInstallFailure(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	want := "--yes\n@deepseek-ai/dsh@latest\nweb\n--patch\n" + patchPath + "\n--port\n0\nollama\n"
+	want := "--yes\n@deepseek-ai/dsh@latest\nweb\n--patch\n" + patchPath + "\n--port\n0\n" + deepSeekHarnessProvider + "\n"
 	data, err := os.ReadFile(logPath)
 	if err != nil {
 		t.Fatal(err)

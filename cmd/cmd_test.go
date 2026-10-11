@@ -348,7 +348,7 @@ Weigh anchor!
     quantization    FP16    
 
   License
-    MIT License             
+    MIT License           
     Copyright (c) Rose    
 
 `
@@ -1424,11 +1424,11 @@ func TestPushHandler(t *testing.T) {
 					}
 				},
 			},
-			expectedOutput: "\nYou can find your model at:\n\n\thttps://ollama.com/test-model\n",
+			expectedOutput: "\nYou can find your model at:\n\n\tharbor.qompass.ai/library/test-model:latest\n",
 		},
 		{
 			name:      "not signed in push",
-			modelName: "notsignedin-model",
+			modelName: "registry.ollama.ai/library/notsignedin-model",
 			serverResponse: map[string]func(w http.ResponseWriter, r *http.Request){
 				"/api/me": func(w http.ResponseWriter, r *http.Request) {
 					if r.Method != http.MethodPost {
