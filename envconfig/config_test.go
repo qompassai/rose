@@ -1,10 +1,12 @@
 package envconfig
 
 import (
+	"fmt"
 	"log/slog"
 	"math"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -487,5 +489,40 @@ func TestNoCloud(t *testing.T) {
 				t.Errorf("NoCloudSource() = %q, want %q", got, tt.wantSource)
 			}
 		})
+	}
+}
+
+func TestAPIToken(t *testing.T) {
+	t.Setenv("ROSE_API_TOKEN", "")
+	if got := APIToken(); got != "" {
+		t.Errorf("unset: APIToken() = %q, want empty", got)
+	}
+
+	t.Setenv("ROSE_API_TOKEN", "secret-token")
+	if got := APIToken(); got != "secret-token" {
+		t.Errorf("set: APIToken() = %q, want %q", got, "secret-token")
+	}
+
+	// The OLLAMA_* namespace is not an alias: a token set only there
+	// must not enable Rose's API token.
+	t.Setenv("ROSE_API_TOKEN", "")
+	t.Setenv("OLLAMA_API_TOKEN", "legacy-token")
+	if got := APIToken(); got != "" {
+		t.Errorf("OLLAMA_API_TOKEN only: APIToken() = %q, want empty", got)
+	}
+
+	// AsMap feeds envconfig.Values(), which is logged at server
+	// startup, so it must report only that the token is set — never
+	// the token itself.
+	t.Setenv("ROSE_API_TOKEN", "secret-token")
+	entry, ok := AsMap()["ROSE_API_TOKEN"]
+	if !ok {
+		t.Fatal("AsMap() has no ROSE_API_TOKEN entry")
+	}
+	if entry.Value != true {
+		t.Errorf("AsMap()[ROSE_API_TOKEN].Value = %v, want true (set flag)", entry.Value)
+	}
+	if strings.Contains(fmt.Sprintf("%v", entry.Value), "secret-token") {
+		t.Error("AsMap() leaks the API token value")
 	}
 }

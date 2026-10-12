@@ -271,6 +271,14 @@ func String(s string) func() string {
 var (
 	LLMLibrary = String("ROSE_LLM_LIBRARY")
 	Editor     = String("ROSE_EDITOR")
+	// APIToken is the optional Bearer token for the HTTP API. When
+	// non-empty, the server requires "Authorization: Bearer <token>"
+	// on /api/* and /v1/* requests (see middleware.APITokenMiddleware);
+	// when empty, the API is unauthenticated, exactly as upstream.
+	// This is a secret: never log its value. AsMap below reports only
+	// whether it is set, because envconfig.Values() is logged at
+	// server startup.
+	APIToken = String("ROSE_API_TOKEN")
 
 	CudaVisibleDevices    = String("CUDA_VISIBLE_DEVICES")
 	HipVisibleDevices     = String("HIP_VISIBLE_DEVICES")
@@ -365,6 +373,10 @@ func AsMap() map[string]EnvVar {
 		"ROSE_CREATE_REMOTE":        {"ROSE_CREATE_REMOTE", CreateRemote(), "Force model creation through the server API even when the server is local"},
 		"ROSE_EDITOR":               {"ROSE_EDITOR", Editor(), "Path to editor for interactive prompt editing (Ctrl+G)"},
 		"ROSE_REMOTES":              {"ROSE_REMOTES", Remotes(), "Allowed hosts for remote models (default \"ollama.com\")"},
+		// The value here is deliberately a set/unset flag, not the
+		// token: Values() is logged at startup and a secret must
+		// never reach the log.
+		"ROSE_API_TOKEN": {"ROSE_API_TOKEN", APIToken() != "", "Require Authorization: Bearer <token> on /api/* and /v1/* requests (value never shown)"},
 
 		// Informational
 		"HTTP_PROXY":  {"HTTP_PROXY", String("HTTP_PROXY")(), "HTTP proxy"},

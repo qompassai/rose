@@ -105,6 +105,27 @@ func getAuthorizationToken(ctx context.Context, challenge string) (string, error
 	return token, nil
 }
 
+// setAuthorizationHeader sets the request's Authorization header.
+//
+// A configured ROSE_API_TOKEN (envconfig.APIToken) takes precedence:
+// it is the credential the Rose server's API-token middleware checks,
+// sent in the standard "Bearer <token>" form. It is a different
+// mechanism from the signed token (ROSE_AUTH / ollama.com): when an
+// API token is configured it replaces the signed token on requests
+// this client makes, so the two should not be combined. With no API
+// token set, behavior is exactly as before — the signed token is used
+// when present, and no Authorization header is sent otherwise.
+func setAuthorizationHeader(request *http.Request, signedToken string) {
+	if apiToken := envconfig.APIToken(); apiToken != "" {
+		request.Header.Set("Authorization", "Bearer "+apiToken)
+		return
+	}
+
+	if signedToken != "" {
+		request.Header.Set("Authorization", signedToken)
+	}
+}
+
 func (c *Client) do(ctx context.Context, method, path string, reqData, respData any) error {
 	var reqBody io.Reader
 	var data []byte
@@ -150,9 +171,7 @@ func (c *Client) do(ctx context.Context, method, path string, reqData, respData 
 	request.Header.Set("Accept", "application/json")
 	request.Header.Set("User-Agent", fmt.Sprintf("rose/%s (%s %s) Go/%s", version.Version, runtime.GOARCH, runtime.GOOS, runtime.Version()))
 
-	if token != "" {
-		request.Header.Set("Authorization", token)
-	}
+	setAuthorizationHeader(request, token)
 
 	respObj, err := c.http.Do(request)
 	if err != nil {
@@ -229,9 +248,7 @@ func (c *Client) stream(ctx context.Context, method, path string, data any, fn f
 	request.Header.Set("Accept", "application/x-ndjson")
 	request.Header.Set("User-Agent", fmt.Sprintf("rose/%s (%s %s) Go/%s", version.Version, runtime.GOARCH, runtime.GOOS, runtime.Version()))
 
-	if token != "" {
-		request.Header.Set("Authorization", token)
-	}
+	setAuthorizationHeader(request, token)
 
 	response, err := c.http.Do(request)
 	if err != nil {
