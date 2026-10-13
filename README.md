@@ -7,6 +7,7 @@
 # Rose
 
 Start building with open models.
+<a href="./LICENSE"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="License: Apache 2.0"></a>
 
 ## Download
 
@@ -354,3 +355,7 @@ console.log(response.message.content);
 - [Gentoo](https://github.com/gentoo/gentoo/tree/master/sci-ml/rose)
 - [Flox](https://flox.dev/blog/rose-part-one)
 - [Guix channel](https://codeberg.org/tusharhero/rose-guix)
+
+## License
+
+This project is licensed under the [Apache License, Version 2.0](./LICENSE).
