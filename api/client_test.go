@@ -595,3 +595,62 @@ func (r *failingReader) Read(p []byte) (int, error) {
 	}
 	return 0, r.err
 }
+
+// TestClientSendsAPIToken verifies the client side of the
+// ROSE_API_TOKEN contract: when the variable is set, both the do and
+// stream request paths send "Authorization: Bearer <token>" (the
+// header the server's API-token middleware checks); when it is unset,
+// no Authorization header is sent at all, as before.
+func TestClientSendsAPIToken(t *testing.T) {
+	cases := []struct {
+		name          string
+		token         string
+		wantAuthValue string
+	}{
+		{"token set", "client-secret-token", "Bearer client-secret-token"},
+		{"token unset", "", ""},
+	}
+
+	for _, tt := range cases {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Setenv("ROSE_API_TOKEN", tt.token)
+			// Keep the signed-token path out of this test.
+			t.Setenv("ROSE_AUTH", "")
+
+			var gotAuth []string
+			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				gotAuth = append(gotAuth, r.Header.Get("Authorization"))
+				w.Header().Set("Content-Type", "application/json")
+				if r.URL.Path == "/api/pull" {
+					// stream path: one JSON progress line
+					_, _ = w.Write([]byte("{\"status\":\"success\"}\n"))
+					return
+				}
+				_, _ = w.Write([]byte("{}"))
+			}))
+			defer ts.Close()
+
+			u, err := url.Parse(ts.URL)
+			if err != nil {
+				t.Fatal(err)
+			}
+			client := NewClient(u, http.DefaultClient)
+
+			if _, err := client.List(t.Context()); err != nil {
+				t.Fatalf("List (do path): %v", err)
+			}
+			if err := client.Pull(t.Context(), &PullRequest{Model: "test"}, func(ProgressResponse) error { return nil }); err != nil {
+				t.Fatalf("Pull (stream path): %v", err)
+			}
+
+			if len(gotAuth) != 2 {
+				t.Fatalf("server saw %d requests, want 2", len(gotAuth))
+			}
+			for i, got := range gotAuth {
+				if got != tt.wantAuthValue {
+					t.Errorf("request %d: Authorization = %q, want %q", i, got, tt.wantAuthValue)
+				}
+			}
+		})
+	}
+}

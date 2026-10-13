@@ -2295,6 +2295,13 @@ func (s *Server) GenerateRoutes() (http.Handler, error) {
 	r.Use(
 		cors.New(corsConfig),
 		allowedHostsMiddleware(s.addr),
+		// Opt-in API bearer token (ROSE_API_TOKEN). Runs after CORS so
+		// browser preflight (OPTIONS, which carries no credentials and
+		// runs no operation) is answered by the CORS layer as upstream.
+		// With the token unset this is a pass-through; with it set, it
+		// guards the /api/* and /v1/* trees — see
+		// middleware.APITokenMiddleware for the scope decision.
+		middleware.APITokenMiddleware(envconfig.APIToken()),
 	)
 
 	// General
