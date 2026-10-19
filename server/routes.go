@@ -3525,6 +3525,9 @@ func (s *Server) handleNativeChat(c *gin.Context, req api.ChatRequest, m *Model,
 	go func() {
 		defer close(ch)
 
+		// reply accumulates content so a fenced-JSON tool call the runner
+		// left as text can be promoted once the reply is complete.
+		var reply strings.Builder
 		err := r.Chat(c.Request.Context(), nativeReq, func(r llm.ChatResponse) {
 			res := api.ChatResponse{
 				Model:     req.Model,
@@ -3545,10 +3548,22 @@ func (s *Server) handleNativeChat(c *gin.Context, req api.ChatRequest, m *Model,
 				res.Message.Role = "assistant"
 			}
 
+			if len(req.Tools) > 0 {
+				reply.WriteString(res.Message.Content)
+			}
+
 			if r.Done {
 				res.DoneReason = r.DoneReason.String()
 				res.TotalDuration = time.Since(checkpointStart)
 				res.LoadDuration = checkpointLoaded.Sub(checkpointStart)
+
+				if len(req.Tools) > 0 && len(res.Message.ToolCalls) == 0 {
+					toolCalls := tools.FencedCalls(req.Tools, reply.String())
+					for i := range toolCalls {
+						toolCalls[i].ID = toolCallId()
+					}
+					res.Message.ToolCalls = toolCalls
+				}
 			}
 
 			ch <- res
