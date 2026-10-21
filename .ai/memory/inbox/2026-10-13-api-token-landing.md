@@ -1,6 +1,6 @@
 # API-token middleware landing — 2026-10-13 (Pax)
 
-Matt ruled "go with your recs" (2026-10-13); the api-token branch was
+Owner ruled "go with your recs" (2026-10-13); the api-token branch was
 the push/merge item.
 
 - Branch pax/api-token-20261012 @ 58d6ed02 (single commit on top of
