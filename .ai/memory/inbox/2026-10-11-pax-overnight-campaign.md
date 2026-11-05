@@ -1,3 +1,8 @@
+---
+origin_lane: qompassai
+content_label: sfw
+---
+
 # Overnight campaign pass — 2026-10-11 (Pax)
 
 Primo checkout: fresh clone by the campaign inventory wave; clean and

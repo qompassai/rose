@@ -1,3 +1,8 @@
+---
+origin_lane: qompassai
+content_label: sfw
+---
+
 # 2026-10-10 — `rose cert` certificate helper (security-port decision D5, option b)
 
 Owner ruled D5 = build the helper (Oct 10), overriding the docs-only

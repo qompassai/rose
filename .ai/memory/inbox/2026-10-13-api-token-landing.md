@@ -1,3 +1,8 @@
+---
+origin_lane: qompassai
+content_label: sfw
+---
+
 # API-token middleware landing — 2026-10-13 (Pax)
 
 Owner ruled "go with your recs" (2026-10-13); the api-token branch was
