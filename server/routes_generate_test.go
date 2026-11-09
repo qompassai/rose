@@ -496,6 +496,117 @@ func TestChatHandlerChatTemplateRouteTruncatesMessages(t *testing.T) {
 	}
 }
 
+func TestChatHandlerChatTemplateRoutePromotesFencedToolCall(t *testing.T) {
+	t.Setenv("ROSE_CONTEXT_LENGTH", "4096")
+	t.Setenv("ROSE_GO_TEMPLATE", "")
+	gin.SetMode(gin.TestMode)
+
+	fenced := []string{"Here is the function call:\n\n```json\n", `[{"name": "run_shell", "arguments": {"command": "ls"}}]`, "\n```"}
+	runnerCall := api.ToolCall{ID: "runner", Function: api.ToolCallFunction{Name: "run_shell", Arguments: testArgs(map[string]any{"command": "pwd"})}}
+	var runnerCalls []api.ToolCall
+	mock := mockRunner{
+		ChatFn: func(_ context.Context, req llm.ChatRequest, fn func(llm.ChatResponse)) error {
+			for _, delta := range fenced {
+				fn(llm.ChatResponse{Message: api.Message{Role: "assistant", Content: delta}})
+			}
+			fn(llm.ChatResponse{Message: api.Message{Role: "assistant", ToolCalls: runnerCalls}, Done: true, DoneReason: llm.DoneReasonStop})
+			return nil
+		},
+	}
+	s := newServerWithMockRunner(t, &mock)
+	createMinimalGGUFModel(t, s, "chat-template-tools", gguftest.KV{
+		"tokenizer.chat_template": "{% if tools %}{{ tools }}{% endif %}{{ messages[0]['content'] }}",
+	}, "", nil)
+
+	tools := []api.Tool{{
+		Type: "function",
+		Function: api.ToolFunction{
+			Name: "run_shell",
+			Parameters: api.ToolFunctionParameters{
+				Type:       "object",
+				Required:   []string{"command"},
+				Properties: testPropsMap(map[string]api.ToolProperty{"command": {Type: api.PropertyType{"string"}}}),
+			},
+		},
+	}}
+
+	chat := func(t *testing.T, stream bool, tools []api.Tool) []api.ChatResponse {
+		t.Helper()
+		w := createRequest(t, s.ChatHandler, api.ChatRequest{
+			Model:    "chat-template-tools",
+			Messages: []api.Message{{Role: "user", Content: "list files"}},
+			Tools:    tools,
+			Stream:   &stream,
+		})
+		if w.Code != http.StatusOK {
+			t.Fatalf("expected status 200, got %d: %s", w.Code, w.Body.String())
+		}
+		var out []api.ChatResponse
+		dec := json.NewDecoder(w.Body)
+		for dec.More() {
+			var res api.ChatResponse
+			if err := dec.Decode(&res); err != nil {
+				t.Fatal(err)
+			}
+			out = append(out, res)
+		}
+		return out
+	}
+
+	t.Run("non-streamed promotes and keeps content", func(t *testing.T) {
+		runnerCalls = nil
+		got := chat(t, false, tools)
+		if len(got) != 1 {
+			t.Fatalf("expected one response, got %d", len(got))
+		}
+		calls := got[0].Message.ToolCalls
+		if len(calls) != 1 || calls[0].ID == "" || calls[0].Function.Name != "run_shell" {
+			t.Fatalf("tool calls = %#v", calls)
+		}
+		if v, _ := calls[0].Function.Arguments.Get("command"); v != "ls" {
+			t.Fatalf("command = %v, want ls", v)
+		}
+		if got[0].Message.Content != strings.Join(fenced, "") {
+			t.Fatalf("content = %q", got[0].Message.Content)
+		}
+	})
+
+	t.Run("streamed promotes on the done chunk only", func(t *testing.T) {
+		runnerCalls = nil
+		got := chat(t, true, tools)
+		if len(got) != len(fenced)+1 {
+			t.Fatalf("expected %d chunks, got %d", len(fenced)+1, len(got))
+		}
+		for _, res := range got[:len(fenced)] {
+			if len(res.Message.ToolCalls) != 0 {
+				t.Fatalf("tool calls before done: %#v", res.Message.ToolCalls)
+			}
+		}
+		if last := got[len(got)-1]; !last.Done || len(last.Message.ToolCalls) != 1 {
+			t.Fatalf("done chunk = %#v", last)
+		}
+	})
+
+	t.Run("no tools leaves fence as text", func(t *testing.T) {
+		runnerCalls = nil
+		got := chat(t, false, nil)
+		if len(got) != 1 || len(got[0].Message.ToolCalls) != 0 {
+			t.Fatalf("responses = %#v", got)
+		}
+	})
+
+	t.Run("runner tool calls are not augmented", func(t *testing.T) {
+		runnerCalls = []api.ToolCall{runnerCall}
+		got := chat(t, false, tools)
+		if len(got) != 1 {
+			t.Fatalf("expected one response, got %d", len(got))
+		}
+		if diff := cmp.Diff([]api.ToolCall{runnerCall}, got[0].Message.ToolCalls, argsComparer); diff != "" {
+			t.Fatalf("tool calls mismatch (-want +got):\n%s", diff)
+		}
+	})
+}
+
 func TestChatHandlerTemplateEnvUsesRenderedRoute(t *testing.T) {
 	t.Setenv("ROSE_CONTEXT_LENGTH", "4096")
 	t.Setenv("ROSE_GO_TEMPLATE", "1")

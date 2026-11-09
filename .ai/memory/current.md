@@ -5,14 +5,14 @@
   (rebrand, `ROSE_*`-only environment configuration, XDG default
   store, harbor default registry, paper, and the promotion of the sync
   line).
-- Matt's Rose identity ruling (2026-10-08): Rose is his own product,
+- Owner's Rose identity ruling (2026-10-08): Rose is his own product,
   loosely following Ollama. The command is `rose` and the environment
   namespace is `ROSE_*` in lieu of Ollama; do not add an `ollama`
   command alias, an `OLLAMA_*` fallback, or Ollama-first defaults.
-- Matt's store ruling (2026-10-08): Rose's default store is
+- Owner's store ruling (2026-10-08): Rose's default store is
   `$XDG_DATA_HOME/rose/models`, or `~/.local/share/rose/models` when
   `XDG_DATA_HOME` is unset. `ROSE_MODELS` remains an explicit override.
-- Compatibility shim pending Matt's deviation ruling: the public-host
+- Compatibility shim pending Owner's deviation ruling: the public-host
   union is retained for now, but it is not settled Rose design.
 - Validated on primo (Arch, Go 1.27.1): full cmake build OK; server,
   manifest, types, envconfig, api, create, and transfer tests pass;
