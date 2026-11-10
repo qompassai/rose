@@ -33,8 +33,26 @@ func chatPrompt(ctx context.Context, m *Model, tokenize tokenizeFunc, opts *api.
 	currMsgIdx := 0
 
 	if truncate {
+		// A truncated window may not begin with a tool result: the
+		// assistant message carrying the matching tool calls would be
+		// dropped, and strict chat templates reject the orphaned
+		// result outright. Cut points therefore land only on non-tool
+		// messages, so a tool group is kept or dropped whole.
+		// lastCutIdx is the pair-aware fallback — the latest legal
+		// cut, used when no candidate fits; it keeps the final tool
+		// group whole where the old code kept only the final message.
+		lastCutIdx := lastMsgIdx
+		for lastCutIdx > 0 && msgs[lastCutIdx].Role == "tool" {
+			lastCutIdx--
+		}
+
 		// Start with all messages and remove from the front until it fits in context
-		for i := 0; i <= lastMsgIdx; i++ {
+		currMsgIdx = -1
+		for i := 0; i <= lastCutIdx; i++ {
+			if msgs[i].Role == "tool" {
+				continue
+			}
+
 			// Collect system messages from the portion we're about to skip
 			system = make([]api.Message, 0)
 			for j := range i {
@@ -45,7 +63,14 @@ func chatPrompt(ctx context.Context, m *Model, tokenize tokenizeFunc, opts *api.
 
 			p, err := renderPrompt(m, append(system, msgs[i:]...), tools, think)
 			if err != nil {
-				return "", nil, err
+				// A candidate window the template rejects is an
+				// invalid candidate, not a fatal error: keep
+				// advancing. Only the last legal candidate's render
+				// failure is real — no fallback remains.
+				if i == lastCutIdx {
+					return "", nil, err
+				}
+				continue
 			}
 
 			s, err := tokenize(ctx, p)
@@ -64,11 +89,19 @@ func chatPrompt(ctx context.Context, m *Model, tokenize tokenizeFunc, opts *api.
 				currMsgIdx = i
 				break
 			}
+		}
 
-			// Must always include at least the last message
-			if i == lastMsgIdx {
-				currMsgIdx = lastMsgIdx
-				break
+		if currMsgIdx < 0 {
+			currMsgIdx = lastCutIdx
+		}
+
+		// The loop leaves system holding its last rendered candidate's
+		// collection; recollect for the cut actually chosen, which the
+		// fallback path may not have rendered.
+		system = make([]api.Message, 0)
+		for j := range currMsgIdx {
+			if msgs[j].Role == "system" {
+				system = append(system, msgs[j])
 			}
 		}
 	}

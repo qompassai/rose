@@ -3588,10 +3588,29 @@ func truncateNativeChatMessages(ctx context.Context, m *Model, r llm.LlamaServer
 	}
 
 	lastMsgIdx := len(req.Messages) - 1
-	currMsgIdx := 0
+
+	// A truncated window may not begin with a tool result: the
+	// assistant message carrying the matching tool calls would be
+	// dropped, and strict chat templates (gpt-oss, devstral) reject
+	// the orphaned result outright. Cut points therefore land only on
+	// non-tool messages, so a tool group is kept or dropped whole.
+	// lastCutIdx is the pair-aware fallback — the latest legal cut,
+	// used when no candidate fits. Where the old code kept only the
+	// final message (itself possibly a tool result), the fallback
+	// keeps the final tool group whole.
+	lastCutIdx := lastMsgIdx
+	for lastCutIdx > 0 && req.Messages[lastCutIdx].Role == "tool" {
+		lastCutIdx--
+	}
+
+	currMsgIdx := -1
 	var system []api.Message
 
-	for i := 0; i <= lastMsgIdx; i++ {
+	for i := 0; i <= lastCutIdx; i++ {
+		if req.Messages[i].Role == "tool" {
+			continue
+		}
+
 		system = system[:0]
 		for j := range i {
 			if req.Messages[j].Role == "system" {
@@ -3603,7 +3622,14 @@ func truncateNativeChatMessages(ctx context.Context, m *Model, r llm.LlamaServer
 		renderReq.Messages = append(slices.Clone(system), req.Messages[i:]...)
 		prompt, err := r.ApplyChatTemplate(ctx, renderReq)
 		if err != nil {
-			return nil, err
+			// A candidate window the template rejects is an invalid
+			// candidate, not a fatal error: keep advancing. Only the
+			// last legal candidate's render failure is real — no
+			// fallback remains.
+			if i == lastCutIdx {
+				return nil, err
+			}
+			continue
 		}
 
 		tokens, err := r.Tokenize(ctx, prompt)
@@ -3622,10 +3648,10 @@ func truncateNativeChatMessages(ctx context.Context, m *Model, r llm.LlamaServer
 			currMsgIdx = i
 			break
 		}
-		if i == lastMsgIdx {
-			currMsgIdx = lastMsgIdx
-			break
-		}
+	}
+
+	if currMsgIdx < 0 {
+		currMsgIdx = lastCutIdx
 	}
 
 	if currMsgIdx > 0 {
